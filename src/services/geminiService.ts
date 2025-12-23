@@ -1,12 +1,11 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { UserData, AstrologySystem } from "../types";
 
-// Initialize Gemini with the Standard Library
-// FIX: Using Vite's env variable method
+// Initialize Gemini
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-// FIX: Use the standard, stable model name
-const MODEL_NAME = "gemini-1.5-flash";
+// FIX: Switched to the "Pro" model which has wider availability than Flash
+const MODEL_NAME = "gemini-1.5-pro";
 
 export const getAstrologicalInsight = async (userData: UserData) => {
   const model = genAI.getGenerativeModel({ model: MODEL_NAME });
@@ -40,12 +39,11 @@ export const getAstrologicalInsight = async (userData: UserData) => {
   try {
     const result = await model.generateContent(prompt);
     const text = result.response.text();
-    // Clean up if Gemini adds markdown formatting
     const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
     return JSON.parse(cleanJson);
   } catch (error) {
     console.error("Gemini API Error details:", error);
-    alert("Gemini Connection Failed: " + error);
+    alert("API Error: " + error);
     return null;
   }
 };
@@ -89,7 +87,6 @@ export const getTransitInsights = async (userData: UserData) => {
   }
 };
 
-// Simplified placeholders to prevent crashes
 export const generateCelestialSigil = async (userData: UserData, insight: any) => {
   return null; 
 };
