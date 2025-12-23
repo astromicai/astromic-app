@@ -1,11 +1,12 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { UserData, AstrologySystem } from "../types";
 
-// Initialize Gemini (Standard Library)
+// Initialize Gemini
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
 export const getAstrologicalInsight = async (userData: UserData) => {
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  // FIX: Using the specific version number
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-001" }); 
   const isVedic = userData.system === AstrologySystem.VEDIC;
 
   const prompt = `
@@ -37,7 +38,6 @@ export const getAstrologicalInsight = async (userData: UserData) => {
   try {
     const result = await model.generateContent(prompt);
     const text = result.response.text();
-    // Clean up if Gemini adds markdown formatting
     const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
     return JSON.parse(cleanJson);
   } catch (error) {
@@ -48,7 +48,8 @@ export const getAstrologicalInsight = async (userData: UserData) => {
 };
 
 export const getTransitInsights = async (userData: UserData) => {
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  // FIX: Using the specific version number
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-001" });
   const today = new Date().toISOString().split('T')[0];
   
   const prompt = `
