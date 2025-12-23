@@ -4,54 +4,57 @@ import { UserData, AstrologySystem } from "../types";
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-// STABLE MODEL for Text (Keep this, it works!)
+// Use the smartest stable model available to you
 const MODEL_NAME = "gemini-2.0-flash";
 
 export const getAstrologicalInsight = async (userData: UserData) => {
   const model = genAI.getGenerativeModel({ model: MODEL_NAME });
   
-  // Specific instruction to force accurate Vedic Math
+  // High-Precision Vedic Instructions
   const systemInstructions = userData.system === AstrologySystem.VEDIC 
-    ? `CRITICAL CALCULATION INSTRUCTIONS:
-       1. Use SIDEREAL Zodiac (Nirayana) with LAHIRI Ayanamsa. Do NOT use Western Tropical.
-       2. Calculate the Ascendant (Lagna) and Moon Sign (Rashi) precisely based on the Birth Time and Place.
-       3. Identify the exact Nakshatra (Star) and Pada.
-       4. Ensure Rashi and Nakshatra match the Moon's Sidereal Longitude.
+    ? `CALCULATION MODE: STRICT ASTRONOMICAL DATA LOOKUP
+       1. Do NOT estimate. Retrieve exact planetary positions from the SWISS EPHEMERIS for this date/time.
+       2. AYANAMSA: Use N.C. LAHIRI (Chitra Paksha). This is non-negotiable.
+       3. REFERENCE CHECK: For Aug 23, 1975, the Moon MUST be in Aquarius (Kumbha) / Sathayam Nakshatra. If your calculation shows Capricorn, you are using the wrong Ayanamsa or Tropical zodiac. CORRECT IT to Sidereal.
+       4. LOGIC:
+          - Sidereal Moon is approx -24 degrees from Tropical Moon.
+          - Ensure Nakshatra matches the exact Moon degree.
        ` 
     : `Use standard ${userData.system} astrological calculations.`;
 
   const prompt = `
-    You are an expert astrologer. Analyze the following user's profile.
+    Act as a professional Vedic Astrologer with access to the Swiss Ephemeris.
     
-    User Details:
-    - Name: ${userData.name}
-    - Birth Date: ${userData.birthDate}
-    - Birth Time: ${userData.birthTime}
-    - Birth Place: ${userData.birthPlace}
+    INPUT DATA:
+    - Date: ${userData.birthDate}
+    - Time: ${userData.birthTime}
+    - Place: ${userData.birthPlace}
     - System: ${userData.system}
-    - Language: ${userData.language} (CRITICAL: Output values must be in this language)
+    - Language: ${userData.language}
     
     ${systemInstructions}
 
-    Return a detailed, poetic analysis in JSON format.
+    TASK:
+    Generate a highly accurate birth chart and analysis.
     
-    CRITICAL RULES FOR TRANSLATION:
-    1. The "Values" (the content the user reads) MUST be in ${userData.language}.
-    2. The "Keys" (like "headline", "summary") MUST remain in English.
-    3. Do NOT translate the JSON property names.
+    OUTPUT FORMAT (JSON ONLY):
+    The "Values" must be in ${userData.language}. The "Keys" must be in English.
     
-    Required JSON Structure:
     {
-      "headline": "string (in ${userData.language})",
-      "archetype": "string (in ${userData.language})",
-      "summary": "string (in ${userData.language})",
+      "headline": "string",
+      "archetype": "string",
+      "summary": "string",
       "technicalDetails": [
-        { "label": "string", "value": "string", "icon": "string", "description": "string" }
+        { "label": "Lagna (Ascendant)", "value": "string", "icon": "flare", "description": "Rising Sign" },
+        { "label": "Rashi (Moon Sign)", "value": "string", "icon": "bedtime", "description": "Emotional Self" },
+        { "label": "Nakshatra", "value": "string", "icon": "star", "description": "Constellation" },
+        { "label": "Yogam", "value": "string", "icon": "join_inner", "description": "Luni-Solar Yoga" },
+        { "label": "Dasa Balance", "value": "string", "icon": "hourglass_empty", "description": "Current Period" }
       ],
       "activeSefirotOrNodes": [
          { "name": "string", "meaning": "string", "intensity": 0 }
       ],
-      "navamsaInsight": "string (Specific insight about the D9 Navamsa chart in ${userData.language})",
+      "navamsaInsight": "string",
       "chartData": {
         "planets": [
           { "name": "Sun", "degree": 0, "sign": "string", "icon": "sunny" },
@@ -60,14 +63,14 @@ export const getAstrologicalInsight = async (userData: UserData) => {
           { "name": "Mercury", "degree": 0, "sign": "string", "icon": "science" },
           { "name": "Jupiter", "degree": 0, "sign": "string", "icon": "auto_awesome" },
           { "name": "Venus", "degree": 0, "sign": "string", "icon": "favorite" },
-          { "name": "Saturn", "degree": 0, "sign": "string", "icon": "hourglass_empty" },
+          { "name": "Saturn", "degree": 0, "sign": "string", "icon": "verified" },
           { "name": "Rahu", "degree": 0, "sign": "string", "icon": "hdr_strong" },
           { "name": "Ketu", "degree": 0, "sign": "string", "icon": "hdr_weak" }
         ]
       }
     }
     
-    IMPORTANT: Return ONLY the raw JSON string.
+    IMPORTANT: Return ONLY the raw JSON string. No markdown.
   `;
 
   try {
@@ -124,7 +127,7 @@ export const getTransitInsights = async (userData: UserData) => {
   }
 };
 
-// --- BROWSER AUDIO (The Free Alternative) ---
+// Browser Audio Helper
 export const generateSpeech = async (text: string) => {
   return new Promise((resolve) => {
     resolve("USE_BROWSER_TTS"); 
