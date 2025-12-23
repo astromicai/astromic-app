@@ -4,7 +4,7 @@ import { UserData, AstrologySystem } from "../types";
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-// FIX: Using the STABLE version since you confirmed it works
+// STABLE MODEL for Text (Keep this, it works!)
 const MODEL_NAME = "gemini-2.0-flash";
 
 export const getAstrologicalInsight = async (userData: UserData) => {
@@ -39,13 +39,12 @@ export const getAstrologicalInsight = async (userData: UserData) => {
       ]
     }
     
-    IMPORTANT: Return ONLY the raw JSON string. Do not use Markdown, backticks, or introduction text.
+    IMPORTANT: Return ONLY the raw JSON string.
   `;
 
   try {
     const result = await model.generateContent(prompt);
     const text = result.response.text();
-    // Clean up if Gemini adds markdown formatting
     const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
     return JSON.parse(cleanJson);
   } catch (error) {
@@ -97,6 +96,15 @@ export const getTransitInsights = async (userData: UserData) => {
   }
 };
 
+// --- BROWSER AUDIO (The Free Alternative) ---
+export const generateSpeech = async (text: string) => {
+  return new Promise((resolve) => {
+    // This tells the App "I am ready to speak" but we don't return audio data
+    // The App component will handle the window.speechSynthesis part
+    // We return a special flag string to let the UI know to use Browser TTS
+    resolve("USE_BROWSER_TTS"); 
+  });
+};
+
 export const generateCelestialSigil = async (userData: UserData, insight: any) => { return null; };
 export const generateDestinyVideo = async (prompt: string) => { return null; };
-export const generateSpeech = async (text: string) => { return null; };

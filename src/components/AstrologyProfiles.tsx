@@ -1,7 +1,6 @@
-
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { UserData, AstrologySystem, TransitData, InsightData } from '../types';
-import { generateSpeech, generateDestinyVideo } from '../services/geminiService';
+import { generateDestinyVideo } from '../services/geminiService';
 
 interface ProfileProps {
   userData: UserData;
@@ -10,36 +9,8 @@ interface ProfileProps {
   onBack: () => void;
   onOpenChat: (prompt?: string) => void;
   onReset: () => void;
-}
-
-// Audio Helper Functions
-function decode(base64: string) {
-  const binaryString = atob(base64);
-  const len = binaryString.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes;
-}
-
-async function decodeAudioData(
-  data: Uint8Array,
-  ctx: AudioContext,
-  sampleRate: number,
-  numChannels: number,
-): Promise<AudioBuffer> {
-  const dataInt16 = new Int16Array(data.buffer);
-  const frameCount = dataInt16.length / numChannels;
-  const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
-
-  for (let channel = 0; channel < numChannels; channel++) {
-    const channelData = buffer.getChannelData(channel);
-    for (let i = 0; i < frameCount; i++) {
-      channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
-    }
-  }
-  return buffer;
+  onPlayAudio: () => void; // <--- NEW PROP
+  isPlaying: boolean;      // <--- NEW PROP
 }
 
 const VedicChartSquare: React.FC<{ planets: any[] }> = ({ planets = [] }) => {
@@ -48,17 +19,17 @@ const VedicChartSquare: React.FC<{ planets: any[] }> = ({ planets = [] }) => {
   
   const houses = [
     { id: 1, path: `M 160 160 L 80 80 L 160 0 L 240 80 Z`, labelPos: { x: 160, y: 50 } }, 
-    { id: 2, path: `M 80 80 L 0 0 L 160 0 Z`, labelPos: { x: 80, y: 25 } },             
-    { id: 3, path: `M 80 80 L 0 0 L 0 160 Z`, labelPos: { x: 30, y: 80 } },            
+    { id: 2, path: `M 80 80 L 0 0 L 160 0 Z`, labelPos: { x: 80, y: 25 } },              
+    { id: 3, path: `M 80 80 L 0 0 L 0 160 Z`, labelPos: { x: 30, y: 80 } },             
     { id: 4, path: `M 160 160 L 80 80 L 0 160 L 80 240 Z`, labelPos: { x: 80, y: 160 } }, 
-    { id: 5, path: `M 80 240 L 0 160 L 0 320 Z`, labelPos: { x: 30, y: 240 } },           
-    { id: 6, path: `M 80 240 L 0 320 L 160 320 Z`, labelPos: { x: 80, y: 295 } },         
+    { id: 5, path: `M 80 240 L 0 160 L 0 320 Z`, labelPos: { x: 30, y: 240 } },            
+    { id: 6, path: `M 80 240 L 0 320 L 160 320 Z`, labelPos: { x: 80, y: 295 } },          
     { id: 7, path: `M 160 160 L 80 240 L 160 320 L 240 240 Z`, labelPos: { x: 160, y: 260 } }, 
-    { id: 8, path: `M 240 240 L 160 320 L 320 320 Z`, labelPos: { x: 240, y: 295 } },     
-    { id: 9, path: `M 240 240 L 320 320 L 320 160 Z`, labelPos: { x: 290, y: 240 } },     
+    { id: 8, path: `M 240 240 L 160 320 L 320 320 Z`, labelPos: { x: 240, y: 295 } },      
+    { id: 9, path: `M 240 240 L 320 320 L 320 160 Z`, labelPos: { x: 290, y: 240 } },      
     { id: 10, path: `M 160 160 L 240 240 L 320 160 L 240 80 Z`, labelPos: { x: 240, y: 160 } }, 
-    { id: 11, path: `M 240 80 L 320 160 L 320 0 Z`, labelPos: { x: 290, y: 80 } },         
-    { id: 12, path: `M 240 80 L 320 0 L 160 0 Z`, labelPos: { x: 240, y: 25 } },           
+    { id: 11, path: `M 240 80 L 320 160 L 320 0 Z`, labelPos: { x: 290, y: 80 } },          
+    { id: 12, path: `M 240 80 L 320 0 L 160 0 Z`, labelPos: { x: 240, y: 25 } },            
   ];
 
   const getHouseFromDegree = (degree: number) => {
@@ -154,57 +125,15 @@ const NatalChartWheel: React.FC<{ planets: any[] }> = ({ planets = [] }) => {
   );
 };
 
-const HoroscopeSection: React.FC<{ transitData: TransitData | null, userData: UserData, onOpenChat: (p?: string) => void }> = ({ transitData, userData, onOpenChat }) => {
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-
-  const stopSpeaking = () => {
-    if (audioSourceRef.current) {
-      try {
-        audioSourceRef.current.stop();
-      } catch (e) { /* ignore */ }
-      audioSourceRef.current = null;
-    }
-    setIsSpeaking(false);
-  };
-
-  const handleSpeak = async () => {
-    if (isSpeaking) {
-      stopSpeaking();
-      return;
-    }
-
-    if (!transitData) return;
-
-    const textToSpeak = `${transitData.dailyHoroscope}. ${transitData.dailyAdvice.join('. ')}`;
-    setIsSpeaking(true);
-
-    try {
-      const base64Audio = await generateSpeech(textToSpeak);
-      if (!base64Audio) throw new Error("No audio data");
-
-      if (!audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
-      }
-      const ctx = audioContextRef.current;
-      
-      const audioData = decode(base64Audio);
-      const audioBuffer = await decodeAudioData(audioData, ctx, 24000, 1);
-      
-      const source = ctx.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(ctx.destination);
-      source.onended = () => setIsSpeaking(false);
-      
-      audioSourceRef.current = source;
-      source.start();
-    } catch (error) {
-      console.error("Speech error:", error);
-      setIsSpeaking(false);
-    }
-  };
-
+// UPDATED: Now receives audio controls from parent
+const HoroscopeSection: React.FC<{ 
+  transitData: TransitData | null, 
+  userData: UserData, 
+  onOpenChat: (p?: string) => void,
+  onPlayAudio: () => void, 
+  isPlaying: boolean 
+}> = ({ transitData, userData, onOpenChat, onPlayAudio, isPlaying }) => {
+  
   if (!transitData) return (
     <div className="py-20 text-center">
       <div className="size-12 rounded-full border-2 border-primary border-t-transparent animate-spin mx-auto mb-4" />
@@ -225,13 +154,15 @@ const HoroscopeSection: React.FC<{ transitData: TransitData | null, userData: Us
               <span className="text-primary text-[10px] uppercase tracking-[0.3em] font-bold">Your Daily Guidance</span>
               <h2 className="text-3xl font-bold leading-tight text-white">{transitData.dailyHeadline}</h2>
             </div>
+            
+            {/* UPDATED: Audio Button connected to App.tsx */}
             <button 
-              onClick={handleSpeak}
-              className={`size-12 rounded-full flex items-center justify-center transition-all ${isSpeaking ? 'bg-primary text-white scale-110 shadow-[0_0_20px_rgba(242,13,185,0.5)]' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
-              title={isSpeaking ? "Stop listening" : "Listen to horoscope"}
+              onClick={onPlayAudio}
+              className={`size-12 rounded-full flex items-center justify-center transition-all ${isPlaying ? 'bg-primary text-white scale-110 shadow-[0_0_20px_rgba(242,13,185,0.5)]' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
+              title={isPlaying ? "Stop listening" : "Listen to horoscope"}
             >
               <span className="material-symbols-outlined">
-                {isSpeaking ? 'stop' : 'volume_up'}
+                {isPlaying ? 'stop' : 'volume_up'}
               </span>
             </button>
           </div>
@@ -416,7 +347,8 @@ const PulseSection: React.FC<{ transitData: TransitData | null, userData: UserDa
   );
 };
 
-const AstrologyProfiles: React.FC<ProfileProps> = ({ userData, insight, transitData, onBack, onOpenChat, onReset }) => {
+// UPDATED: Destructuring new props and passing them down
+const AstrologyProfiles: React.FC<ProfileProps> = ({ userData, insight, transitData, onBack, onOpenChat, onReset, onPlayAudio, isPlaying }) => {
   const [activeTab, setActiveTab] = useState<'blueprint' | 'pulse' | 'horoscope'>('horoscope');
 
   if (!insight) return (
@@ -473,7 +405,7 @@ const AstrologyProfiles: React.FC<ProfileProps> = ({ userData, insight, transitD
           </div>
         )}
         {activeTab === 'pulse' && <PulseSection transitData={transitData} userData={userData} onOpenChat={onOpenChat} />}
-        {activeTab === 'horoscope' && <HoroscopeSection transitData={transitData} userData={userData} onOpenChat={onOpenChat} />}
+        {activeTab === 'horoscope' && <HoroscopeSection transitData={transitData} userData={userData} onOpenChat={onOpenChat} onPlayAudio={onPlayAudio} isPlaying={isPlaying} />}
       </main>
       <div className="fixed bottom-6 left-4 right-4 z-40 flex justify-center">
         <button onClick={() => onOpenChat()} className="w-full max-w-sm bg-primary hover:bg-primary/90 text-white font-bold py-4 px-6 rounded-2xl shadow-[0_10px_30px_rgba(242,13,185,0.4)] flex items-center justify-center gap-2 transition-all active:scale-95 border border-white/10">
