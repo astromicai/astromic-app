@@ -5,7 +5,7 @@ import { UserData, AstrologySystem } from "../types";
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
 export const getAstrologicalInsight = async (userData: UserData) => {
-  // FIX: Switched to the modern standard model
+  // Using the standard Flash model
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); 
   const isVedic = userData.system === AstrologySystem.VEDIC;
 
@@ -38,35 +38,19 @@ export const getAstrologicalInsight = async (userData: UserData) => {
   try {
     const result = await model.generateContent(prompt);
     const text = result.response.text();
-    const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    return JSON.parse(cleanJson);
-
-  } catch (error) {
-    console.error("Gemini API Error details:", error); 
-    // This alert will tell us if 1.5-flash also fails
-    alert("API Error: " + error); 
-    return null;
-  }
-};
-
-  try {
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
     // Clean up if Gemini adds markdown formatting
     const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
     return JSON.parse(cleanJson);
 
   } catch (error) {
-    // FIX 2: This is the updated error block you asked for
     console.error("Gemini API Error details:", error); 
-    alert("API Error: " + error); // <--- POPUP WILL SHOW HERE
+    alert("API Error: " + error); 
     return null;
   }
 };
 
 export const getTransitInsights = async (userData: UserData) => {
-  // FIX 3: Changed this from "gemini-1.5-flash" to "gemini-pro" for consistency
-  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   const today = new Date().toISOString().split('T')[0];
   
   const prompt = `
@@ -113,6 +97,4 @@ export const generateDestinyVideo = async (prompt: string) => {
   return null; 
 };
 
-export const generateSpeech = async (text: string) => {
-  return null; 
-};
+export const generateSpeech = async (text: string
