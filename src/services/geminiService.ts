@@ -5,8 +5,8 @@ import { UserData, AstrologySystem } from "../types";
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
 export const getAstrologicalInsight = async (userData: UserData) => {
-  // FIX 1: Using "gemini-pro" which is most reliable for free tiers
-  const model = genAI.getGenerativeModel({ model: "gemini-pro" }); 
+  // FIX: Switched to the modern standard model
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); 
   const isVedic = userData.system === AstrologySystem.VEDIC;
 
   const prompt = `
@@ -34,6 +34,20 @@ export const getAstrologicalInsight = async (userData: UserData) => {
     
     IMPORTANT: Return ONLY the JSON string. Do not use Markdown code blocks.
   `;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+    const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    return JSON.parse(cleanJson);
+
+  } catch (error) {
+    console.error("Gemini API Error details:", error); 
+    // This alert will tell us if 1.5-flash also fails
+    alert("API Error: " + error); 
+    return null;
+  }
+};
 
   try {
     const result = await model.generateContent(prompt);
