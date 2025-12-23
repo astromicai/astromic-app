@@ -1,3 +1,8 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { UserData } from '../types';
+
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { GoogleGenAI, Chat, GenerateContentResponse } from "@google/genai";
