@@ -10,6 +10,40 @@ const STORAGE_KEY = 'astromic_user_profile';
 const INSIGHT_KEY = 'astromic_insight_data';
 const TRANSIT_KEY = 'astromic_transit_data';
 
+// 1. EXPANDED LANGUAGE MAP (Includes Arabic & many others)
+const getLanguageCode = (languageName: string) => {
+  const map: Record<string, string> = {
+    'English': 'en-US',
+    'Tamil': 'ta-IN',
+    'Hindi': 'hi-IN',
+    'Arabic': 'ar-SA',  // <--- Added Arabic
+    'Spanish': 'es-ES',
+    'French': 'fr-FR',
+    'German': 'de-DE',
+    'Italian': 'it-IT',
+    'Portuguese': 'pt-BR',
+    'Russian': 'ru-RU',
+    'Japanese': 'ja-JP',
+    'Korean': 'ko-KR',
+    'Chinese': 'zh-CN',
+    'Telugu': 'te-IN',
+    'Kannada': 'kn-IN',
+    'Malayalam': 'ml-IN',
+    'Bengali': 'bn-IN',
+    'Gujarati': 'gu-IN',
+    'Marathi': 'mr-IN',
+    'Urdu': 'ur-PK',
+    'Turkish': 'tr-TR',
+    'Vietnamese': 'vi-VN',
+    'Indonesian': 'id-ID',
+    'Thai': 'th-TH',
+    'Dutch': 'nl-NL',
+    'Polish': 'pl-PL'
+  };
+  // We return undefined if not found, so the Smart Search can take over
+  return map[languageName]; 
+};
+
 const App: React.FC = () => {
   const [step, setStep] = useState<AppStep>('HERO');
   const [loading, setLoading] = useState(false);
@@ -19,7 +53,6 @@ const App: React.FC = () => {
   const [initialChatPrompt, setInitialChatPrompt] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   
-  // Track audio state
   const [isPlaying, setIsPlaying] = useState(false);
 
   const [userData, setUserData] = useState<UserData>({
@@ -32,7 +65,6 @@ const App: React.FC = () => {
     system: AstrologySystem.WESTERN,
   });
 
-  // Load data on mount
   useEffect(() => {
     const savedUser = localStorage.getItem(STORAGE_KEY);
     const savedInsight = localStorage.getItem(INSIGHT_KEY);
@@ -85,7 +117,6 @@ const App: React.FC = () => {
       
       let finalInsight = insight;
       if (insight) {
-        // Generate celestial sigil in background
         const sigil = await generateCelestialSigil(userData, insight);
         finalInsight = { ...insight, sigilUrl: sigil };
         
@@ -109,7 +140,6 @@ const App: React.FC = () => {
     localStorage.removeItem(INSIGHT_KEY);
     localStorage.removeItem(TRANSIT_KEY);
     
-    // Stop audio if resetting
     window.speechSynthesis.cancel();
     setIsPlaying(false);
 
@@ -127,11 +157,8 @@ const App: React.FC = () => {
     setStep('HERO');
   }, []);
 
-  // --- BROWSER AUDIO HANDLER ---
-  const handlePlayAudio = () => {
-    if (!insightData?.summary) return;
-    
-    // Stop any current speech first
+  // --- SMART AUDIO HANDLER ---
+  const handlePlayAudio = (textToRead?: string) => {
     window.speechSynthesis.cancel();
 
     if (isPlaying) {
@@ -139,17 +166,44 @@ const App: React.FC = () => {
       return;
     }
 
+    const finalText = textToRead || insightData?.summary;
+    if (!finalText) return;
+
     setIsPlaying(true);
     
-    const utterance = new SpeechSynthesisUtterance(insightData.summary);
+    const utterance = new SpeechSynthesisUtterance(finalText);
     utterance.pitch = 1;
     utterance.rate = 0.9; 
-    
-    // Try to pick a better voice 
+
+    // 1. Get all available voices on the device
     const voices = window.speechSynthesis.getVoices();
-    const preferredVoice = voices.find(v => v.name.includes("Google") || v.name.includes("Female"));
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
+    
+    // 2. Try to match the specific code (e.g., 'ta-IN' for Tamil)
+    const exactCode = getLanguageCode(userData.language);
+    
+    let matchingVoice = null;
+
+    if (exactCode) {
+      // If we have a code in our map, try to find it
+      matchingVoice = voices.find(v => v.lang === exactCode) || 
+                      voices.find(v => v.lang.startsWith(exactCode.split('-')[0]));
+    }
+    
+    // 3. SMART FALLBACK: If user typed "Swahili" (not in our map), 
+    // search the voice names for that word!
+    if (!matchingVoice) {
+      const searchString = userData.language.toLowerCase();
+      matchingVoice = voices.find(v => v.name.toLowerCase().includes(searchString));
+    }
+
+    // 4. Default to English/Google US if absolutely nothing matches
+    if (!matchingVoice) {
+      matchingVoice = voices.find(v => v.name.includes("Google US")) || null;
+    }
+
+    if (matchingVoice) {
+      utterance.voice = matchingVoice;
+      utterance.lang = matchingVoice.lang; // Ensure lang matches the voice
     }
 
     utterance.onend = () => {
