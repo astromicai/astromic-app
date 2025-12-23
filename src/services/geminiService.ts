@@ -1,11 +1,10 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { UserData, AstrologySystem } from "../types";
 
-// Initialize Gemini
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-// FIX: Switched to the "Pro" model which has wider availability than Flash
-const MODEL_NAME = "gemini-1.5-pro";
+// The Free Tier ALWAYS supports this model
+const MODEL_NAME = "gemini-1.5-flash";
 
 export const getAstrologicalInsight = async (userData: UserData) => {
   const model = genAI.getGenerativeModel({ model: MODEL_NAME });
@@ -87,14 +86,6 @@ export const getTransitInsights = async (userData: UserData) => {
   }
 };
 
-export const generateCelestialSigil = async (userData: UserData, insight: any) => {
-  return null; 
-};
-
-export const generateDestinyVideo = async (prompt: string) => {
-  return null; 
-};
-
-export const generateSpeech = async (text: string) => {
-  return null; 
-};
+export const generateCelestialSigil = async (userData: UserData, insight: any) => { return null; };
+export const generateDestinyVideo = async (prompt: string) => { return null; };
+export const generateSpeech = async (text: string) => { return null; };
