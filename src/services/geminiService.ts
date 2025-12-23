@@ -4,13 +4,12 @@ import { UserData, AstrologySystem } from "../types";
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-// USE THIS MODEL - It is the most stable standard version
-const MODEL_NAME = "gemini-1.5-flash";
+// FIX: Using the STABLE version since you confirmed it works
+const MODEL_NAME = "gemini-2.0-flash";
 
 export const getAstrologicalInsight = async (userData: UserData) => {
   const model = genAI.getGenerativeModel({ model: MODEL_NAME });
   
-  // This prompt handles ANY language (Selected or Typed)
   const prompt = `
     You are an expert astrologer. Analyze the following user's profile.
     
@@ -25,7 +24,7 @@ export const getAstrologicalInsight = async (userData: UserData) => {
     CRITICAL RULES FOR TRANSLATION:
     1. The "Values" (the content the user reads) MUST be in ${userData.language}.
     2. The "Keys" (like "headline", "summary") MUST remain in English.
-    3. Do NOT translate the JSON property names, or the app will crash.
+    3. Do NOT translate the JSON property names.
     
     Required JSON Structure:
     {
@@ -51,7 +50,7 @@ export const getAstrologicalInsight = async (userData: UserData) => {
     return JSON.parse(cleanJson);
   } catch (error) {
     console.error("Gemini API Error details:", error);
-    alert("Language Generation Failed: " + error);
+    alert("Generation Failed: " + error);
     return null;
   }
 };
