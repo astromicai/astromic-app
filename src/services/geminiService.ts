@@ -5,8 +5,7 @@ import { UserData, AstrologySystem } from "../types";
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
 export const getAstrologicalInsight = async (userData: UserData) => {
-  // Using the standard Flash model
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); 
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   const isVedic = userData.system === AstrologySystem.VEDIC;
 
   const prompt = `
@@ -41,10 +40,9 @@ export const getAstrologicalInsight = async (userData: UserData) => {
     // Clean up if Gemini adds markdown formatting
     const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
     return JSON.parse(cleanJson);
-
   } catch (error) {
-    console.error("Gemini API Error details:", error); 
-    alert("API Error: " + error); 
+    console.error("Gemini API Error details:", error);
+    alert("API Error: " + error);
     return null;
   }
 };
@@ -88,7 +86,6 @@ export const getTransitInsights = async (userData: UserData) => {
   }
 };
 
-// Simplified Image/Video placeholders to prevent build errors
 export const generateCelestialSigil = async (userData: UserData, insight: any) => {
   return null; 
 };
@@ -97,4 +94,6 @@ export const generateDestinyVideo = async (prompt: string) => {
   return null; 
 };
 
-export const generateSpeech = async (text: string
+export const generateSpeech = async (text: string) => {
+  return null; 
+};
