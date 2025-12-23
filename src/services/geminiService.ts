@@ -1,14 +1,16 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { UserData, AstrologySystem } from "../types";
 
-// Initialize Gemini
+// Initialize Gemini with the Standard Library
+// FIX: Using Vite's env variable method
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-export const getAstrologicalInsight = async (userData: UserData) => {
-  // FIX: Using the specific version number
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-001" }); 
-  const isVedic = userData.system === AstrologySystem.VEDIC;
+// FIX: Use the standard, stable model name
+const MODEL_NAME = "gemini-1.5-flash";
 
+export const getAstrologicalInsight = async (userData: UserData) => {
+  const model = genAI.getGenerativeModel({ model: MODEL_NAME });
+  
   const prompt = `
     Analyze the following user's cosmic profile using the ${userData.system} astrology system.
     User Details:
@@ -38,18 +40,18 @@ export const getAstrologicalInsight = async (userData: UserData) => {
   try {
     const result = await model.generateContent(prompt);
     const text = result.response.text();
+    // Clean up if Gemini adds markdown formatting
     const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
     return JSON.parse(cleanJson);
   } catch (error) {
     console.error("Gemini API Error details:", error);
-    alert("API Error: " + error);
+    alert("Gemini Connection Failed: " + error);
     return null;
   }
 };
 
 export const getTransitInsights = async (userData: UserData) => {
-  // FIX: Using the specific version number
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-001" });
+  const model = genAI.getGenerativeModel({ model: MODEL_NAME });
   const today = new Date().toISOString().split('T')[0];
   
   const prompt = `
@@ -87,6 +89,7 @@ export const getTransitInsights = async (userData: UserData) => {
   }
 };
 
+// Simplified placeholders to prevent crashes
 export const generateCelestialSigil = async (userData: UserData, insight: any) => {
   return null; 
 };
