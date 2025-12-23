@@ -5,7 +5,8 @@ import { UserData, AstrologySystem } from "../types";
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
 export const getAstrologicalInsight = async (userData: UserData) => {
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // Using Flash model for best performance
+  // FIX 1: Using "gemini-pro" which is most reliable for free tiers
+  const model = genAI.getGenerativeModel({ model: "gemini-pro" }); 
   const isVedic = userData.system === AstrologySystem.VEDIC;
 
   const prompt = `
@@ -40,14 +41,18 @@ export const getAstrologicalInsight = async (userData: UserData) => {
     // Clean up if Gemini adds markdown formatting
     const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
     return JSON.parse(cleanJson);
+
   } catch (error) {
-    console.error("Gemini API Error:", error);
+    // FIX 2: This is the updated error block you asked for
+    console.error("Gemini API Error details:", error); 
+    alert("API Error: " + error); // <--- POPUP WILL SHOW HERE
     return null;
   }
 };
 
 export const getTransitInsights = async (userData: UserData) => {
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  // FIX 3: Changed this from "gemini-1.5-flash" to "gemini-pro" for consistency
+  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
   const today = new Date().toISOString().split('T')[0];
   
   const prompt = `
@@ -87,13 +92,13 @@ export const getTransitInsights = async (userData: UserData) => {
 
 // Simplified Image/Video placeholders to prevent build errors
 export const generateCelestialSigil = async (userData: UserData, insight: any) => {
-  return null; // Image generation disabled to fix build
+  return null; 
 };
 
 export const generateDestinyVideo = async (prompt: string) => {
-  return null; // Video generation disabled to fix build
+  return null; 
 };
 
 export const generateSpeech = async (text: string) => {
-  return null; // Speech disabled to fix build
+  return null; 
 };
