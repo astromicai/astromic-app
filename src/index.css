@@ -1,18 +1,40 @@
-/* 1. Import the Global Font (supports Tamil, Arabic, etc.) */
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap');
+/* IMPORT ALL GLOBAL FONTS 
+  - Noto Sans (English, Russian, European, Vietnamese, Indonesian)
+  - Noto Sans Arabic (Arabic, Urdu)
+  - Noto Sans Devanagari (Hindi, Marathi)
+  - Noto Sans Tamil (Tamil)
+  - Noto Sans Telugu (Telugu)
+  - Noto Sans Kannada (Kannada)
+  - Noto Sans Malayalam (Malayalam)
+  - Noto Sans Bengali (Bengali)
+  - Noto Sans Gujarati (Gujarati)
+  - Noto Sans Thai (Thai)
+  - Noto Sans SC (Chinese Simplified)
+  - Noto Sans JP (Japanese)
+  - Noto Sans KR (Korean)
+*/
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&family=Noto+Sans+Arabic:wght@400;700&family=Noto+Sans+Bengali:wght@400;700&family=Noto+Sans+Devanagari:wght@400;700&family=Noto+Sans+Gujarati:wght@400;700&family=Noto+Sans+JP:wght@400;700&family=Noto+Sans+KR:wght@400;700&family=Noto+Sans+Kannada:wght@400;700&family=Noto+Sans+Malayalam:wght@400;700&family=Noto+Sans+SC:wght@400;700&family=Noto+Sans+Tamil:wght@400;700&family=Noto+Sans+Telugu:wght@400;700&family=Noto+Sans+Thai:wght@400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* 2. Force the dark background and the new font globally */
-body {
+/* Apply the "Universal Font Stack" */
+body, button, input, textarea, select {
   background-color: #0f0c29;
   color: white;
-  font-family: 'Noto Sans', sans-serif !important;
-}
-
-/* 3. Ensure buttons and inputs also use the new font */
-button, input, textarea, select {
-  font-family: 'Noto Sans', sans-serif !important;
+  font-family: 'Noto Sans', 
+               'Noto Sans Arabic', 
+               'Noto Sans Devanagari', 
+               'Noto Sans Tamil', 
+               'Noto Sans Telugu', 
+               'Noto Sans Kannada', 
+               'Noto Sans Malayalam', 
+               'Noto Sans Bengali', 
+               'Noto Sans Gujarati', 
+               'Noto Sans Thai', 
+               'Noto Sans SC', 
+               'Noto Sans JP', 
+               'Noto Sans KR', 
+               sans-serif !important;
 }

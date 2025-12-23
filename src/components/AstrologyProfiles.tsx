@@ -12,6 +12,22 @@ interface ProfileProps {
   isPlaying: boolean;
 }
 
+// FIX: Helper to prevent broken icons
+const getSafeIcon = (iconName: string) => {
+  // Common valid Material Symbols
+  const validIcons = ['star', 'bedtime', 'sunny', 'public', 'favorite', 'bolt', 'auto_awesome', 'timeline', 'psychology', 'flare', 'diversity_1', 'nightlight', 'join_inner'];
+  
+  if (validIcons.includes(iconName)) return iconName;
+  
+  // Map common hallucinations to real icons
+  if (iconName.includes('sun') || iconName.includes('moon')) return 'contrast';
+  if (iconName.includes('mars') || iconName.includes('venus')) return 'wc';
+  if (iconName.includes('mercury') || iconName.includes('jupiter')) return 'school';
+  
+  // Default fallback
+  return 'auto_awesome'; 
+};
+
 const VedicChartSquare: React.FC<{ planets: any[] }> = ({ planets = [] }) => {
   const size = 320;
   const strokeColor = "rgba(242, 13, 185, 0.4)";
@@ -222,15 +238,17 @@ const PulseSection: React.FC<{ transitData: TransitData | null, userData: UserDa
             <div key={i} className="bg-surface-dark border border-white/5 rounded-2xl p-5 group hover:border-primary/30 transition-all">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                    <span className="material-symbols-outlined">{t.icon}</span>
+                  <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    {/* FIX: Use safe icon helper */}
+                    <span className="material-symbols-outlined">{getSafeIcon(t.icon)}</span>
                   </div>
                   <div>
                     <h4 className="font-bold text-lg leading-snug">{t.planet}</h4>
                     <p className="text-xs text-primary/80 uppercase font-bold tracking-wider">{t.aspect}</p>
                   </div>
                 </div>
-                <div className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${t.intensity === 'High' ? 'bg-red-500/20 text-red-400' : t.intensity === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-green-500/20 text-green-400'}`}>{t.intensity} Influence</div>
+                {/* FIX: Adjusted width to prevent overlap in different languages */}
+                <div className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest shrink-0 ${t.intensity === 'High' ? 'bg-red-500/20 text-red-400' : t.intensity === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-green-500/20 text-green-400'}`}>{t.intensity}</div>
               </div>
               <p className="text-sm text-white/70 leading-relaxed mb-4 font-normal">{t.description}</p>
               <button 
@@ -281,7 +299,6 @@ const AstrologyProfiles: React.FC<ProfileProps> = ({ userData, insight, transitD
     </div>
   );
 
-  // FIX: Using Enum instead of strings
   const renderProfile = () => {
     switch (userData.system) {
       case AstrologySystem.KABBALISTIC: return <KabbalisticProfile userData={userData} insight={insight} onOpenChat={onOpenChat} />;
@@ -296,7 +313,6 @@ const AstrologyProfiles: React.FC<ProfileProps> = ({ userData, insight, transitD
     if (!insight.chartData?.planets) return null;
     return (
       <div className="mb-8 relative group w-full flex justify-center">
-        {/* FIX: Using Enum instead of strings */}
         {userData.system === AstrologySystem.VEDIC ? (
           <VedicChartSquare planets={insight.chartData.planets} />
         ) : (

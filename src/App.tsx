@@ -1,6 +1,5 @@
-// (Imports remain the same)
 import './index.css';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { UserData, AppStep, AstrologySystem, TransitData, InsightData } from './types';
 import OnboardingSteps from './components/OnboardingSteps';
 import AstrologyProfiles from './components/AstrologyProfiles';
@@ -11,7 +10,7 @@ const STORAGE_KEY = 'astromic_user_profile';
 const INSIGHT_KEY = 'astromic_insight_data';
 const TRANSIT_KEY = 'astromic_transit_data';
 
-// Expanded Language Code Map
+// Helper for language codes
 const getLanguageCode = (languageName: string) => {
   const map: Record<string, string> = {
     'English': 'en-US', 'Tamil': 'ta-IN', 'Hindi': 'hi-IN', 'Arabic': 'ar-SA',
@@ -33,7 +32,11 @@ const App: React.FC = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [initialChatPrompt, setInitialChatPrompt] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  
   const [isPlaying, setIsPlaying] = useState(false);
+  
+  // FIX: Ref to hold the utterance so it doesn't get garbage collected
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   const [userData, setUserData] = useState<UserData>({
     name: '',
@@ -118,8 +121,10 @@ const App: React.FC = () => {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(INSIGHT_KEY);
     localStorage.removeItem(TRANSIT_KEY);
+    
     window.speechSynthesis.cancel();
     setIsPlaying(false);
+
     setUserData({
       name: '',
       birthDate: '1995-08-14',
@@ -134,46 +139,55 @@ const App: React.FC = () => {
     setStep('HERO');
   }, []);
 
-  // --- AUDIO HANDLER ---
+  // --- ROBUST AUDIO HANDLER ---
   const handlePlayAudio = (textToRead?: string) => {
+    // 1. Always cancel existing speech
     window.speechSynthesis.cancel();
 
+    // 2. Toggle off if already playing
     if (isPlaying) {
       setIsPlaying(false);
+      utteranceRef.current = null;
       return;
     }
 
+    // 3. Get text
     const finalText = textToRead || insightData?.summary;
     if (!finalText) return;
 
     setIsPlaying(true);
     
+    // 4. Create Utterance and save to REF (Fixes Garbage Collection Bug)
     const utterance = new SpeechSynthesisUtterance(finalText);
+    utteranceRef.current = utterance;
+
     utterance.pitch = 1;
     utterance.rate = 0.9; 
 
-    // 1. Determine Language Code
+    // 5. Voice Selection Logic
     const langCode = getLanguageCode(userData.language);
     utterance.lang = langCode;
 
-    // 2. Try to find a matching voice
     const voices = window.speechSynthesis.getVoices();
-    let matchingVoice = voices.find(v => v.lang === langCode) || 
-                        voices.find(v => v.lang.startsWith(langCode.split('-')[0]));
     
-    // 3. Fallback: Search by name
-    if (!matchingVoice) {
-      const searchString = userData.language.toLowerCase();
-      matchingVoice = voices.find(v => v.name.toLowerCase().includes(searchString));
-    }
+    // Try exact match -> Try partial match -> Try name match -> Default
+    let matchingVoice = voices.find(v => v.lang === langCode) || 
+                        voices.find(v => v.lang.startsWith(langCode.split('-')[0])) ||
+                        voices.find(v => v.name.toLowerCase().includes(userData.language.toLowerCase()));
 
-    // 4. If voice found, use it. If not, the browser will use the default for that `lang`.
     if (matchingVoice) {
       utterance.voice = matchingVoice;
     }
 
     utterance.onend = () => {
       setIsPlaying(false);
+      utteranceRef.current = null;
+    };
+
+    utterance.onerror = (e) => {
+      console.error("Speech Error:", e);
+      setIsPlaying(false);
+      utteranceRef.current = null;
     };
 
     window.speechSynthesis.speak(utterance);
