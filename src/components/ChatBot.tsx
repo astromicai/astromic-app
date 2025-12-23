@@ -56,7 +56,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onCl
 	    //model: "gemini-pro",
 		//model: "gemini-1.5-pro",		
 		//model: "gemini-1.5-flash",
-        model: "gemini-1.5-flash", // Using Flash model for best performance
+        model: "gemini-2.0-flash", // Using Flash model for best performance
         systemInstruction: `You are Astromic, a high-level AI astrologer. 
         Your user is ${userData.name || 'a seeker'}. 
         Birth Data: ${userData.birthDate} at ${userData.birthTime} in ${userData.birthPlace}. 
