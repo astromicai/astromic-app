@@ -19,7 +19,7 @@ const App: React.FC = () => {
   const [initialChatPrompt, setInitialChatPrompt] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   
-  // <--- NEW: Add state to track if audio is playing
+  // Track audio state
   const [isPlaying, setIsPlaying] = useState(false);
 
   const [userData, setUserData] = useState<UserData>({
@@ -127,23 +127,102 @@ const App: React.FC = () => {
     setStep('HERO');
   }, []);
 
-  // <--- NEW: This function handles the Browser Audio
+  // --- BROWSER AUDIO HANDLER ---
   const handlePlayAudio = () => {
-    // If we have no text to read, do nothing
     if (!insightData?.summary) return;
     
-    // Always stop current speech first (to avoid overlap or to toggle off)
+    // Stop any current speech first
     window.speechSynthesis.cancel();
 
-    // If it was already playing, we just stopped it above, so update state and exit
     if (isPlaying) {
       setIsPlaying(false);
       return;
     }
 
-    // Otherwise, start speaking
     setIsPlaying(true);
     
     const utterance = new SpeechSynthesisUtterance(insightData.summary);
     utterance.pitch = 1;
-    utterance
+    utterance.rate = 0.9; 
+    
+    // Try to pick a better voice 
+    const voices = window.speechSynthesis.getVoices();
+    const preferredVoice = voices.find(v => v.name.includes("Google") || v.name.includes("Female"));
+    if (preferredVoice) {
+      utterance.voice = preferredVoice;
+    }
+
+    utterance.onend = () => {
+      setIsPlaying(false);
+    };
+
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const openChat = (prompt?: string) => {
+    setInitialChatPrompt(prompt || null);
+    setIsChatOpen(true);
+  };
+
+  const Background = () => (
+    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-background-dark">
+      <div className="absolute top-[-10%] left-[-20%] w-[120%] h-[50%] rounded-full bg-primary/10 blur-[120px]" />
+      <div className="absolute bottom-[-10%] right-[-20%] w-[100%] h-[40%] rounded-full bg-blue-600/10 blur-[100px]" />
+      <div className="absolute top-[30%] right-[-10%] w-[40%] h-[40%] rounded-full bg-fuchsia-600/5 blur-[100px]" />
+    </div>
+  );
+
+  if (!isInitialized) return null;
+
+  return (
+    <div className="relative min-h-screen w-full flex flex-col items-center justify-start overflow-x-hidden font-display text-white selection:bg-primary selection:text-white">
+      <Background />
+      
+      <div className="relative z-10 w-full max-w-md h-screen flex flex-col">
+        {step === 'PROFILE_DISPLAY' ? (
+          <AstrologyProfiles 
+            userData={userData} 
+            insight={insightData} 
+            transitData={transitData}
+            onBack={() => setStep('REVIEW')} 
+            onOpenChat={openChat}
+            onReset={handleReset}
+            onPlayAudio={handlePlayAudio}
+            isPlaying={isPlaying}
+          />
+        ) : (
+          <OnboardingSteps 
+            step={step} 
+            userData={userData} 
+            setUserData={setUserData} 
+            onNext={nextStep} 
+            onPrev={prevStep} 
+            onFinish={handleFinish}
+            loading={loading}
+          />
+        )}
+      </div>
+
+      <ChatBot 
+        userData={userData} 
+        isOpen={isChatOpen} 
+        initialPrompt={initialChatPrompt}
+        onClose={() => {
+          setIsChatOpen(false);
+          setInitialChatPrompt(null);
+        }} 
+      />
+
+      {step === 'PROFILE_DISPLAY' && !isChatOpen && (
+        <button 
+          onClick={() => openChat()}
+          className="fixed bottom-6 right-6 z-50 size-14 rounded-full bg-primary flex items-center justify-center text-white shadow-2xl hover:bg-primary-alt transition-all animate-bounce hover:animate-none"
+        >
+          <span className="material-symbols-outlined text-2xl">chat</span>
+        </button>
+      )}
+    </div>
+  );
+};
+
+export default App;
