@@ -1,29 +1,37 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { UserData, AstrologySystem } from "../types";
 
+// Initialize Gemini
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-// The Free Tier ALWAYS supports this model
-const MODEL_NAME = "gemini-2.0-flash";
+// USE THIS MODEL - It is the most stable standard version
+const MODEL_NAME = "gemini-1.5-flash";
 
 export const getAstrologicalInsight = async (userData: UserData) => {
   const model = genAI.getGenerativeModel({ model: MODEL_NAME });
   
+  // This prompt handles ANY language (Selected or Typed)
   const prompt = `
-    Analyze the following user's cosmic profile using the ${userData.system} astrology system.
+    You are an expert astrologer. Analyze the following user's profile.
+    
     User Details:
     - Name: ${userData.name}
     - Birth Date: ${userData.birthDate}
-    - Birth Time: ${userData.birthTime}
-    - Birth Place: ${userData.birthPlace}
-    - Focus Areas: ${userData.focusAreas.join(', ')}
+    - System: ${userData.system}
+    - Language: ${userData.language} (CRITICAL: Output values must be in this language)
     
-    Return a detailed, poetic, and mystical analysis in JSON format.
-    The structure must match this schema exactly:
+    Return a detailed, poetic analysis in JSON format.
+    
+    CRITICAL RULES FOR TRANSLATION:
+    1. The "Values" (the content the user reads) MUST be in ${userData.language}.
+    2. The "Keys" (like "headline", "summary") MUST remain in English.
+    3. Do NOT translate the JSON property names, or the app will crash.
+    
+    Required JSON Structure:
     {
-      "headline": "string",
-      "archetype": "string",
-      "summary": "string",
+      "headline": "string (in ${userData.language})",
+      "archetype": "string (in ${userData.language})",
+      "summary": "string (in ${userData.language})",
       "technicalDetails": [
         { "label": "string", "value": "string", "icon": "string", "description": "string" }
       ],
@@ -32,17 +40,18 @@ export const getAstrologicalInsight = async (userData: UserData) => {
       ]
     }
     
-    IMPORTANT: Return ONLY the JSON string. Do not use Markdown code blocks.
+    IMPORTANT: Return ONLY the raw JSON string. Do not use Markdown, backticks, or introduction text.
   `;
 
   try {
     const result = await model.generateContent(prompt);
     const text = result.response.text();
+    // Clean up if Gemini adds markdown formatting
     const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
     return JSON.parse(cleanJson);
   } catch (error) {
     console.error("Gemini API Error details:", error);
-    alert("API Error: " + error);
+    alert("Language Generation Failed: " + error);
     return null;
   }
 };
@@ -52,17 +61,20 @@ export const getTransitInsights = async (userData: UserData) => {
   const today = new Date().toISOString().split('T')[0];
   
   const prompt = `
-    Calculate the current planetary transits for today (${today}) relative to the user's natal chart.
-    System: ${userData.system}.
-    Birth Date: ${userData.birthDate}.
+    Calculate daily transits for today (${today}).
+    User Language: ${userData.language}.
+    
+    RULES:
+    1. All user-facing text must be in ${userData.language}.
+    2. JSON Keys (like "dailyHeadline", "mood") must be in English.
     
     Return JSON format exactly like this:
     {
-      "dailyHeadline": "string",
-      "weeklySummary": "string",
-      "dailyHoroscope": "string",
+      "dailyHeadline": "string (in ${userData.language})",
+      "weeklySummary": "string (in ${userData.language})",
+      "dailyHoroscope": "string (in ${userData.language})",
       "dailyAdvice": ["string", "string", "string"],
-      "mood": "string",
+      "mood": "string (in ${userData.language})",
       "luckyNumber": "string",
       "luckyColor": "string",
       "transits": [
@@ -72,7 +84,7 @@ export const getTransitInsights = async (userData: UserData) => {
          { "title": "string", "insight": "string" }
       ]
     }
-    IMPORTANT: Return ONLY the JSON string. Do not use Markdown code blocks.
+    IMPORTANT: Return ONLY the JSON string.
   `;
 
   try {
