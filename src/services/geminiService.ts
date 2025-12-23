@@ -10,15 +10,29 @@ const MODEL_NAME = "gemini-2.0-flash";
 export const getAstrologicalInsight = async (userData: UserData) => {
   const model = genAI.getGenerativeModel({ model: MODEL_NAME });
   
+  // Specific instruction to force accurate Vedic Math
+  const systemInstructions = userData.system === AstrologySystem.VEDIC 
+    ? `CRITICAL CALCULATION INSTRUCTIONS:
+       1. Use SIDEREAL Zodiac (Nirayana) with LAHIRI Ayanamsa. Do NOT use Western Tropical.
+       2. Calculate the Ascendant (Lagna) and Moon Sign (Rashi) precisely based on the Birth Time and Place.
+       3. Identify the exact Nakshatra (Star) and Pada.
+       4. Ensure Rashi and Nakshatra match the Moon's Sidereal Longitude.
+       ` 
+    : `Use standard ${userData.system} astrological calculations.`;
+
   const prompt = `
     You are an expert astrologer. Analyze the following user's profile.
     
     User Details:
     - Name: ${userData.name}
     - Birth Date: ${userData.birthDate}
+    - Birth Time: ${userData.birthTime}
+    - Birth Place: ${userData.birthPlace}
     - System: ${userData.system}
     - Language: ${userData.language} (CRITICAL: Output values must be in this language)
     
+    ${systemInstructions}
+
     Return a detailed, poetic analysis in JSON format.
     
     CRITICAL RULES FOR TRANSLATION:
@@ -36,7 +50,21 @@ export const getAstrologicalInsight = async (userData: UserData) => {
       ],
       "activeSefirotOrNodes": [
          { "name": "string", "meaning": "string", "intensity": 0 }
-      ]
+      ],
+      "navamsaInsight": "string (Specific insight about the D9 Navamsa chart in ${userData.language})",
+      "chartData": {
+        "planets": [
+          { "name": "Sun", "degree": 0, "sign": "string", "icon": "sunny" },
+          { "name": "Moon", "degree": 0, "sign": "string", "icon": "bedtime" },
+          { "name": "Mars", "degree": 0, "sign": "string", "icon": "swords" },
+          { "name": "Mercury", "degree": 0, "sign": "string", "icon": "science" },
+          { "name": "Jupiter", "degree": 0, "sign": "string", "icon": "auto_awesome" },
+          { "name": "Venus", "degree": 0, "sign": "string", "icon": "favorite" },
+          { "name": "Saturn", "degree": 0, "sign": "string", "icon": "hourglass_empty" },
+          { "name": "Rahu", "degree": 0, "sign": "string", "icon": "hdr_strong" },
+          { "name": "Ketu", "degree": 0, "sign": "string", "icon": "hdr_weak" }
+        ]
+      }
     }
     
     IMPORTANT: Return ONLY the raw JSON string.
@@ -99,9 +127,6 @@ export const getTransitInsights = async (userData: UserData) => {
 // --- BROWSER AUDIO (The Free Alternative) ---
 export const generateSpeech = async (text: string) => {
   return new Promise((resolve) => {
-    // This tells the App "I am ready to speak" but we don't return audio data
-    // The App component will handle the window.speechSynthesis part
-    // We return a special flag string to let the UI know to use Browser TTS
     resolve("USE_BROWSER_TTS"); 
   });
 };
