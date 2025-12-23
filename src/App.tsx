@@ -1,3 +1,4 @@
+// (Imports remain the same)
 import './index.css';
 import React, { useState, useEffect, useCallback } from 'react';
 import { UserData, AppStep, AstrologySystem, TransitData, InsightData } from './types';
@@ -10,38 +11,18 @@ const STORAGE_KEY = 'astromic_user_profile';
 const INSIGHT_KEY = 'astromic_insight_data';
 const TRANSIT_KEY = 'astromic_transit_data';
 
-// 1. EXPANDED LANGUAGE MAP (Includes Arabic & many others)
+// Expanded Language Code Map
 const getLanguageCode = (languageName: string) => {
   const map: Record<string, string> = {
-    'English': 'en-US',
-    'Tamil': 'ta-IN',
-    'Hindi': 'hi-IN',
-    'Arabic': 'ar-SA',  // <--- Added Arabic
-    'Spanish': 'es-ES',
-    'French': 'fr-FR',
-    'German': 'de-DE',
-    'Italian': 'it-IT',
-    'Portuguese': 'pt-BR',
-    'Russian': 'ru-RU',
-    'Japanese': 'ja-JP',
-    'Korean': 'ko-KR',
-    'Chinese': 'zh-CN',
-    'Telugu': 'te-IN',
-    'Kannada': 'kn-IN',
-    'Malayalam': 'ml-IN',
-    'Bengali': 'bn-IN',
-    'Gujarati': 'gu-IN',
-    'Marathi': 'mr-IN',
-    'Urdu': 'ur-PK',
-    'Turkish': 'tr-TR',
-    'Vietnamese': 'vi-VN',
-    'Indonesian': 'id-ID',
-    'Thai': 'th-TH',
-    'Dutch': 'nl-NL',
-    'Polish': 'pl-PL'
+    'English': 'en-US', 'Tamil': 'ta-IN', 'Hindi': 'hi-IN', 'Arabic': 'ar-SA',
+    'Spanish': 'es-ES', 'French': 'fr-FR', 'German': 'de-DE', 'Italian': 'it-IT',
+    'Portuguese': 'pt-BR', 'Russian': 'ru-RU', 'Japanese': 'ja-JP', 'Korean': 'ko-KR',
+    'Chinese': 'zh-CN', 'Telugu': 'te-IN', 'Kannada': 'kn-IN', 'Malayalam': 'ml-IN',
+    'Bengali': 'bn-IN', 'Gujarati': 'gu-IN', 'Marathi': 'mr-IN', 'Urdu': 'ur-PK',
+    'Turkish': 'tr-TR', 'Vietnamese': 'vi-VN', 'Indonesian': 'id-ID', 'Thai': 'th-TH',
+    'Dutch': 'nl-NL', 'Polish': 'pl-PL'
   };
-  // We return undefined if not found, so the Smart Search can take over
-  return map[languageName]; 
+  return map[languageName] || 'en-US';
 };
 
 const App: React.FC = () => {
@@ -52,7 +33,6 @@ const App: React.FC = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [initialChatPrompt, setInitialChatPrompt] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  
   const [isPlaying, setIsPlaying] = useState(false);
 
   const [userData, setUserData] = useState<UserData>({
@@ -119,7 +99,6 @@ const App: React.FC = () => {
       if (insight) {
         const sigil = await generateCelestialSigil(userData, insight);
         finalInsight = { ...insight, sigilUrl: sigil };
-        
         setInsightData(finalInsight);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
         localStorage.setItem(INSIGHT_KEY, JSON.stringify(finalInsight));
@@ -139,10 +118,8 @@ const App: React.FC = () => {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(INSIGHT_KEY);
     localStorage.removeItem(TRANSIT_KEY);
-    
     window.speechSynthesis.cancel();
     setIsPlaying(false);
-
     setUserData({
       name: '',
       birthDate: '1995-08-14',
@@ -157,7 +134,7 @@ const App: React.FC = () => {
     setStep('HERO');
   }, []);
 
-  // --- SMART AUDIO HANDLER ---
+  // --- AUDIO HANDLER ---
   const handlePlayAudio = (textToRead?: string) => {
     window.speechSynthesis.cancel();
 
@@ -175,35 +152,24 @@ const App: React.FC = () => {
     utterance.pitch = 1;
     utterance.rate = 0.9; 
 
-    // 1. Get all available voices on the device
-    const voices = window.speechSynthesis.getVoices();
-    
-    // 2. Try to match the specific code (e.g., 'ta-IN' for Tamil)
-    const exactCode = getLanguageCode(userData.language);
-    
-    let matchingVoice = null;
+    // 1. Determine Language Code
+    const langCode = getLanguageCode(userData.language);
+    utterance.lang = langCode;
 
-    if (exactCode) {
-      // If we have a code in our map, try to find it
-      matchingVoice = voices.find(v => v.lang === exactCode) || 
-                      voices.find(v => v.lang.startsWith(exactCode.split('-')[0]));
-    }
+    // 2. Try to find a matching voice
+    const voices = window.speechSynthesis.getVoices();
+    let matchingVoice = voices.find(v => v.lang === langCode) || 
+                        voices.find(v => v.lang.startsWith(langCode.split('-')[0]));
     
-    // 3. SMART FALLBACK: If user typed "Swahili" (not in our map), 
-    // search the voice names for that word!
+    // 3. Fallback: Search by name
     if (!matchingVoice) {
       const searchString = userData.language.toLowerCase();
       matchingVoice = voices.find(v => v.name.toLowerCase().includes(searchString));
     }
 
-    // 4. Default to English/Google US if absolutely nothing matches
-    if (!matchingVoice) {
-      matchingVoice = voices.find(v => v.name.includes("Google US")) || null;
-    }
-
+    // 4. If voice found, use it. If not, the browser will use the default for that `lang`.
     if (matchingVoice) {
       utterance.voice = matchingVoice;
-      utterance.lang = matchingVoice.lang; // Ensure lang matches the voice
     }
 
     utterance.onend = () => {
@@ -231,7 +197,6 @@ const App: React.FC = () => {
   return (
     <div className="relative min-h-screen w-full flex flex-col items-center justify-start overflow-x-hidden font-display text-white selection:bg-primary selection:text-white">
       <Background />
-      
       <div className="relative z-10 w-full max-w-md h-screen flex flex-col">
         {step === 'PROFILE_DISPLAY' ? (
           <AstrologyProfiles 
@@ -256,7 +221,6 @@ const App: React.FC = () => {
           />
         )}
       </div>
-
       <ChatBot 
         userData={userData} 
         isOpen={isChatOpen} 
@@ -266,7 +230,6 @@ const App: React.FC = () => {
           setInitialChatPrompt(null);
         }} 
       />
-
       {step === 'PROFILE_DISPLAY' && !isChatOpen && (
         <button 
           onClick={() => openChat()}

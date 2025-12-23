@@ -1,9 +1,18 @@
+/* 1. Import the Global Font (supports Tamil, Arabic, etc.) */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* This forces the dark purple background immediately */
+/* 2. Force the dark background and the new font globally */
 body {
   background-color: #0f0c29;
   color: white;
+  font-family: 'Noto Sans', sans-serif !important;
+}
+
+/* 3. Ensure buttons and inputs also use the new font */
+button, input, textarea, select {
+  font-family: 'Noto Sans', sans-serif !important;
 }
