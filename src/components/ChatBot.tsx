@@ -53,7 +53,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onCl
 
     try {
       const model = genAI.getGenerativeModel({ 
-        model: "gemini-1.5-flash",
+        model: "gemini-1.5-flash",// Using Flash model for best performance
         systemInstruction: `You are Astromic, a high-level AI astrologer. 
         Your user is ${userData.name || 'a seeker'}. 
         Birth Data: ${userData.birthDate} at ${userData.birthTime} in ${userData.birthPlace}. 
