@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import './App.css';
-import { GoogleGenerativeAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Initialize Gemini with your API key
 // Make sure you added VITE_GEMINI_API_KEY in your Vercel Environment Variables!
