@@ -1,4 +1,4 @@
-
+import './index.css';
 import React, { useState, useEffect, useCallback } from 'react';
 import { UserData, AppStep, AstrologySystem, TransitData, InsightData } from './types';
 import OnboardingSteps from './components/OnboardingSteps';
