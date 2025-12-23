@@ -15,7 +15,7 @@ interface ProfileProps {
 const VedicChartSquare: React.FC<{ planets: any[] }> = ({ planets = [] }) => {
   const size = 320;
   const strokeColor = "rgba(242, 13, 185, 0.4)";
-  // (Chart drawing code remains the same for brevity - it works fine)
+  
   const houses = [
     { id: 1, path: `M 160 160 L 80 80 L 160 0 L 240 80 Z`, labelPos: { x: 160, y: 50 } }, 
     { id: 2, path: `M 80 80 L 0 0 L 160 0 Z`, labelPos: { x: 80, y: 25 } },              
@@ -30,7 +30,10 @@ const VedicChartSquare: React.FC<{ planets: any[] }> = ({ planets = [] }) => {
     { id: 11, path: `M 240 80 L 320 160 L 320 0 Z`, labelPos: { x: 290, y: 80 } },          
     { id: 12, path: `M 240 80 L 320 0 L 160 0 Z`, labelPos: { x: 240, y: 25 } },            
   ];
-  const getHouseFromDegree = (degree: number) => Math.floor(degree / 30) + 1;
+
+  const getHouseFromDegree = (degree: number) => {
+    return Math.floor(degree / 30) + 1;
+  };
 
   return (
     <div className="flex flex-col items-center justify-center p-4 w-full">
@@ -200,7 +203,6 @@ const HoroscopeSection: React.FC<{
   );
 };
 
-// --- UPDATED PULSE SECTION (Removed Video, Fixed Fonts) ---
 const PulseSection: React.FC<{ transitData: TransitData | null, userData: UserData, onOpenChat: (p?: string) => void }> = ({ transitData, userData, onOpenChat }) => {
   if (!transitData) return null;
 
@@ -214,8 +216,6 @@ const PulseSection: React.FC<{ transitData: TransitData | null, userData: UserDa
         <h1 className="text-2xl font-bold leading-tight">Cosmic Alignments</h1>
       </header>
       
-      {/* Removed Destiny Video Section entirely as requested */}
-
       <section className="space-y-4">
         <div className="grid gap-4">
           {transitData.transits.map((t, i) => (
@@ -226,7 +226,6 @@ const PulseSection: React.FC<{ transitData: TransitData | null, userData: UserDa
                     <span className="material-symbols-outlined">{t.icon}</span>
                   </div>
                   <div>
-                    {/* Fixed: Removed absolute font sizes/overlap that caused Tamil issues */}
                     <h4 className="font-bold text-lg leading-snug">{t.planet}</h4>
                     <p className="text-xs text-primary/80 uppercase font-bold tracking-wider">{t.aspect}</p>
                   </div>
@@ -282,12 +281,13 @@ const AstrologyProfiles: React.FC<ProfileProps> = ({ userData, insight, transitD
     </div>
   );
 
+  // FIX: Using Enum instead of strings
   const renderProfile = () => {
     switch (userData.system) {
-      case 'Kabbalistic': return <KabbalisticProfile userData={userData} insight={insight} onOpenChat={onOpenChat} />;
-      case 'Vedic': return <VedicProfile userData={userData} insight={insight} onOpenChat={onOpenChat} />;
-      case 'Hellenistic': return <HellenisticProfile userData={userData} insight={insight} onOpenChat={onOpenChat} />;
-      case 'Islamic': return <IslamicProfile userData={userData} insight={insight} onOpenChat={onOpenChat} />;
+      case AstrologySystem.KABBALISTIC: return <KabbalisticProfile userData={userData} insight={insight} onOpenChat={onOpenChat} />;
+      case AstrologySystem.VEDIC: return <VedicProfile userData={userData} insight={insight} onOpenChat={onOpenChat} />;
+      case AstrologySystem.HELLENISTIC: return <HellenisticProfile userData={userData} insight={insight} onOpenChat={onOpenChat} />;
+      case AstrologySystem.ISLAMIC: return <IslamicProfile userData={userData} insight={insight} onOpenChat={onOpenChat} />;
       default: return <StandardProfile userData={userData} insight={insight} onOpenChat={onOpenChat} />;
     }
   };
@@ -296,7 +296,8 @@ const AstrologyProfiles: React.FC<ProfileProps> = ({ userData, insight, transitD
     if (!insight.chartData?.planets) return null;
     return (
       <div className="mb-8 relative group w-full flex justify-center">
-        {userData.system === 'Vedic' ? (
+        {/* FIX: Using Enum instead of strings */}
+        {userData.system === AstrologySystem.VEDIC ? (
           <VedicChartSquare planets={insight.chartData.planets} />
         ) : (
           <NatalChartWheel planets={insight.chartData.planets} />
@@ -341,7 +342,6 @@ const AstrologyProfiles: React.FC<ProfileProps> = ({ userData, insight, transitD
   );
 };
 
-// ... (Rest of the Profile components: VedicProfile, KabbalisticProfile, etc. - These don't need changes so you can leave them as is, or paste the previous version if you deleted them)
 const VedicProfile: React.FC<{userData: UserData, insight: InsightData, onOpenChat: (p?: string) => void}> = ({ userData, insight, onOpenChat }) => {
   const nakshatra = insight.technicalDetails?.find((d: any) => d.label.toLowerCase().includes('nakshatra'));
   const yoga = insight.technicalDetails?.find((d: any) => d.label.toLowerCase().includes('yoga') || d.label.toLowerCase().includes('yogam'));
