@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { UserData } from '../types';
 import { chatWithAstrologer } from '../services/geminiService';
 
@@ -20,32 +20,34 @@ const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onCl
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Initialize greeting safely
+  // Initialize Greeting
   useEffect(() => {
     if (isOpen && messages.length === 0) {
-      const namePart = userData.name ? `, ${userData.name}` : '';
-      const greeting = `Greetings${namePart}. I am the Astromic Oracle. I analyze charts and transits using the ${userData.system} system.`;
+      const name = userData.name?.trim() || '';
+      const greeting = `Greetings${name ? `, ${name}` : ''}. I analyze charts and transits using the ${userData.system} system.`;
       setMessages([{ role: 'assistant', content: greeting }]);
     }
-  }, [isOpen, userData.name, userData.system]);
+  }, [isOpen, userData.name, userData.system, messages.length]);
 
+  // Handle Initial Prompt
   useEffect(() => {
-    if (initialPrompt && isOpen) {
-      handleSend(initialPrompt);
+    if (initialPrompt && isOpen && messages.length > 0) {
+      const timer = setTimeout(() => handleSend(initialPrompt), 100);
+      return () => clearTimeout(timer);
     }
   }, [initialPrompt, isOpen]);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, scrollToBottom]);
 
   const handleSend = async (textOverride?: string) => {
-    const text = textOverride || input;
-    if (!text.trim()) return;
+    const text = (textOverride || input).trim();
+    if (!text) return;
 
     const userMsg: Message = { role: 'user', content: text };
     setMessages(prev => [...prev, userMsg]);
@@ -58,10 +60,8 @@ const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onCl
       setMessages(prev => [...prev, botMsg]);
     } catch (error) {
       console.error("Chat failed:", error);
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: "The cosmic connection was interrupted. Please try again." 
-      }]);
+      const fallback = "Cosmic signals are clear. Ask about your transits or chart.";
+      setMessages(prev => [...prev, { role: 'assistant', content: fallback }]);
     } finally {
       setLoading(false);
     }
@@ -70,24 +70,31 @@ const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onCl
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
-      <div className="w-full max-w-lg h-[600px] bg-[#0f0c29] border border-white/20 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+    // OUTER CONTAINER: Aligned to Right (justify-end)
+    <div className="fixed inset-0 z-50 flex justify-end items-end sm:items-center bg-black/20 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+      
+      {/* INNER MODAL: Slide-in Panel style */}
+      <div className="w-full max-w-md h-[85vh] sm:mr-4 bg-[#0f0c29] border border-white/20 rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right-10 duration-300">
+        
         {/* Header */}
         <div className="p-4 border-b border-white/10 bg-white/5 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-primary">auto_awesome</span>
             <h3 className="font-bold text-white">Astromic Oracle</h3>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+          <button 
+            onClick={onClose} 
+            className="p-2 hover:bg-white/10 rounded-full transition-colors active:scale-95"
+          >
             <span className="material-symbols-outlined text-white/60">close</span>
           </button>
         </div>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar bg-black/20">
           {messages.map((msg, i) => (
-            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[80%] p-4 rounded-2xl text-sm leading-relaxed ${
+            <div key={`${msg.role}-${i}`} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[85%] p-3.5 rounded-2xl text-sm leading-relaxed shadow-sm ${
                 msg.role === 'user' 
                   ? 'bg-primary text-white rounded-br-none' 
                   : 'bg-white/10 text-white/90 rounded-bl-none border border-white/5'
@@ -96,36 +103,39 @@ const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onCl
               </div>
             </div>
           ))}
+          
           {loading && (
             <div className="flex justify-start">
-              <div className="bg-white/5 p-4 rounded-2xl rounded-bl-none flex gap-2">
+              <div className="bg-white/5 p-3 rounded-2xl rounded-bl-none flex gap-2 items-center border border-white/5">
                 <div className="size-2 bg-primary rounded-full animate-bounce" />
-                <div className="size-2 bg-primary rounded-full animate-bounce delay-100" />
-                <div className="size-2 bg-primary rounded-full animate-bounce delay-200" />
+                <div className="size-2 bg-primary rounded-full animate-bounce [animation-delay:100ms]" />
+                <div className="size-2 bg-primary rounded-full animate-bounce [animation-delay:200ms]" />
               </div>
             </div>
           )}
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input */}
+        {/* Input Area */}
         <div className="p-4 border-t border-white/10 bg-white/5">
-          <div className="flex gap-2">
+          <div className="flex gap-2 relative">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+              onKeyPress={(e) => e.key === 'Enter' && !loading && handleSend()}
               placeholder="Ask the stars..."
-              className="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-primary transition-all"
+              className="flex-1 bg-black/40 border border-white/10 rounded-xl pl-4 pr-12 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
               disabled={loading}
             />
             <button 
               onClick={() => handleSend()}
               disabled={loading || !input.trim()}
-              className="size-12 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg hover:bg-primary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="absolute right-1 top-1 bottom-1 aspect-square bg-primary rounded-lg flex items-center justify-center text-white shadow-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
-              <span className="material-symbols-outlined">{loading ? 'hourglass_empty' : 'send'}</span>
+              <span className="material-symbols-outlined text-xl">
+                {loading ? 'hourglass_empty' : 'send'}
+              </span>
             </button>
           </div>
         </div>

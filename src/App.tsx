@@ -29,6 +29,7 @@ const App: React.FC = () => {
     system: AstrologySystem.WESTERN,
   });
 
+  // Restore state on load
   useEffect(() => {
     const savedUser = localStorage.getItem(STORAGE_KEY);
     const savedInsight = localStorage.getItem(INSIGHT_KEY);
@@ -49,6 +50,7 @@ const App: React.FC = () => {
     setIsInitialized(true);
   }, []);
 
+  // Navigation Helpers
   const nextStep = () => {
     const sequence: AppStep[] = [
       'HERO', 'NAME_INPUT', 'LANGUAGE_SELECT', 'BIRTH_DATE', 'BIRTH_PLACE', 'BIRTH_TIME', 
@@ -71,37 +73,32 @@ const App: React.FC = () => {
     }
   };
 
-  // --- FIXED: ROBUST DATA GENERATION ---
+  // --- FINAL GENERATION LOGIC ---
   const handleFinish = async () => {
     setLoading(true);
     try {
-      console.log("Starting profile generation...");
+      console.log("Starting generation...");
       
-      // 1. Generate Insight and Transits in parallel
+      // 1. Fetch Data in Parallel
       const [insight, transits] = await Promise.all([
         getAstrologicalInsight(userData),
         getTransitInsights(userData)
       ]);
       
-      // 2. Process Insight Data
+      // 2. Save Insight Data
       if (insight) {
         let sigil = null;
         try {
-          // Attempt to generate sigil (non-blocking)
           sigil = await generateCelestialSigil(userData, insight);
-        } catch (e) {
-          console.warn("Sigil generation skipped:", e);
-        }
+        } catch (e) { console.warn("Sigil skipped"); }
 
         const finalInsight = { ...insight, sigilUrl: sigil };
         setInsightData(finalInsight);
-        
-        // Save to Storage
         localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
         localStorage.setItem(INSIGHT_KEY, JSON.stringify(finalInsight));
       }
       
-      // 3. Process Transit Data
+      // 3. Save Transit Data
       if (transits) {
         setTransitData(transits);
         localStorage.setItem(TRANSIT_KEY, JSON.stringify(transits));
@@ -109,10 +106,11 @@ const App: React.FC = () => {
       
       // 4. Move to Display
       setStep('PROFILE_DISPLAY');
-
+      
     } catch (err) {
-      console.error("Critical error generating profile:", err);
-      // Even if it fails, we turn off loading so the app doesn't hang
+      console.error("Critical Profile Error:", err);
+      // Even if error, move to display so user isn't stuck loading
+      setStep('PROFILE_DISPLAY');
     } finally {
       setLoading(false);
     }
@@ -164,7 +162,6 @@ const App: React.FC = () => {
             onBack={() => setStep('REVIEW')} 
             onOpenChat={openChat}
             onReset={handleReset}
-            // Note: Audio props removed to fix TS error
           />
         ) : (
           <OnboardingSteps 
@@ -178,6 +175,8 @@ const App: React.FC = () => {
           />
         )}
       </div>
+
+      {/* Chat Window */}
       <ChatBot 
         userData={userData} 
         isOpen={isChatOpen} 
@@ -187,6 +186,8 @@ const App: React.FC = () => {
           setInitialChatPrompt(null);
         }} 
       />
+
+      {/* Floating Chat Button */}
       {step === 'PROFILE_DISPLAY' && !isChatOpen && (
         <button 
           onClick={() => openChat()}
