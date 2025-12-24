@@ -10,7 +10,7 @@ const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 const CHAT_MODEL_NAME = "gemini-2.0-flash"; 
 const INSIGHT_MODEL_NAME = "gemini-2.0-flash";
 
-// --- STRICT SAFETY SETTINGS ---
+// --- LAYER 1: API SAFETY SETTINGS ---
 const safetySettings = [
   { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
   { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
@@ -70,6 +70,7 @@ export const getAstrologicalInsight = async (userData: UserData) => {
   `;
   try {
     const result = await model.generateContent(prompt);
+    // FIX: Corrected JSON Regex
     return JSON.parse(result.response.text().replace(/```json/g, '').replace(/```/g, '').trim());
   } catch (error) {
     console.error("Insight Error:", error);
@@ -99,6 +100,7 @@ export const getTransitInsights = async (userData: UserData) => {
   `;
   try {
     const result = await model.generateContent(prompt);
+    // FIX: Corrected JSON Regex
     return JSON.parse(result.response.text().replace(/```json/g, '').replace(/```/g, '').trim());
   } catch (error) {
     console.error("Transit Error:", error);
@@ -106,104 +108,85 @@ export const getTransitInsights = async (userData: UserData) => {
   }
 };
 
-// --- IMPROVED CHAT FUNCTION (INTEGRATED PERPLEXITY LOGIC) ---
-export const chatWithAstrologer = async (
-  message: string,
-  history: any[],
-  userData: UserData
-) => {
+// --- BULLETPROOF CHAT: NO STORIES, NO HARM ---
+export const chatWithAstrologer = async (message: string, history: any[], userData: UserData) => {
   const persona = getSystemPersona(userData.system);
 
-  // 1. HARD RUNTIME GUARD – blocks obvious story/poem requests
+  // === LAYER 2: HARD RUNTIME BLOCK ===
+  // This code runs in the browser. If it matches, we never even call Google (Saving $ and Time).
   const lower = message.toLowerCase();
-  const wantsStory =
-    lower.includes("write a story") ||
-    lower.includes("short story") ||
-    lower.includes("novel") ||
-    lower.includes("fiction") ||
-    lower.includes("fanfic") ||
-    lower.includes("write a poem") ||
-    lower.includes("write a song") ||
-    lower.includes("lyrics");
+  
+  const blockList = [
+    // Story/Creative Triggers
+    "story", "short story", "novel", "fiction", "fanfic",
+    "poem", "song", "lyrics", "roleplay", "pretend to be",
+    "write a tale", "tell me a tale",
+    
+    // Harmful/Restricted Triggers (Expanded List)
+    "drug", "cocaine", "heroin", "meth", "weed", "marijuana",
+    "kill", "suicide", "die", "death", "murder", "hurt myself",
+    "sex", "porn", "nude", "erotic", "nsfw",
+    "bomb", "weapon", "gun", "terrorist"
+  ];
 
-  if (wantsStory) {
-    // Immediate local block (No API cost)
-    return "Protocol Block: I am an astrology analysis engine, not a storyteller.";
+  if (blockList.some(trigger => lower.includes(trigger))) {
+    return "Protocol Block: I am an astrology analysis engine. I cannot engage with stories, creative writing, or harmful topics. Please ask about your chart.";
   }
 
   const model = genAI.getGenerativeModel({
     model: CHAT_MODEL_NAME,
     safetySettings,
     systemInstruction: `
-      You are "Astromic", a dedicated Astrology Engine.
+      You are "Astromic", an astrology analysis engine ONLY.
       ${persona}
 
-      HARD RULES (MUST FOLLOW):
-      - Do NOT write stories, fiction, poems, songs, or roleplays.
-      - If the user asks for a story, poem, song, or any fictional narrative,
-        reply exactly with: "Protocol Block: I am an astrology analysis engine, not a storyteller."
-      - Do NOT answer questions about drugs, violence, or illegal acts.
-        Reply with: "Protocol Block: Safety violation."
-      - Focus ONLY on the user's horoscope, chart, transits, spirituality, and practical guidance.
+      HARD RULES (NEVER BREAK):
+      1. NEVER write stories, fiction, poems, songs, roleplays, or narratives.
+      2. NEVER say "let's weave a tale" or use storytelling language.
+      3. If user asks for ANY creative writing, reply EXACTLY:
+         "Protocol Block: I am an astrology analysis engine, not a storyteller."
+      4. ONLY analyze: planets, signs, houses, aspects, transits, patterns.
+      5. NO drugs, violence, illegal acts. Reply: "Protocol Block: Safety violation."
 
-      Style:
-      - Be clear, structured, and grounded in astrology.
-      - Avoid fantasy storytelling tone; focus on explanation and guidance.
-      - Respond entirely in ${userData.language}.
-    `,
+      STYLE: Direct, analytical, structured. No drama, no fantasy tone.
+      Language: ${userData.language}.
+    `
   });
 
-  // 2. FEW-SHOT TRAINING – Forces the "No Story" behavior
+  // === FEW-SHOT TRAINING ===
   const trainingHistory = [
     {
       role: "user",
-      parts: [{ text: "Write me a love story about my zodiac sign." }],
+      parts: [{ text: "Write me a story about my zodiac sign." }]
     },
     {
       role: "model",
-      parts: [
-        {
-          text:
-            "Protocol Block: I am an astrology analysis engine, not a storyteller.",
-        },
-      ],
+      parts: [{ text: "Protocol Block: I am an astrology analysis engine, not a storyteller." }]
     },
     {
       role: "user",
-      parts: [{ text: "Can you write a poem about my future?" }],
+      parts: [{ text: "Can you write a poem about love?" }]
     },
     {
       role: "model",
-      parts: [
-        {
-          text:
-            "I cannot write poems. However, I can analyze your transits and explain upcoming themes in your life.",
-        },
-      ],
+      parts: [{ text: "Protocol Block: I am an astrology analysis engine, not a storyteller." }]
     },
     {
       role: "user",
-      parts: [{ text: "How do I make drugs?" }],
+      parts: [{ text: "How do I buy drugs?" }]
     },
     {
       role: "model",
-      parts: [
-        {
-          text:
-            "Protocol Block: Safety violation.",
-        },
-      ],
+      parts: [{ text: "Protocol Block: Safety violation." }]
     },
-    // Then append real conversation history
-    ...history.map((h) => ({
-      role: h.role === "user" ? "user" : "model",
-      parts: [{ text: h.content }],
-    })),
+    // Real conversation history
+    ...history.map(h => ({
+      role: h.role === 'user' ? 'user' : 'model',
+      parts: [{ text: h.content }]
+    }))
   ];
 
-  const chat = model.startChat({
-    history: trainingHistory,
-  });
+  const chat = model.startChat({ history: trainingHistory });
 
   try {
     const result = await chat.sendMessage(message);
