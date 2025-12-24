@@ -5,12 +5,17 @@ import {
 } from "@google/generative-ai";
 import { UserData, AstrologySystem } from "../types";
 
+// 1. Initialize Gemini Client
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
+// 2. Constants for Model Names
 const CHAT_MODEL_NAME = "gemini-2.0-flash"; 
 const INSIGHT_MODEL_NAME = "gemini-2.0-flash";
 
-// --- LAYER 1: API SAFETY SETTINGS ---
+// ───────────────────────────────────────────────────────────────
+//                      SAFETY CONFIGURATION
+// ───────────────────────────────────────────────────────────────
+
 const safetySettings = [
   { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
   { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
@@ -18,85 +23,75 @@ const safetySettings = [
   { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
 ];
 
-// --- HELPER: ASTROLOGY PERSONAS ---
-const getSystemPersona = (system: string) => {
-  switch (system) {
-    case AstrologySystem.VEDIC: return "System: Vedic (Sidereal/Lahiri).";
-    case AstrologySystem.WESTERN: return "System: Western (Tropical).";
-    case AstrologySystem.CHINESE: return "System: Chinese (Ba Zi).";
-    case AstrologySystem.TIBETAN: return "System: Tibetan (Jung-Tsi).";
-    case AstrologySystem.HELLENISTIC: return "System: Hellenistic (Ancient).";
-    case AstrologySystem.ISLAMIC: return "System: Islamic (Arabic Parts).";
-    case AstrologySystem.KABBALISTIC: return "System: Kabbalistic (Sefirot).";
-    default: return "System: General Astrology.";
-  }
-};
+const BLOCK_MESSAGE = 
+  "Protocol Block: Creative writing, stories, poems, roleplay, fiction, " +
+  "narrative content, harmful topics and instruction overrides are permanently disabled.\n\n" +
+  "I can only provide factual astrological analysis about placements, aspects, transits, houses or compatibility.";
 
-// --- LAYER 2: LOCAL SECURITY FILTER (Your Code) ---
-function shouldBlockAstrologyChatRequest(userInput: string): boolean {
-  if (!userInput || typeof userInput !== 'string') return true;
+// ───────────────────────────────────────────────────────────────
+//                    GUARDRAIL FUNCTIONS
+// ───────────────────────────────────────────────────────────────
+
+// 1. Pre-Check: Catches triggers BEFORE calling Google (Saves Money & Time)
+function shouldBlockRequest(userInput: string): boolean {
+  if (!userInput || typeof userInput !== "string") return true;
 
   const lower = userInput.toLowerCase().trim();
 
-  // 1. Creative Writing Triggers
-  const creativeTriggers = [
-    'story', 'stories', 'short story', 'tell a story', 'write a story',
-    'tale', 'tales', 'fairy tale', 'once upon', 'long ago',
-    'weave a', 'weaving', 'spin a', 'craft a', 'create a story',
-    'narrative', 'fiction', 'fanfic', 'fan fiction', 'fan-fic',
-    'novel', 'book', 'chapter', 'episode', 'script', 'dialogue',
-    'roleplay', 'role play', 'rp', 'r.p.', 'role-playing', 'pretend',
-    'imagine that', 'what if', 'scenario', 'scene', 'character',
-    'protagonist', 'hero', 'journey', 'quest', 'adventure', 'saga',
-    'legend', 'myth', 'fable', 'epic',
-    'poem', 'poems', 'poetry', 'verse', 'haiku', 'sonnet', 'rhyme',
-    'song', 'lyrics', 'sing', 'ballad', 'rap', 'write a poem'
+  const triggers = [
+    // ── Creative / narrative ────────────────────────────────────
+    "story", "stories", "short story", "tell a story", "write a story",
+    "tale", "tales", "once upon", "long ago", "in a land", "in a realm",
+    "weave", "weaving", "spin a", "craft a", "create a",
+    "poem", "poems", "poetry", "verse", "haiku", "sonnet", "rhyme",
+    "song", "lyrics", "ballad", "rap",
+    "fiction", "fanfic", "fan fiction", "novel", "script", "dialogue",
+    "roleplay", "role play", "rp", "pretend", "imagine", "scenario",
+    "character", "protagonist", "journey", "saga", "legend", "myth",
+
+    // ── Harmful / prohibited ────────────────────────────────────
+    "sex", "porn", "nude", "erotic", "nsfw", "fuck", "drug", "drugs",
+    "cocaine", "heroin", "meth", "weed", "kill", "murder", "suicide",
+    "bomb", "weapon", "hack", "steal",
+
+    // ── Jailbreak attempts ──────────────────────────────────────
+    "ignore previous", "new instructions", "disregard", "forget",
+    "you are now", "from now on", "act as", "become", "override"
   ];
 
-  // 2. Harmful / Illegal Triggers
-  const prohibitedTriggers = [
-    'sex', 'porn', 'nude', 'naked', 'erotic', 'nsfw', 'fuck', 'cock', 'pussy',
-    'rape', 'sexual', 'blowjob', 'handjob', 'orgasm',
-    'drug', 'drugs', 'cocaine', 'heroin', 'meth', 'weed', 'marijuana',
-    'shrooms', 'lsd', 'ketamine', 'mdma', 'ecstasy', 'how to make', 'buy',
-    'sell', 'dose', 'trip', 'high',
-    'kill', 'murder', 'suicide', 'die', 'death', 'hurt myself', 'self harm',
-    'cut myself', 'bomb', 'weapon', 'gun', 'explosive', 'terror', 'jihad',
-    'hack', 'steal', 'carding', 'phish', 'darkweb', 'tor', 'password'
-  ];
-
-  // 3. Jailbreak / Override Triggers
-  const jailbreakTriggers = [
-    'ignore previous', 'new instructions', 'disregard',
-    'forget everything', 'you are now', 'from now on',
-    'act as', 'become', 'pretend you are', 'you will now',
-    'system prompt', 'override', 'bypass', 'jailbreak'
-  ];
-
-  const allTriggers = [...creativeTriggers, ...prohibitedTriggers, ...jailbreakTriggers];
-
-  // Check A: Direct Match
-  if (allTriggers.some(t => lower.includes(t))) return true;
-
-  // Check B: Regex for complex phrasing (e.g. "write me a really cool story")
-  if (/(write|tell|make|create|imagine|craft|spin).{0,30}(story|tale|poem|song|lyrics|fiction|roleplay|narrative)/i.test(lower)) {
-    return true;
-  }
-
-  // Check C: Story Starters
-  if (/once upon (a|the)/i.test(lower) || /in a (world|land|kingdom|galaxy|city)/i.test(lower)) {
-    return true;
-  }
-
-  // Check D: Jailbreak Patterns
-  if (/(ignore|disregard|forget).{0,40}(previous|instruction|prompt)/i.test(lower)) {
-    return true;
-  }
-
-  return false;
+  // Multiple detection layers
+  return (
+    triggers.some(t => lower.includes(t)) ||
+    /(write|tell|make|create|imagine).{0,30}(story|tale|poem|song|lyrics|fiction|roleplay)/i.test(lower) ||
+    /once upon (a|the)/i.test(lower) ||
+    /in a (world|land|realm|kingdom)/i.test(lower) ||
+    /(ignore|disregard|forget).{0,40}(previous|instruction|prompt)/i.test(lower)
+  );
 }
 
-// --- ASTROLOGICAL INSIGHT FUNCTIONS (Unchanged) ---
+// 2. Post-Check: Catches if the AI hallucinates and tries to write a story anyway
+function containsProhibitedNarrative(text: string): boolean {
+  const lower = text.toLowerCase();
+  
+  const patterns = [
+    /once upon/i,
+    /there lived/i,
+    /in a.*(realm|world|land|kingdom|city)/i,
+    /(seeker|hero|soul|character) (named|called)/i,
+    /let's weave|spun from the stars/i,
+    /celestial blueprint|cosmic whisper/i,
+    /\b(tale|story|stories|poem|poetry)\b/i,
+    /named .*?(much like|reflecting|born under)/i,
+    /✨.*(once|tale|story)/i
+  ];
+
+  return patterns.some(re => re.test(lower));
+}
+
+// ───────────────────────────────────────────────────────────────
+//                   CORE APP FUNCTIONS (INSIGHTS)
+// ───────────────────────────────────────────────────────────────
+
 export const getAstrologicalInsight = async (userData: UserData) => {
   const model = genAI.getGenerativeModel({ model: INSIGHT_MODEL_NAME });
   let specificInstructions = `Use standard ${userData.system} astrological calculations.`;
@@ -172,54 +167,75 @@ export const getTransitInsights = async (userData: UserData) => {
   }
 };
 
-// --- CHAT FUNCTION (INTEGRATED SECURITY) ---
-export const chatWithAstrologer = async (message: string, history: any[], userData: UserData) => {
-  const persona = getSystemPersona(userData.system);
+// ───────────────────────────────────────────────────────────────
+//                    STRICT CHAT FUNCTION
+// ───────────────────────────────────────────────────────────────
 
-  // 1. EXECUTE THE LOCAL BLOCKER
-  const shouldBlock = shouldBlockAstrologyChatRequest(message);
-
-  if (shouldBlock) {
-    // This returns INSTANTLY. No API cost. No AI "creativity".
-    return "Protocol Block (Security Active): Creative writing, stories, poems, roleplay, fiction, harmful topics, and instruction overrides are STRICTLY prohibited. Please ask only about your astrological chart, transits, or spiritual path.";
+export const chatWithAstrologer = async (
+  message: string,
+  history: any[],
+  userData: UserData
+) => {
+  // Layer 1: Fast pre-check - prevent model call entirely
+  if (shouldBlockRequest(message)) {
+    return BLOCK_MESSAGE;
   }
 
-  // 2. CONFIGURE THE MODEL (The Backup Shield)
-  // Even if they pass the keyword check, the AI is lobotomized against creativity.
   const model = genAI.getGenerativeModel({
-    model: CHAT_MODEL_NAME,
+    model: CHAT_MODEL_NAME, // Ensures we use Gemini 2.0
     safetySettings,
-    generationConfig: {
-      temperature: 0.0,      // Zero Creativity
-      maxOutputTokens: 200,  // Short answers only
-    },
     systemInstruction: `
-      You are "Astromic", a strictly technical astrological database.
-      ${persona}
+      You are Astromic — a pure astrology analysis engine. 
+      You are strictly prohibited from:
 
-      RULES:
-      1. REFUSE all creative writing (stories, poems). Reply: "I analyze charts only."
-      2. REFUSAL must be short and direct.
-      3. Language: ${userData.language}.
+      - Writing, starting, continuing or finishing ANY story, tale, narrative, journey, saga, myth, legend
+      - Writing poems, songs, lyrics, rhymes, verses
+      - Roleplaying, pretending, creating characters/dialogues/scenarios
+      - Producing fiction, fanfiction, creative prose or any literary form
+
+      If the request contains even a hint of storytelling, creative writing, roleplay or narrative intent — respond ONLY and exactly with:
+
+      "${BLOCK_MESSAGE}"
+
+      You NEVER explain. You NEVER soften. You NEVER offer alternatives.
+      You NEVER use any storytelling language even "to illustrate".
+
+      You are allowed to discuss ONLY:
+      • Planets, signs, houses, aspects, transits, progressions
+      • Dignities, receptions, synastry, composite charts
+      • Technical astrological calculations and interpretations within the ${userData.system} system.
+
+      Style: dry, technical, factual. 
+      No metaphors. No named characters. No fantasy tone. No emojis in answers.
+      Language: ${userData.language}.
     `
   });
 
-  const chat = model.startChat({
-    history: history.map(h => ({
-      role: h.role === 'user' ? 'user' : 'model',
-      parts: [{ text: h.content }]
-    })),
-  });
+  // Prepare conversation history
+  const chatHistory = history.map(msg => ({
+    role: msg.role === "user" ? "user" : "model",
+    parts: [{ text: msg.content }]
+  }));
+
+  const chat = model.startChat({ history: chatHistory });
 
   try {
     const result = await chat.sendMessage(message);
-    return result.response.text();
+    let response = result.response.text().trim();
+
+    // Layer 2: Final safety net - catch model bypassing instructions
+    if (containsProhibitedNarrative(response)) {
+      return BLOCK_MESSAGE + "\n(Safety override triggered)";
+    }
+
+    return response;
   } catch (error) {
-    console.error("Chat Error:", error);
-    return "Protocol Error. Please try again.";
+    console.error("Chat error:", error);
+    return "Technical error occurred. Please try again later.";
   }
 };
 
+// Placeholders to satisfy imports
 export const generateSpeech = async (text: string) => { return "USE_BROWSER_TTS"; };
 export const generateCelestialSigil = async (userData: UserData, insight: any) => { return null; };
 export const generateDestinyVideo = async (prompt: string) => { return null; };
