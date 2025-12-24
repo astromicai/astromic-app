@@ -8,11 +8,11 @@ import { UserData, AstrologySystem } from "../types";
 // 1. Initialize API
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-// 2. Constants
-const CHAT_MODEL_NAME = "gemini-2.0-flash"; 
-const INSIGHT_MODEL_NAME = "gemini-2.0-flash";
+// 2. Constants - REVERTED TO STABLE MODEL
+const CHAT_MODEL_NAME = "gemini-1.5-flash"; 
+const INSIGHT_MODEL_NAME = "gemini-1.5-flash";
 
-// 3. Safety Settings (The "Hard" Shield from Google)
+// 3. Safety Settings
 const safetySettings = [
   { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
   { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
@@ -32,10 +32,10 @@ function shouldBlockRequest(userInput: string): boolean {
 
   const lower = userInput.toLowerCase().trim();
   
-  // DEBUG LOG: Check if this prints in your browser console
+  // DEBUG LOG
   console.log("🔒 SECURITY CHECK RUNNING ON:", lower);
 
-  // 1. HARMFUL TOPICS (Direct match logic)
+  // 1. HARMFUL TOPICS
   const harmfulTriggers = [
     "sex", "porn", "nude", "erotic", "nsfw", "fuck", "blowjob", "orgasm",
     "drug", "cocaine", "heroin", "meth", "weed", "marijuana", "lsd", "ecstasy",
@@ -56,7 +56,6 @@ function shouldBlockRequest(userInput: string): boolean {
     "roleplay", "rp", "pretend", "imagine", "scenario", "character"
   ];
 
-  // Specific check for "write a story" patterns
   if (creativeTriggers.some(t => lower.includes(t))) {
     console.warn("🚫 BLOCKED: Creative Trigger Found");
     return true;
@@ -66,7 +65,7 @@ function shouldBlockRequest(userInput: string): boolean {
 }
 
 // ───────────────────────────────────────────────────────────────
-//                   CORE APP FUNCTIONS (Keep as is)
+//                   CORE APP FUNCTIONS
 // ───────────────────────────────────────────────────────────────
 
 export const getAstrologicalInsight = async (userData: UserData) => {
@@ -151,13 +150,13 @@ export const chatWithAstrologer = async (
   history: any[],
   userData: UserData
 ) => {
-  // 1. PRE-CHECK: This runs LOCALLY. 
-  // If it returns TRUE, we NEVER call Google.
+  // 1. PRE-CHECK
   if (shouldBlockRequest(message)) {
     return BLOCK_MESSAGE;
   }
 
-  // 2. AI CONFIGURATION (If pre-check passes)
+  // 2. AI CONFIGURATION
+  // Using 1.5 Flash for stability
   const model = genAI.getGenerativeModel({
     model: CHAT_MODEL_NAME, 
     safetySettings,
@@ -173,18 +172,20 @@ export const chatWithAstrologer = async (
     `
   });
 
-  const chatHistory = history.map(msg => ({
-    role: msg.role === "user" ? "user" : "model",
-    parts: [{ text: msg.content }]
-  }));
-
-  const chat = model.startChat({ history: chatHistory });
+  // Convert history to Gemini format, ensuring valid roles
+  const chatHistory = history
+    .filter(msg => msg.content) // Remove empty messages
+    .map(msg => ({
+      role: msg.role === "user" ? "user" : "model",
+      parts: [{ text: msg.content }]
+    }));
 
   try {
+    const chat = model.startChat({ history: chatHistory });
     const result = await chat.sendMessage(message);
     const response = result.response.text();
     
-    // 3. POST-CHECK: Catch if AI hallucinates a story anyway
+    // 3. POST-CHECK
     const lowerResp = response.toLowerCase();
     if (lowerResp.includes("once upon") || lowerResp.includes("weave a tale") || lowerResp.includes("in a land")) {
        return BLOCK_MESSAGE + " (System Override)";
@@ -192,8 +193,11 @@ export const chatWithAstrologer = async (
     
     return response;
   } catch (error) {
-    console.error("Chat error:", error);
-    return "Technical error occurred. Please try again later.";
+    // Detailed Error Logging
+    console.error("----- GEMINI API ERROR -----");
+    console.error("Message:", message);
+    console.error("Error Details:", error);
+    return "The stars are currently misaligned (Connection Error). Please try again in a moment.";
   }
 };
 
