@@ -1,6 +1,6 @@
 import './index.css';
 import React, { useState, useEffect, useCallback } from 'react';
-// FIX 1: Changed '../types' to './types' (assuming types.ts is in src folder)
+// ✅ FIXED: Changed import path from '../types' to './types'
 import { UserData, AppStep, AstrologySystem, TransitData, InsightData } from './types';
 import OnboardingSteps from './components/OnboardingSteps';
 import AstrologyProfiles from './components/AstrologyProfiles';
@@ -74,22 +74,21 @@ const App: React.FC = () => {
     }
   };
 
-  // --- FINAL GENERATION LOGIC ---
+  // --- GENERATION LOGIC ---
   const handleFinish = async () => {
     setLoading(true);
     try {
       console.log("Starting generation...");
       
-      // 1. Fetch Data in Parallel
       const [insight, transits] = await Promise.all([
         getAstrologicalInsight(userData),
         getTransitInsights(userData)
       ]);
       
-      // 2. Save Insight Data
       if (insight) {
         let sigil = null;
         try {
+          // This call is now TypeScript-safe thanks to geminiService fix
           sigil = await generateCelestialSigil(userData, insight);
         } catch (e) { console.warn("Sigil skipped"); }
 
@@ -99,18 +98,15 @@ const App: React.FC = () => {
         localStorage.setItem(INSIGHT_KEY, JSON.stringify(finalInsight));
       }
       
-      // 3. Save Transit Data
       if (transits) {
         setTransitData(transits);
         localStorage.setItem(TRANSIT_KEY, JSON.stringify(transits));
       }
       
-      // 4. Move to Display
       setStep('PROFILE_DISPLAY');
       
     } catch (err) {
       console.error("Critical Profile Error:", err);
-      // Even if error, move to display so user isn't stuck loading
       setStep('PROFILE_DISPLAY');
     } finally {
       setLoading(false);
@@ -177,7 +173,6 @@ const App: React.FC = () => {
         )}
       </div>
 
-      {/* Chat Window */}
       <ChatBot 
         userData={userData} 
         isOpen={isChatOpen} 
@@ -188,7 +183,6 @@ const App: React.FC = () => {
         }} 
       />
 
-      {/* Floating Chat Button */}
       {step === 'PROFILE_DISPLAY' && !isChatOpen && (
         <button 
           onClick={() => openChat()}
@@ -201,5 +195,5 @@ const App: React.FC = () => {
   );
 };
 
-// FIX 2: Added explicit default export
+// ✅ FIXED: Added default export
 export default App;

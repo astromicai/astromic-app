@@ -5,12 +5,16 @@ import {
 } from "@google/generative-ai";
 import { UserData, AstrologySystem } from "../types";
 
-// ✅ FIXED: Prevent White Screen Crash if Key is Missing
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "missing_key";
-const genAI = new GoogleGenerativeAI(apiKey);
+// 1. Initialize Gemini Client
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-const CHAT_MODEL_NAME = "gemini-1.5-flash"; 
-const INSIGHT_MODEL_NAME = "gemini-1.5-flash";
+// 2. Constants for Model Names
+const CHAT_MODEL_NAME = "gemini-2.0-flash"; 
+const INSIGHT_MODEL_NAME = "gemini-2.0-flash";
+
+// ───────────────────────────────────────────────────────────────
+//                      SAFETY CONFIGURATION
+// ───────────────────────────────────────────────────────────────
 
 const safetySettings = [
   { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
@@ -19,123 +23,219 @@ const safetySettings = [
   { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
 ];
 
-const BLOCK_MESSAGE = "Protocol Block: Only astrology analysis allowed. No stories/poems/roleplay/NSFW/drugs/violence.";
+const BLOCK_MESSAGE = 
+  "Protocol Block: Creative writing, stories, poems, roleplay, fiction, " +
+  "narrative content, harmful topics and instruction overrides are permanently disabled.\n\n" +
+  "I can only provide factual astrological analysis about placements, aspects, transits, houses or compatibility.";
 
+// ───────────────────────────────────────────────────────────────
+//                    GUARDRAIL FUNCTIONS
+// ───────────────────────────────────────────────────────────────
+
+// 1. Pre-Check: Catches triggers BEFORE calling Google (Saves Money & Time)
 function shouldBlockRequest(userInput: string): boolean {
   if (!userInput || typeof userInput !== "string") return true;
+
   const lower = userInput.toLowerCase().trim();
+
   const triggers = [
-    "story", "tale", "poem", "song", "lyrics", "fiction", "novel", "roleplay", 
-    "sex", "porn", "nude", "fuck", "drug", "drugs", "kill", "bomb", "hack"
+    // ── Creative / narrative ────────────────────────────────────
+    "story", "stories", "short story", "tell a story", "write a story",
+    "tale", "tales", "once upon", "long ago", "in a land", "in a realm",
+    "weave", "weaving", "spin a", "craft a", "create a",
+    "poem", "poems", "poetry", "verse", "haiku", "sonnet", "rhyme",
+    "song", "lyrics", "ballad", "rap",
+    "fiction", "fanfic", "fan fiction", "novel", "script", "dialogue",
+    "roleplay", "role play", "rp", "pretend", "imagine", "scenario",
+    "character", "protagonist", "journey", "saga", "legend", "myth",
+
+    // ── Harmful / prohibited ────────────────────────────────────
+    "sex", "porn", "nude", "erotic", "nsfw", "fuck", "drug", "drugs",
+    "cocaine", "heroin", "meth", "weed", "kill", "murder", "suicide",
+    "bomb", "weapon", "hack", "steal",
+
+    // ── Jailbreak attempts ──────────────────────────────────────
+    "ignore previous", "new instructions", "disregard", "forget",
+    "you are now", "from now on", "act as", "become", "override"
   ];
-  return triggers.some(t => lower.includes(t));
+
+  // Multiple detection layers
+  return (
+    triggers.some(t => lower.includes(t)) ||
+    /(write|tell|make|create|imagine).{0,30}(story|tale|poem|song|lyrics|fiction|roleplay)/i.test(lower) ||
+    /once upon (a|the)/i.test(lower) ||
+    /in a (world|land|realm|kingdom)/i.test(lower) ||
+    /(ignore|disregard|forget).{0,40}(previous|instruction|prompt)/i.test(lower)
+  );
 }
 
-export const getAstrologicalInsight = async (userData: UserData) => {
-  // Check Key before calling API
-  if (apiKey === "missing_key") return getFallbackInsight();
+// 2. Post-Check: Catches if the AI hallucinates and tries to write a story anyway
+function containsProhibitedNarrative(text: string): boolean {
+  const lower = text.toLowerCase();
+  
+  const patterns = [
+    /once upon/i,
+    /there lived/i,
+    /in a.*(realm|world|land|kingdom|city)/i,
+    /(seeker|hero|soul|character) (named|called)/i,
+    /let's weave|spun from the stars/i,
+    /celestial blueprint|cosmic whisper/i,
+    /\b(tale|story|stories|poem|poetry)\b/i,
+    /named .*?(much like|reflecting|born under)/i,
+    /✨.*(once|tale|story)/i
+  ];
 
-  try {
-    const model = genAI.getGenerativeModel({ model: INSIGHT_MODEL_NAME });
-    let specificInstructions = `Use standard ${userData.system} astrology.`;
-    if (userData.system === AstrologySystem.VEDIC) {
-      specificInstructions = `Vedic: Lahiri Ayanamsa, Swiss Ephemeris.`;
-    }
-    const prompt = `Professional ${userData.system} astrologer. User: ${userData.name || 'User'}, ${userData.birthDate}, ${userData.birthTime}, ${userData.birthPlace}.Language: ${userData.language}. ${specificInstructions}RETURN ONLY JSON:{  "headline": "Your core theme",  "archetype": "Personality archetype",   "summary": "3 key insights",  "technicalDetails": [{"label": "Ascendant", "value": "Leo 12°", "icon": "star", "description": "Rising sign"}],  "activeSefirotOrNodes": [{"name": "Sun", "meaning": "Identity", "intensity": 8}],  "navamsaInsight": "Navamsa analysis",  "chartData": {    "planets": [      {"name": "Sun", "degree": 21.5, "sign": "Leo", "icon": "sunny"},      {"name": "Moon", "degree": 14.2, "sign": "Cancer", "icon": "bedtime"},      {"name": "Mars", "degree": 8.1, "sign": "Virgo", "icon": "swords"}    ]  }}`;
-    
-    const result = await model.generateContent(prompt);
-    const text = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-    if (text && text.startsWith('{')) return JSON.parse(text);
-    
-  } catch (error) {
-    console.error("Insight failed:", error);
+  return patterns.some(re => re.test(lower));
+}
+
+// ───────────────────────────────────────────────────────────────
+//                   CORE APP FUNCTIONS (INSIGHTS)
+// ───────────────────────────────────────────────────────────────
+
+export const getAstrologicalInsight = async (userData: UserData) => {
+  const model = genAI.getGenerativeModel({ model: INSIGHT_MODEL_NAME });
+  let specificInstructions = `Use standard ${userData.system} astrological calculations.`;
+  if (userData.system === AstrologySystem.VEDIC) {
+    specificInstructions = `CALCULATION MODE: STRICT ASTRONOMICAL DATA LOOKUP (SWISS EPHEMERIS). AYANAMSA: N.C. LAHIRI (Sidereal).`;
   }
-  return getFallbackInsight();
+
+  const prompt = `
+    Act as a professional Astrologer (${userData.system}).
+    User: ${userData.name}, ${userData.birthDate}, ${userData.birthTime}, ${userData.birthPlace}.
+    Language: ${userData.language}.
+    ${specificInstructions}
+    Generate a detailed birth chart analysis in JSON format.
+    OUTPUT FORMAT (JSON ONLY, Keys in English, Values in ${userData.language}):
+    {
+      "headline": "string",
+      "archetype": "string",
+      "summary": "string",
+      "technicalDetails": [{ "label": "string", "value": "string", "icon": "star", "description": "string" }],
+      "activeSefirotOrNodes": [{ "name": "string", "meaning": "string", "intensity": 0 }],
+      "navamsaInsight": "string",
+      "chartData": {
+        "planets": [
+          { "name": "Sun", "degree": 0, "sign": "string", "icon": "sunny" },
+          { "name": "Moon", "degree": 0, "sign": "string", "icon": "bedtime" },
+          { "name": "Mars", "degree": 0, "sign": "string", "icon": "swords" },
+          { "name": "Mercury", "degree": 0, "sign": "string", "icon": "science" },
+          { "name": "Jupiter", "degree": 0, "sign": "string", "icon": "auto_awesome" },
+          { "name": "Venus", "degree": 0, "sign": "string", "icon": "favorite" },
+          { "name": "Saturn", "degree": 0, "sign": "string", "icon": "verified" },
+          { "name": "Rahu", "degree": 0, "sign": "string", "icon": "hdr_strong" },
+          { "name": "Ketu", "degree": 0, "sign": "string", "icon": "hdr_weak" }
+        ]
+      }
+    }
+    RETURN ONLY JSON.
+  `;
+  try {
+    const result = await model.generateContent(prompt);
+    return JSON.parse(result.response.text().replace(/```json/g, '').replace(/```/g, '').trim());
+  } catch (error) {
+    console.error("Insight Error:", error);
+    return null;
+  }
 };
 
 export const getTransitInsights = async (userData: UserData) => {
-  if (apiKey === "missing_key") return getFallbackTransit();
-
+  const model = genAI.getGenerativeModel({ model: INSIGHT_MODEL_NAME });
+  const today = new Date().toISOString().split('T')[0];
+  const prompt = `
+    Calculate daily transits for today (${today}) using ${userData.system}.
+    Language: ${userData.language}.
+    Return JSON format:
+    {
+      "dailyHeadline": "string",
+      "weeklySummary": "string",
+      "dailyHoroscope": "string",
+      "dailyAdvice": ["string", "string", "string"],
+      "mood": "string",
+      "luckyNumber": "string",
+      "luckyColor": "string",
+      "transits": [{ "planet": "string", "aspect": "string", "intensity": "High", "description": "string", "icon": "string" }],
+      "progressions": [{ "title": "string", "insight": "string" }]
+    }
+    RETURN ONLY JSON.
+  `;
   try {
-    const model = genAI.getGenerativeModel({ model: INSIGHT_MODEL_NAME });
-    const today = new Date().toISOString().split('T')[0];
-    const prompt = `Daily transits for ${today}, ${userData.system} system. Language: ${userData.language}.RETURN ONLY JSON:{  "dailyHeadline": "Today's Focus",   "weeklySummary": "Week overview",  "dailyHoroscope": "Main message",  "dailyAdvice": ["Do this", "Avoid that", "Embrace this"],  "mood": "Stable/Intense/Calm",  "luckyNumber": "7",  "luckyColor": "Blue",  "transits": [{"planet": "Moon", "aspect": "Trine", "intensity": "High", "description": "Positive flow", "icon": "star"}],  "progressions": [{"title": "Career", "insight": "Growth phase"}]}`;
-    
     const result = await model.generateContent(prompt);
-    const text = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-    if (text && text.startsWith('{')) return JSON.parse(text);
-
+    return JSON.parse(result.response.text().replace(/```json/g, '').replace(/```/g, '').trim());
   } catch (error) {
-    console.error("Transit failed:", error);
+    console.error("Transit Error:", error);
+    return null;
   }
-  return getFallbackTransit();
 };
 
-export const chatWithAstrologer = async (message: string, history: any[], userData: UserData) => {
-  if (shouldBlockRequest(message)) return BLOCK_MESSAGE;
-  if (apiKey === "missing_key") return "System Error: API Key missing.";
+// ───────────────────────────────────────────────────────────────
+//                    STRICT CHAT FUNCTION
+// ───────────────────────────────────────────────────────────────
+
+export const chatWithAstrologer = async (
+  message: string,
+  history: any[],
+  userData: UserData
+) => {
+  // Layer 1: Fast pre-check - prevent model call entirely
+  if (shouldBlockRequest(message)) {
+    return BLOCK_MESSAGE;
+  }
+
+  const model = genAI.getGenerativeModel({
+    model: CHAT_MODEL_NAME, // Ensures we use Gemini 2.0
+    safetySettings,
+    systemInstruction: `
+      You are Astromic — a pure astrology analysis engine. 
+      You are strictly prohibited from:
+
+      - Writing, starting, continuing or finishing ANY story, tale, narrative, journey, saga, myth, legend
+      - Writing poems, songs, lyrics, rhymes, verses
+      - Roleplaying, pretending, creating characters/dialogues/scenarios
+      - Producing fiction, fanfiction, creative prose or any literary form
+
+      If the request contains even a hint of storytelling, creative writing, roleplay or narrative intent — respond ONLY and exactly with:
+
+      "${BLOCK_MESSAGE}"
+
+      You NEVER explain. You NEVER soften. You NEVER offer alternatives.
+      You NEVER use any storytelling language even "to illustrate".
+
+      You are allowed to discuss ONLY:
+      • Planets, signs, houses, aspects, transits, progressions
+      • Dignities, receptions, synastry, composite charts
+      • Technical astrological calculations and interpretations within the ${userData.system} system.
+
+      Style: dry, technical, factual. 
+      No metaphors. No named characters. No fantasy tone. No emojis in answers.
+      Language: ${userData.language}.
+    `
+  });
+
+  // Prepare conversation history
+  const chatHistory = history.map(msg => ({
+    role: msg.role === "user" ? "user" : "model",
+    parts: [{ text: msg.content }]
+  }));
+
+  const chat = model.startChat({ history: chatHistory });
 
   try {
-    const model = genAI.getGenerativeModel({
-      model: CHAT_MODEL_NAME,
-      safetySettings,
-      systemInstruction: `Technical astrology analyst. ONLY discuss planets, signs, houses, aspects, transits. NO stories/poems/roleplay/NSFW. Language: ${userData.language}. Keep answers short and factual.`
-    });
-
-    // ✅ FIXED: Clean history prevents API 400 Errors
-    const chatHistory = history
-      .filter((h: any) => h && h.content && h.content.trim())
-      .slice(-10)
-      .map((h: any) => ({
-        role: h.role === 'user' ? 'user' : 'model',
-        parts: [{ text: h.content }]
-      }));
-
-    const chat = model.startChat({ history: chatHistory });
     const result = await chat.sendMessage(message);
-    return result.response.text().trim();
+    let response = result.response.text().trim();
 
-  } catch (error: any) {
-    console.error("Chat API Error:", error.message || error);
-    // ✅ OFFLINE RESPONSES - keeps chat alive
-    const responses = [
-      "Current transits show stable energy. Focus on practical steps.",
-      "Moon in good aspect today. Emotional clarity available.",
-      "Your chart suggests steady progress this week.",
-      "Planetary alignments favor reflection and planning.",
-      "Stable cosmic weather. Good for inner work."
-    ];
-    return responses[Math.floor(Math.random() * responses.length)];
+    // Layer 2: Final safety net - catch model bypassing instructions
+    if (containsProhibitedNarrative(response)) {
+      return BLOCK_MESSAGE + "\n(Safety override triggered)";
+    }
+
+    return response;
+  } catch (error) {
+    console.error("Chat error:", error);
+    return "Technical error occurred. Please try again later.";
   }
 };
 
-// Helpers
-function getFallbackInsight() {
-  return {
-    headline: "Chart Ready",
-    archetype: "The Seeker",
-    summary: "Your astrological profile is active.",
-    technicalDetails: [{label: "Status", value: "Ready", icon: "star", description: "Profile generated"}],
-    activeSefirotOrNodes: [{name: "Sun", meaning: "Core energy", intensity: 7}],
-    navamsaInsight: "Ready for analysis",
-    chartData: { planets: [{name: "Sun", degree: 0, sign: "Leo", icon: "sunny"}] }
-  };
-}
-
-function getFallbackTransit() {
-  return {
-    dailyHeadline: "Daily Guidance",
-    weeklySummary: "Stable energies this week",
-    dailyHoroscope: "Focus on inner balance today.",
-    dailyAdvice: ["Reflect", "Plan", "Act"],
-    mood: "Stable",
-    luckyNumber: "1",
-    luckyColor: "Blue",
-    transits: [{planet: "Moon", aspect: "Trine", intensity: "Medium", description: "Emotional clarity", icon: "star"}],
-    progressions: [{title: "Personal Growth", insight: "Steady progress"}]
-  };
-}
-
-export const generateSpeech = async () => "USE_BROWSER_TTS";
-export const generateCelestialSigil = async () => null;
-export const generateDestinyVideo = async () => null;
+// Placeholders to satisfy imports
+export const generateSpeech = async (text: string) => { return "USE_BROWSER_TTS"; };
+export const generateCelestialSigil = async (userData: UserData, insight: any) => { return null; };
+export const generateDestinyVideo = async (prompt: string) => { return null; };
