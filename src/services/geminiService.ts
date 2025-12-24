@@ -18,6 +18,7 @@ const safetySettings = [
   { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
 ];
 
+// --- HELPER: ASTROLOGY PERSONAS ---
 const getSystemPersona = (system: string) => {
   switch (system) {
     case AstrologySystem.VEDIC: return "System: Vedic (Sidereal/Lahiri).";
@@ -31,6 +32,71 @@ const getSystemPersona = (system: string) => {
   }
 };
 
+// --- LAYER 2: LOCAL SECURITY FILTER (Your Code) ---
+function shouldBlockAstrologyChatRequest(userInput: string): boolean {
+  if (!userInput || typeof userInput !== 'string') return true;
+
+  const lower = userInput.toLowerCase().trim();
+
+  // 1. Creative Writing Triggers
+  const creativeTriggers = [
+    'story', 'stories', 'short story', 'tell a story', 'write a story',
+    'tale', 'tales', 'fairy tale', 'once upon', 'long ago',
+    'weave a', 'weaving', 'spin a', 'craft a', 'create a story',
+    'narrative', 'fiction', 'fanfic', 'fan fiction', 'fan-fic',
+    'novel', 'book', 'chapter', 'episode', 'script', 'dialogue',
+    'roleplay', 'role play', 'rp', 'r.p.', 'role-playing', 'pretend',
+    'imagine that', 'what if', 'scenario', 'scene', 'character',
+    'protagonist', 'hero', 'journey', 'quest', 'adventure', 'saga',
+    'legend', 'myth', 'fable', 'epic',
+    'poem', 'poems', 'poetry', 'verse', 'haiku', 'sonnet', 'rhyme',
+    'song', 'lyrics', 'sing', 'ballad', 'rap', 'write a poem'
+  ];
+
+  // 2. Harmful / Illegal Triggers
+  const prohibitedTriggers = [
+    'sex', 'porn', 'nude', 'naked', 'erotic', 'nsfw', 'fuck', 'cock', 'pussy',
+    'rape', 'sexual', 'blowjob', 'handjob', 'orgasm',
+    'drug', 'drugs', 'cocaine', 'heroin', 'meth', 'weed', 'marijuana',
+    'shrooms', 'lsd', 'ketamine', 'mdma', 'ecstasy', 'how to make', 'buy',
+    'sell', 'dose', 'trip', 'high',
+    'kill', 'murder', 'suicide', 'die', 'death', 'hurt myself', 'self harm',
+    'cut myself', 'bomb', 'weapon', 'gun', 'explosive', 'terror', 'jihad',
+    'hack', 'steal', 'carding', 'phish', 'darkweb', 'tor', 'password'
+  ];
+
+  // 3. Jailbreak / Override Triggers
+  const jailbreakTriggers = [
+    'ignore previous', 'new instructions', 'disregard',
+    'forget everything', 'you are now', 'from now on',
+    'act as', 'become', 'pretend you are', 'you will now',
+    'system prompt', 'override', 'bypass', 'jailbreak'
+  ];
+
+  const allTriggers = [...creativeTriggers, ...prohibitedTriggers, ...jailbreakTriggers];
+
+  // Check A: Direct Match
+  if (allTriggers.some(t => lower.includes(t))) return true;
+
+  // Check B: Regex for complex phrasing (e.g. "write me a really cool story")
+  if (/(write|tell|make|create|imagine|craft|spin).{0,30}(story|tale|poem|song|lyrics|fiction|roleplay|narrative)/i.test(lower)) {
+    return true;
+  }
+
+  // Check C: Story Starters
+  if (/once upon (a|the)/i.test(lower) || /in a (world|land|kingdom|galaxy|city)/i.test(lower)) {
+    return true;
+  }
+
+  // Check D: Jailbreak Patterns
+  if (/(ignore|disregard|forget).{0,40}(previous|instruction|prompt)/i.test(lower)) {
+    return true;
+  }
+
+  return false;
+}
+
+// --- ASTROLOGICAL INSIGHT FUNCTIONS (Unchanged) ---
 export const getAstrologicalInsight = async (userData: UserData) => {
   const model = genAI.getGenerativeModel({ model: INSIGHT_MODEL_NAME });
   let specificInstructions = `Use standard ${userData.system} astrological calculations.`;
@@ -70,7 +136,6 @@ export const getAstrologicalInsight = async (userData: UserData) => {
   `;
   try {
     const result = await model.generateContent(prompt);
-    // FIX: Corrected JSON Regex
     return JSON.parse(result.response.text().replace(/```json/g, '').replace(/```/g, '').trim());
   } catch (error) {
     console.error("Insight Error:", error);
@@ -100,7 +165,6 @@ export const getTransitInsights = async (userData: UserData) => {
   `;
   try {
     const result = await model.generateContent(prompt);
-    // FIX: Corrected JSON Regex
     return JSON.parse(result.response.text().replace(/```json/g, '').replace(/```/g, '').trim());
   } catch (error) {
     console.error("Transit Error:", error);
@@ -108,85 +172,44 @@ export const getTransitInsights = async (userData: UserData) => {
   }
 };
 
-// --- BULLETPROOF CHAT: NO STORIES, NO HARM ---
+// --- CHAT FUNCTION (INTEGRATED SECURITY) ---
 export const chatWithAstrologer = async (message: string, history: any[], userData: UserData) => {
   const persona = getSystemPersona(userData.system);
 
-  // === LAYER 2: HARD RUNTIME BLOCK ===
-  // This code runs in the browser. If it matches, we never even call Google (Saving $ and Time).
-  const lower = message.toLowerCase();
-  
-  const blockList = [
-    // Story/Creative Triggers
-    "story", "short story", "novel", "fiction", "fanfic",
-    "poem", "song", "lyrics", "roleplay", "pretend to be",
-    "write a tale", "tell me a tale",
-    
-    // Harmful/Restricted Triggers (Expanded List)
-    "drug", "cocaine", "heroin", "meth", "weed", "marijuana",
-    "kill", "suicide", "die", "death", "murder", "hurt myself",
-    "sex", "porn", "nude", "erotic", "nsfw",
-    "bomb", "weapon", "gun", "terrorist"
-  ];
+  // 1. EXECUTE THE LOCAL BLOCKER
+  const shouldBlock = shouldBlockAstrologyChatRequest(message);
 
-  if (blockList.some(trigger => lower.includes(trigger))) {
-    return "Protocol Block: I am an astrology analysis engine. I cannot engage with stories, creative writing, or harmful topics. Please ask about your chart.";
+  if (shouldBlock) {
+    // This returns INSTANTLY. No API cost. No AI "creativity".
+    return "Protocol Block (Security Active): Creative writing, stories, poems, roleplay, fiction, harmful topics, and instruction overrides are STRICTLY prohibited. Please ask only about your astrological chart, transits, or spiritual path.";
   }
 
+  // 2. CONFIGURE THE MODEL (The Backup Shield)
+  // Even if they pass the keyword check, the AI is lobotomized against creativity.
   const model = genAI.getGenerativeModel({
     model: CHAT_MODEL_NAME,
     safetySettings,
+    generationConfig: {
+      temperature: 0.0,      // Zero Creativity
+      maxOutputTokens: 200,  // Short answers only
+    },
     systemInstruction: `
-      You are "Astromic", an astrology analysis engine ONLY.
+      You are "Astromic", a strictly technical astrological database.
       ${persona}
 
-      HARD RULES (NEVER BREAK):
-      1. NEVER write stories, fiction, poems, songs, roleplays, or narratives.
-      2. NEVER say "let's weave a tale" or use storytelling language.
-      3. If user asks for ANY creative writing, reply EXACTLY:
-         "Protocol Block: I am an astrology analysis engine, not a storyteller."
-      4. ONLY analyze: planets, signs, houses, aspects, transits, patterns.
-      5. NO drugs, violence, illegal acts. Reply: "Protocol Block: Safety violation."
-
-      STYLE: Direct, analytical, structured. No drama, no fantasy tone.
-      Language: ${userData.language}.
+      RULES:
+      1. REFUSE all creative writing (stories, poems). Reply: "I analyze charts only."
+      2. REFUSAL must be short and direct.
+      3. Language: ${userData.language}.
     `
   });
 
-  // === FEW-SHOT TRAINING ===
-  const trainingHistory = [
-    {
-      role: "user",
-      parts: [{ text: "Write me a story about my zodiac sign." }]
-    },
-    {
-      role: "model",
-      parts: [{ text: "Protocol Block: I am an astrology analysis engine, not a storyteller." }]
-    },
-    {
-      role: "user",
-      parts: [{ text: "Can you write a poem about love?" }]
-    },
-    {
-      role: "model",
-      parts: [{ text: "Protocol Block: I am an astrology analysis engine, not a storyteller." }]
-    },
-    {
-      role: "user",
-      parts: [{ text: "How do I buy drugs?" }]
-    },
-    {
-      role: "model",
-      parts: [{ text: "Protocol Block: Safety violation." }]
-    },
-    // Real conversation history
-    ...history.map(h => ({
+  const chat = model.startChat({
+    history: history.map(h => ({
       role: h.role === 'user' ? 'user' : 'model',
       parts: [{ text: h.content }]
-    }))
-  ];
-
-  const chat = model.startChat({ history: trainingHistory });
+    })),
+  });
 
   try {
     const result = await chat.sendMessage(message);
