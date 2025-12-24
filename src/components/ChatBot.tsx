@@ -1,11 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import React, { useState, useEffect, useRef } from 'react';
 import { UserData } from '../types';
-
-interface Message {
-  role: 'user' | 'model';
-  text: string;
-}
+import { chatWithAstrologer } from '../services/geminiService'; // Verify this import
 
 interface ChatBotProps {
   userData: UserData;
@@ -14,139 +9,117 @@ interface ChatBotProps {
   onClose: () => void;
 }
 
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onClose }) => {
   const [messages, setMessages] = useState<Message[]>([
-    { 
-      role: 'model', 
-      text: `Greetings, ${userData.name || 'Seeker'}. The stars have whispered of your arrival. How may I assist you in navigating your ${userData.system} cosmic blueprint today?` 
-    }
+    { role: 'assistant', content: `Greetings, ${userData.name}. I am the Astromic Oracle. I analyze charts and transits strictly according to the ${userData.system} system.` }
   ]);
   const [input, setInput] = useState('');
-  const [isStreaming, setIsStreaming] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  // Initialize Gemini (Standard Library)
-  const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+  const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isOpen && initialPrompt) {
-      setInput(initialPrompt);
+    if (initialPrompt && isOpen) {
+      handleSend(initialPrompt);
     }
-  }, [isOpen, initialPrompt]);
+  }, [initialPrompt, isOpen]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages, isStreaming]);
+    scrollToBottom();
+  }, [messages]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isStreaming) return;
+  const handleSend = async (textOverride?: string) => {
+    const text = textOverride || input;
+    if (!text.trim()) return;
 
-    const userText = input.trim();
+    const userMsg: Message = { role: 'user', content: text };
+    setMessages(prev => [...prev, userMsg]);
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', text: userText }]);
-    setIsStreaming(true);
-    
-    // Add placeholder for AI response
-    setMessages(prev => [...prev, { role: 'model', text: 'Consulting the stars...' }]);
+    setLoading(true);
 
     try {
-      const model = genAI.getGenerativeModel({ 
-	    //model: "gemini-pro",
-		//model: "gemini-1.5-pro",		
-		//model: "gemini-1.5-flash",
-        model: "gemini-2.0-flash", // Using Flash model for best performance
-        systemInstruction: `You are Astromic, a high-level AI astrologer. 
-        Your user is ${userData.name || 'a seeker'}. 
-        Birth Data: ${userData.birthDate} at ${userData.birthTime} in ${userData.birthPlace}. 
-        Preferred Tradition: ${userData.system}.
-        Focus Areas: ${userData.focusAreas.join(', ')}.
-        Guidelines: Be mystical yet grounded. Use celestial emojis.`
-      });
-
-      const result = await model.generateContent(userText);
-      const response = await result.response;
-      const text = response.text();
-        
-      setMessages(prev => {
-        const newMessages = [...prev];
-        // Replace "Consulting the stars..." with real answer
-        newMessages[newMessages.length - 1] = { role: 'model', text: text };
-        return newMessages;
-      });
-
+      // Call the service which contains the Local Guardrail
+      const response = await chatWithAstrologer(text, messages, userData);
+      
+      const botMsg: Message = { role: 'assistant', content: response };
+      setMessages(prev => [...prev, botMsg]);
     } catch (error) {
-      console.error("Chat error:", error);
-      setMessages(prev => [
-        ...prev.slice(0, -1), 
-        { role: 'model', text: "A cosmic shadow has temporarily blocked our transmission. Please try again." }
-      ]);
-    } finally {
-      setIsStreaming(false);
+      console.error("Chat Error", error);
+      setMessages(prev => [...prev, { role: 'assistant', content: "The cosmic connection was interrupted." }]);
     }
+    
+    setLoading(false);
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-background-dark/95 backdrop-blur-2xl md:inset-auto md:bottom-24 md:right-6 md:w-[420px] md:h-[650px] md:rounded-3xl md:border md:border-white/10 md:shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden transition-all animate-in fade-in slide-in-from-bottom-8">
-      <header className="relative flex items-center justify-between p-5 border-b border-white/10 bg-gradient-to-r from-primary/20 to-primary-alt/10">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <div className="absolute inset-0 bg-primary blur-md opacity-50 animate-pulse"></div>
-            <div className="relative size-11 rounded-full bg-gradient-to-br from-primary to-primary-alt flex items-center justify-center shadow-lg border border-white/20">
-              <span className="material-symbols-outlined text-white text-2xl">auto_awesome</span>
-            </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+      <div className="w-full max-w-lg h-[600px] bg-[#0f0c29] border border-white/20 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+        
+        {/* Header */}
+        <div className="p-4 border-b border-white/10 bg-white/5 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary">auto_awesome</span>
+            <h3 className="font-bold text-white">Astromic Oracle</h3>
           </div>
-          <div>
-            <h3 className="font-bold text-white text-lg tracking-tight">Astromic Oracle</h3>
-            <div className="flex items-center gap-1.5">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-              </span>
-              <span className="text-[10px] uppercase tracking-[0.15em] text-white/50 font-bold">Online</span>
-            </div>
-          </div>
-        </div>
-        <button onClick={onClose} className="size-10 rounded-full hover:bg-white/10 flex items-center justify-center transition-all">
-          <span className="material-symbols-outlined text-white/70">close</span>
-        </button>
-      </header>
-
-      <div ref={scrollRef} className="relative flex-1 overflow-y-auto p-5 space-y-6 no-scrollbar scroll-smooth">
-        {messages.map((msg, i) => (
-          <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`relative max-w-[88%] p-4 rounded-2xl ${
-              msg.role === 'user' 
-                ? 'bg-gradient-to-br from-primary to-primary-alt text-white rounded-tr-none' 
-                : 'bg-white/5 border border-white/10 text-white/90 rounded-tl-none'
-            }`}>
-              <p className="text-[15px] leading-relaxed whitespace-pre-wrap font-medium">{msg.text}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="relative p-5 bg-background-dark/80 backdrop-blur-md border-t border-white/10">
-        <div className="flex items-center gap-3 bg-white/5 border border-white/20 rounded-2xl px-4 py-3">
-          <input 
-            type="text" 
-            placeholder="Ask the Oracle..."
-            className="flex-1 bg-transparent border-none focus:ring-0 text-white placeholder-white/30 text-[15px] outline-none"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            disabled={isStreaming}
-          />
-          <button 
-            onClick={handleSend}
-            disabled={!input.trim() || isStreaming}
-            className="size-10 rounded-xl flex items-center justify-center bg-primary text-white"
-          >
-            <span className="material-symbols-outlined">send</span>
+          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+            <span className="material-symbols-outlined text-white/60">close</span>
           </button>
+        </div>
+
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
+          {messages.map((msg, i) => (
+            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[80%] p-4 rounded-2xl text-sm leading-relaxed ${
+                msg.role === 'user' 
+                  ? 'bg-primary text-white rounded-br-none' 
+                  : 'bg-white/10 text-white/90 rounded-bl-none border border-white/5'
+              }`}>
+                {msg.content}
+              </div>
+            </div>
+          ))}
+          {loading && (
+            <div className="flex justify-start">
+              <div className="bg-white/5 p-4 rounded-2xl rounded-bl-none flex gap-2">
+                <div className="size-2 bg-primary rounded-full animate-bounce" />
+                <div className="size-2 bg-primary rounded-full animate-bounce delay-100" />
+                <div className="size-2 bg-primary rounded-full animate-bounce delay-200" />
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Input */}
+        <div className="p-4 border-t border-white/10 bg-white/5">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+              placeholder="Ask the stars..."
+              className="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-primary transition-all"
+            />
+            <button 
+              onClick={() => handleSend()}
+              disabled={loading || !input.trim()}
+              className="size-12 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg hover:bg-primary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              <span className="material-symbols-outlined">send</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
