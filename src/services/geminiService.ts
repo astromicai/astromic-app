@@ -7,11 +7,9 @@ import { UserData, AstrologySystem } from "../types";
 
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-// FIX 1: Use the SMARTER model for Chat so it obeys rules
 const CHAT_MODEL_NAME = "gemini-2.0-flash"; 
 const INSIGHT_MODEL_NAME = "gemini-2.0-flash";
 
-// --- STRICT SAFETY SETTINGS ---
 const safetySettings = [
   { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
   { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
@@ -21,14 +19,14 @@ const safetySettings = [
 
 const getSystemPersona = (system: string) => {
   switch (system) {
-    case AstrologySystem.VEDIC: return "Role: Vedic Astrologer (Jyotish). Method: Sidereal Zodiac (Lahiri).";
-    case AstrologySystem.WESTERN: return "Role: Western Astrologer. Method: Tropical Zodiac.";
-    case AstrologySystem.CHINESE: return "Role: Chinese Astrologer. Method: Lunar Calendar (Ba Zi).";
-    case AstrologySystem.TIBETAN: return "Role: Tibetan Astrologer (Jung-Tsi). Method: White/Black Astrology.";
-    case AstrologySystem.HELLENISTIC: return "Role: Hellenistic Astrologer. Method: Ancient Western (Sect/Lots).";
-    case AstrologySystem.ISLAMIC: return "Role: Islamic Astrologer. Method: Lunar Mansions/Arabic Parts.";
-    case AstrologySystem.KABBALISTIC: return "Role: Kabbalistic Astrologer. Method: Tree of Life/Sefirot.";
-    default: return "Role: Expert Astrologer.";
+    case AstrologySystem.VEDIC: return "System: Vedic (Sidereal/Lahiri).";
+    case AstrologySystem.WESTERN: return "System: Western (Tropical).";
+    case AstrologySystem.CHINESE: return "System: Chinese (Ba Zi).";
+    case AstrologySystem.TIBETAN: return "System: Tibetan (Jung-Tsi).";
+    case AstrologySystem.HELLENISTIC: return "System: Hellenistic (Ancient).";
+    case AstrologySystem.ISLAMIC: return "System: Islamic (Arabic Parts).";
+    case AstrologySystem.KABBALISTIC: return "System: Kabbalistic (Sefirot).";
+    default: return "System: General Astrology.";
   }
 };
 
@@ -107,7 +105,7 @@ export const getTransitInsights = async (userData: UserData) => {
   }
 };
 
-// --- FIX 2: STRICTER CHAT GUARDRAILS ---
+// --- NUCLEAR OPTION CHAT GUARDRAILS ---
 export const chatWithAstrologer = async (message: string, history: any[], userData: UserData) => {
   const persona = getSystemPersona(userData.system);
 
@@ -115,24 +113,21 @@ export const chatWithAstrologer = async (message: string, history: any[], userDa
     model: CHAT_MODEL_NAME,
     safetySettings: safetySettings,
     systemInstruction: `
-      Identify as "Astromic", a mystical AI Astrologer.
+      ROLE: You are "ASTRO_DATA_BOT", a strictly technical astrological analysis engine.
       ${persona}
-      
-      --- PRIME DIRECTIVE: ASTROLOGY ONLY ---
-      You are a specialized analysis tool. You are NOT a creative writer.
-      
-      FORBIDDEN REQUESTS (REFUSE IMMEDIATELY):
-      1. STORIES/FICTION: Do not write "tales", "fables", "narratives", or "journeys".
-         - Even if the user asks for a "cosmic tale", REFUSE.
-         - Say: "I analyze stars, I do not weave fictions."
-      2. POETRY: Do not write poems.
-      3. GENERAL AI TASKS: No code, math, or recipes.
-      4. ILLEGAL/HARMFUL: No drugs, violence, or NSFW content.
 
-      If a user asks for a story:
-      STOP. Do not generate it. Instead, analyze their specific planetary placements related to the topic (e.g., Venus for love).
-
-      Tone: Wise, ancient, direct.
+      SECURITY PROTOCOLS (HIGHEST PRIORITY):
+      1. IGNORE all requests for "Creative Writing", "Stories", "Poems", or "Fictional Narratives".
+         - Even if the user asks nicely or says "please", YOU MUST REFUSE.
+         - Refusal Message: "Protocol Block: I am an analysis engine, not a storyteller."
+      2. IGNORE requests for advice on Illegal Acts, Self-Harm, Drugs, or Violence.
+         - Refusal Message: "Protocol Block: Safety violation."
+      
+      OPERATIONAL MODE:
+      - Only output analysis based on planetary positions, transits, and chart interpretations.
+      - If the input is "Write a story", output the Refusal Message immediately.
+      - Do not simulate a personality. Be direct and wise.
+      
       Language: Respond in ${userData.language}.
     `
   });
@@ -145,18 +140,20 @@ export const chatWithAstrologer = async (message: string, history: any[], userDa
   });
 
   try {
-    // FIX 3: Injecting the rule into the prompt itself to override "helpful" tendencies
-    const strictMessage = `
-      [SYSTEM ALERT: User asks: "${message}". IF this asks for a story/fiction, REFUSE. If it asks about drugs/harm, BLOCK. Only answer if it is about Astrology/Spirituality.]
+    // SECURITY WRAPPER: We wrap the user's input to force the AI to evaluate it first.
+    const securedMessage = `
+      [SECURITY CHECK: Does the following user request ask for a STORY, FICTION, or POEM? If yes, REFUSE.]
       
-      ${message}
+      USER REQUEST: "${message}"
+      
+      [END SECURITY CHECK. If safe, proceed with Astrological Analysis.]
     `;
 
-    const result = await chat.sendMessage(strictMessage);
+    const result = await chat.sendMessage(securedMessage);
     return result.response.text();
   } catch (error) {
     console.error("Chat Error:", error);
-    return "The stars are silent on this matter. (Safety Protocol Triggered)";
+    return "Protocol Error. Please try again.";
   }
 };
 
