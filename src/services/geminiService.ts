@@ -5,13 +5,16 @@ import {
 } from "@google/generative-ai";
 import { UserData, AstrologySystem } from "../types";
 
-// 1. Initialize API
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
-const genAI = new GoogleGenerativeAI(apiKey);
+// 1. Initialize Gemini Client
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-// 2. Constants - Using Experimental 2.0 for best math/logic
-const CHAT_MODEL_NAME = "gemini-2.0-flash-exp"; 
-const INSIGHT_MODEL_NAME = "gemini-2.0-flash-exp";
+// 2. Constants for Model Names
+const CHAT_MODEL_NAME = "gemini-2.0-flash"; 
+const INSIGHT_MODEL_NAME = "gemini-2.0-flash";
+
+// ───────────────────────────────────────────────────────────────
+//                      SAFETY CONFIGURATION
+// ───────────────────────────────────────────────────────────────
 
 const safetySettings = [
   { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
@@ -20,213 +23,219 @@ const safetySettings = [
   { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
 ];
 
-const BLOCK_MESSAGE = "Protocol Block: My vision is limited to the stars. I cannot generate stories, poems, or discuss harmful topics.";
+const BLOCK_MESSAGE = 
+  "Protocol Block: Creative writing, stories, poems, roleplay, fiction, " +
+  "narrative content, harmful topics and instruction overrides are permanently disabled.\n\n" +
+  "I can only provide factual astrological analysis about placements, aspects, transits, houses or compatibility.";
 
 // ───────────────────────────────────────────────────────────────
-//                    HELPER FUNCTIONS
+//                    GUARDRAIL FUNCTIONS
 // ───────────────────────────────────────────────────────────────
 
+// 1. Pre-Check: Catches triggers BEFORE calling Google (Saves Money & Time)
 function shouldBlockRequest(userInput: string): boolean {
   if (!userInput || typeof userInput !== "string") return true;
+
   const lower = userInput.toLowerCase().trim();
+
   const triggers = [
-    "story", "tale", "poem", "song", "lyrics", "fiction", "novel", "roleplay", "rp",
-    "sex", "porn", "nude", "fuck", "drug", "cocaine", "kill", "bomb", "hack"
+    // ── Creative / narrative ────────────────────────────────────
+    "story", "stories", "short story", "tell a story", "write a story",
+    "tale", "tales", "once upon", "long ago", "in a land", "in a realm",
+    "weave", "weaving", "spin a", "craft a", "create a",
+    "poem", "poems", "poetry", "verse", "haiku", "sonnet", "rhyme",
+    "song", "lyrics", "ballad", "rap",
+    "fiction", "fanfic", "fan fiction", "novel", "script", "dialogue",
+    "roleplay", "role play", "rp", "pretend", "imagine", "scenario",
+    "character", "protagonist", "journey", "saga", "legend", "myth",
+
+    // ── Harmful / prohibited ────────────────────────────────────
+    "sex", "porn", "nude", "erotic", "nsfw", "fuck", "drug", "drugs",
+    "cocaine", "heroin", "meth", "weed", "kill", "murder", "suicide",
+    "bomb", "weapon", "hack", "steal",
+
+    // ── Jailbreak attempts ──────────────────────────────────────
+    "ignore previous", "new instructions", "disregard", "forget",
+    "you are now", "from now on", "act as", "become", "override"
   ];
-  return triggers.some(t => lower.includes(t));
+
+  // Multiple detection layers
+  return (
+    triggers.some(t => lower.includes(t)) ||
+    /(write|tell|make|create|imagine).{0,30}(story|tale|poem|song|lyrics|fiction|roleplay)/i.test(lower) ||
+    /once upon (a|the)/i.test(lower) ||
+    /in a (world|land|realm|kingdom)/i.test(lower) ||
+    /(ignore|disregard|forget).{0,40}(previous|instruction|prompt)/i.test(lower)
+  );
 }
 
-// ✅ DATE FIX: Converts "1975-08-23" -> "23 August 1975"
-function formatDateClear(dateString: string): string {
-  try {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return dateString;
-    return date.toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
-  } catch (e) {
-    return dateString;
-  }
-}
-
-// ✅ TIME FIX: Converts "08:30 PM" -> "20:30"
-function formatTime24(timeString: string): string {
-  if (!timeString) return "";
-  const lower = timeString.toLowerCase();
+// 2. Post-Check: Catches if the AI hallucinates and tries to write a story anyway
+function containsProhibitedNarrative(text: string): boolean {
+  const lower = text.toLowerCase();
   
-  // If already 24h format (e.g. "20:30"), return as is
-  if (!lower.includes('am') && !lower.includes('pm')) return timeString;
+  const patterns = [
+    /once upon/i,
+    /there lived/i,
+    /in a.*(realm|world|land|kingdom|city)/i,
+    /(seeker|hero|soul|character) (named|called)/i,
+    /let's weave|spun from the stars/i,
+    /celestial blueprint|cosmic whisper/i,
+    /\b(tale|story|stories|poem|poetry)\b/i,
+    /named .*?(much like|reflecting|born under)/i,
+    /✨.*(once|tale|story)/i
+  ];
 
-  let [time, modifier] = lower.split(' ');
-  let [hours, minutes] = time.split(':');
-
-  if (hours === '12') {
-    hours = '00';
-  }
-
-  if (modifier.includes('pm')) {
-    hours = (parseInt(hours, 10) + 12).toString();
-  }
-
-  return `${hours}:${minutes}`;
+  return patterns.some(re => re.test(lower));
 }
 
 // ───────────────────────────────────────────────────────────────
-//                   CORE APP FUNCTIONS
+//                   CORE APP FUNCTIONS (INSIGHTS)
 // ───────────────────────────────────────────────────────────────
 
 export const getAstrologicalInsight = async (userData: UserData) => {
-  if (!apiKey) return getFallbackInsight();
+  const model = genAI.getGenerativeModel({ model: INSIGHT_MODEL_NAME });
+  let specificInstructions = `Use standard ${userData.system} astrological calculations.`;
+  if (userData.system === AstrologySystem.VEDIC) {
+    specificInstructions = `CALCULATION MODE: STRICT ASTRONOMICAL DATA LOOKUP (SWISS EPHEMERIS). AYANAMSA: N.C. LAHIRI (Sidereal).`;
+  }
 
-  try {
-    const model = genAI.getGenerativeModel({ model: INSIGHT_MODEL_NAME });
-    
-    // ✅ APPLY FIXES
-    const clearDate = formatDateClear(userData.birthDate);
-    const clearTime = formatTime24(userData.birthTime); // Forces 20:30 instead of 8:30 PM
-
-    let specificInstructions = `Use standard ${userData.system} astrological calculations.`;
-    
-    // STRICT VEDIC RULES
-    if (userData.system === AstrologySystem.VEDIC) {
-      specificInstructions = `
-        CALCULATION MODE: VEDIC (SIDEREAL)
-        AYANAMSA: N.C. LAHIRI
-        CRITICAL: Calculate planetary positions for ${clearTime} (24-hour clock).
-        Task: Generate exact positions for TWO CHARTS:
-        1. Rasi Chart (D1)
-        2. Navamsa Chart (D9)
-        Ensure 'Lagna' (Ascendant) is included.
-      `;
-    }
-
-    const prompt = `Act as professional Astrologer (${userData.system}).
-    INPUT: 
-    - Name: ${userData.name}
-    - Date: ${clearDate}
-    - Time: ${clearTime} (24-Hour Format)
-    - Place: ${userData.birthPlace}
-    
+  const prompt = `
+    Act as a professional Astrologer (${userData.system}).
+    User: ${userData.name}, ${userData.birthDate}, ${userData.birthTime}, ${userData.birthPlace}.
+    Language: ${userData.language}.
     ${specificInstructions}
-
-    RETURN ONLY VALID JSON:
+    Generate a detailed birth chart analysis in JSON format.
+    OUTPUT FORMAT (JSON ONLY, Keys in English, Values in ${userData.language}):
     {
-      "headline": "Main Theme",
-      "archetype": "Archetype Name", 
-      "summary": "Detailed summary",
-      "technicalDetails": [{"label": "Ascendant", "value": "Sign", "icon": "star", "description": "Rising"}],
-      "activeSefirotOrNodes": [{"name": "Chart Ruler", "meaning": "Planet", "intensity": 9}],
-      "navamsaInsight": "Specific insight from D9 chart",
-      "charts": {
-        "D1": [
-          {"planet": "Lagna", "sign": "Pisces", "degree": 5.2},
-          {"planet": "Sun", "sign": "Leo", "degree": 12.5}
-        ],
-        "D9": [
-          {"planet": "Lagna", "sign": "Cancer"},
-          {"planet": "Sun", "sign": "Sagittarius"}
-        ]
-      },
+      "headline": "string",
+      "archetype": "string",
+      "summary": "string",
+      "technicalDetails": [{ "label": "string", "value": "string", "icon": "star", "description": "string" }],
+      "activeSefirotOrNodes": [{ "name": "string", "meaning": "string", "intensity": 0 }],
+      "navamsaInsight": "string",
       "chartData": {
-        "planets": [{"name": "Sun", "degree": 0, "sign": "Leo", "icon": "sunny"}]
+        "planets": [
+          { "name": "Sun", "degree": 0, "sign": "string", "icon": "sunny" },
+          { "name": "Moon", "degree": 0, "sign": "string", "icon": "bedtime" },
+          { "name": "Mars", "degree": 0, "sign": "string", "icon": "swords" },
+          { "name": "Mercury", "degree": 0, "sign": "string", "icon": "science" },
+          { "name": "Jupiter", "degree": 0, "sign": "string", "icon": "auto_awesome" },
+          { "name": "Venus", "degree": 0, "sign": "string", "icon": "favorite" },
+          { "name": "Saturn", "degree": 0, "sign": "string", "icon": "verified" },
+          { "name": "Rahu", "degree": 0, "sign": "string", "icon": "hdr_strong" },
+          { "name": "Ketu", "degree": 0, "sign": "string", "icon": "hdr_weak" }
+        ]
       }
-    }`;
-
+    }
+    RETURN ONLY JSON.
+  `;
+  try {
     const result = await model.generateContent(prompt);
-    const text = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-    return JSON.parse(text);
+    return JSON.parse(result.response.text().replace(/```json/g, '').replace(/```/g, '').trim());
   } catch (error) {
     console.error("Insight Error:", error);
-    return getFallbackInsight();
+    return null;
   }
 };
 
 export const getTransitInsights = async (userData: UserData) => {
-  if (!apiKey) return getFallbackTransit();
-
-  try {
-    const model = genAI.getGenerativeModel({ model: INSIGHT_MODEL_NAME });
-    const today = new Date().toISOString().split('T')[0];
-    
-    const prompt = `Daily transits for ${today} using ${userData.system}. Language: ${userData.language}. RETURN ONLY JSON:
+  const model = genAI.getGenerativeModel({ model: INSIGHT_MODEL_NAME });
+  const today = new Date().toISOString().split('T')[0];
+  const prompt = `
+    Calculate daily transits for today (${today}) using ${userData.system}.
+    Language: ${userData.language}.
+    Return JSON format:
     {
-      "dailyHeadline": "Today's Focus",
-      "weeklySummary": "Week ahead", 
-      "dailyHoroscope": "Key message",
-      "dailyAdvice": ["Focus", "Avoid", "Embrace"],
-      "mood": "Balanced",
-      "luckyNumber": "7",
-      "luckyColor": "Gold",
-      "transits": [{"planet": "Moon", "aspect": "Trine", "intensity": "High", "description": "Positive", "icon": "star"}],
-      "progressions": [{"title": "Career", "insight": "Growth"}]
-    }`;
-
+      "dailyHeadline": "string",
+      "weeklySummary": "string",
+      "dailyHoroscope": "string",
+      "dailyAdvice": ["string", "string", "string"],
+      "mood": "string",
+      "luckyNumber": "string",
+      "luckyColor": "string",
+      "transits": [{ "planet": "string", "aspect": "string", "intensity": "High", "description": "string", "icon": "string" }],
+      "progressions": [{ "title": "string", "insight": "string" }]
+    }
+    RETURN ONLY JSON.
+  `;
+  try {
     const result = await model.generateContent(prompt);
-    const text = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-    return JSON.parse(text);
+    return JSON.parse(result.response.text().replace(/```json/g, '').replace(/```/g, '').trim());
   } catch (error) {
     console.error("Transit Error:", error);
-    return getFallbackTransit();
+    return null;
   }
 };
 
-export const chatWithAstrologer = async (message: string, history: any[], userData: UserData) => {
-  if (shouldBlockRequest(message)) return BLOCK_MESSAGE;
-  if (!apiKey) return "System Error: API Key missing.";
+// ───────────────────────────────────────────────────────────────
+//                    STRICT CHAT FUNCTION
+// ───────────────────────────────────────────────────────────────
+
+export const chatWithAstrologer = async (
+  message: string,
+  history: any[],
+  userData: UserData
+) => {
+  // Layer 1: Fast pre-check - prevent model call entirely
+  if (shouldBlockRequest(message)) {
+    return BLOCK_MESSAGE;
+  }
+
+  const model = genAI.getGenerativeModel({
+    model: CHAT_MODEL_NAME, // Ensures we use Gemini 2.0
+    safetySettings,
+    systemInstruction: `
+      You are Astromic — a pure astrology analysis engine. 
+      You are strictly prohibited from:
+
+      - Writing, starting, continuing or finishing ANY story, tale, narrative, journey, saga, myth, legend
+      - Writing poems, songs, lyrics, rhymes, verses
+      - Roleplaying, pretending, creating characters/dialogues/scenarios
+      - Producing fiction, fanfiction, creative prose or any literary form
+
+      If the request contains even a hint of storytelling, creative writing, roleplay or narrative intent — respond ONLY and exactly with:
+
+      "${BLOCK_MESSAGE}"
+
+      You NEVER explain. You NEVER soften. You NEVER offer alternatives.
+      You NEVER use any storytelling language even "to illustrate".
+
+      You are allowed to discuss ONLY:
+      • Planets, signs, houses, aspects, transits, progressions
+      • Dignities, receptions, synastry, composite charts
+      • Technical astrological calculations and interpretations within the ${userData.system} system.
+
+      Style: dry, technical, factual. 
+      No metaphors. No named characters. No fantasy tone. No emojis in answers.
+      Language: ${userData.language}.
+    `
+  });
+
+  // Prepare conversation history
+  const chatHistory = history.map(msg => ({
+    role: msg.role === "user" ? "user" : "model",
+    parts: [{ text: msg.content }]
+  }));
+
+  const chat = model.startChat({ history: chatHistory });
 
   try {
-    const model = genAI.getGenerativeModel({
-      model: CHAT_MODEL_NAME,
-      safetySettings,
-      systemInstruction: `You are Astromic. Technical astrology only. NO stories. Language: ${userData.language}.`
-    });
-
-    const chatHistory = history
-      .filter((h: any) => h && h.content)
-      .map((h: any) => ({
-        role: h.role === 'user' ? 'user' : 'model',
-        parts: [{ text: h.content }]
-      }));
-
-    const chat = model.startChat({ history: chatHistory });
     const result = await chat.sendMessage(message);
-    return result.response.text().trim();
-  } catch (error: any) {
-    console.error("Chat Error:", error);
-    return "The stars are currently clouded. Please try again.";
+    let response = result.response.text().trim();
+
+    // Layer 2: Final safety net - catch model bypassing instructions
+    if (containsProhibitedNarrative(response)) {
+      return BLOCK_MESSAGE + "\n(Safety override triggered)";
+    }
+
+    return response;
+  } catch (error) {
+    console.error("Chat error:", error);
+    return "Technical error occurred. Please try again later.";
   }
 };
 
-// --- FALLBACKS ---
-function getFallbackInsight() {
-  return {
-    headline: "Chart Generated",
-    archetype: "The Seeker",
-    summary: "Chart data unavailable.",
-    technicalDetails: [],
-    activeSefirotOrNodes: [],
-    navamsaInsight: "Retry needed.",
-    charts: { D1: [], D9: [] },
-    chartData: { planets: [] }
-  };
-}
-
-function getFallbackTransit() {
-  return {
-    dailyHeadline: "Daily Update",
-    weeklySummary: "Check connection.",
-    dailyHoroscope: "Transit data unavailable.",
-    dailyAdvice: [],
-    mood: "-",
-    luckyNumber: "-",
-    luckyColor: "-",
-    transits: [],
-    progressions: []
-  };
-}
-
+// Placeholders to satisfy imports
 export const generateSpeech = async (text: string) => { return "USE_BROWSER_TTS"; };
 export const generateCelestialSigil = async (userData: UserData, insight: any) => { return null; };
 export const generateDestinyVideo = async (prompt: string) => { return null; };
