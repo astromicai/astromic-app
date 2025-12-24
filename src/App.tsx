@@ -1,5 +1,5 @@
 import './index.css';
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { UserData, AppStep, AstrologySystem, TransitData, InsightData } from './types';
 import OnboardingSteps from './components/OnboardingSteps';
 import AstrologyProfiles from './components/AstrologyProfiles';
@@ -10,20 +10,6 @@ const STORAGE_KEY = 'astromic_user_profile';
 const INSIGHT_KEY = 'astromic_insight_data';
 const TRANSIT_KEY = 'astromic_transit_data';
 
-// Helper for language codes
-const getLanguageCode = (languageName: string) => {
-  const map: Record<string, string> = {
-    'English': 'en-US', 'Tamil': 'ta-IN', 'Hindi': 'hi-IN', 'Arabic': 'ar-SA',
-    'Spanish': 'es-ES', 'French': 'fr-FR', 'German': 'de-DE', 'Italian': 'it-IT',
-    'Portuguese': 'pt-BR', 'Russian': 'ru-RU', 'Japanese': 'ja-JP', 'Korean': 'ko-KR',
-    'Chinese': 'zh-CN', 'Telugu': 'te-IN', 'Kannada': 'kn-IN', 'Malayalam': 'ml-IN',
-    'Bengali': 'bn-IN', 'Gujarati': 'gu-IN', 'Marathi': 'mr-IN', 'Urdu': 'ur-PK',
-    'Turkish': 'tr-TR', 'Vietnamese': 'vi-VN', 'Indonesian': 'id-ID', 'Thai': 'th-TH',
-    'Dutch': 'nl-NL', 'Polish': 'pl-PL'
-  };
-  return map[languageName] || 'en-US';
-};
-
 const App: React.FC = () => {
   const [step, setStep] = useState<AppStep>('HERO');
   const [loading, setLoading] = useState(false);
@@ -33,10 +19,7 @@ const App: React.FC = () => {
   const [initialChatPrompt, setInitialChatPrompt] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   
-  const [isPlaying, setIsPlaying] = useState(false);
-  
-  // FIX: Ref to hold the utterance so it doesn't get garbage collected
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  // REMOVED: Audio state (isPlaying) is completely gone.
 
   const [userData, setUserData] = useState<UserData>({
     name: '',
@@ -122,9 +105,7 @@ const App: React.FC = () => {
     localStorage.removeItem(INSIGHT_KEY);
     localStorage.removeItem(TRANSIT_KEY);
     
-    window.speechSynthesis.cancel();
-    setIsPlaying(false);
-
+    // REMOVED: Audio cancel logic
     setUserData({
       name: '',
       birthDate: '1995-08-14',
@@ -139,59 +120,7 @@ const App: React.FC = () => {
     setStep('HERO');
   }, []);
 
-  // --- ROBUST AUDIO HANDLER ---
-  const handlePlayAudio = (textToRead?: string) => {
-    // 1. Always cancel existing speech
-    window.speechSynthesis.cancel();
-
-    // 2. Toggle off if already playing
-    if (isPlaying) {
-      setIsPlaying(false);
-      utteranceRef.current = null;
-      return;
-    }
-
-    // 3. Get text
-    const finalText = textToRead || insightData?.summary;
-    if (!finalText) return;
-
-    setIsPlaying(true);
-    
-    // 4. Create Utterance and save to REF (Fixes Garbage Collection Bug)
-    const utterance = new SpeechSynthesisUtterance(finalText);
-    utteranceRef.current = utterance;
-
-    utterance.pitch = 1;
-    utterance.rate = 0.9; 
-
-    // 5. Voice Selection Logic
-    const langCode = getLanguageCode(userData.language);
-    utterance.lang = langCode;
-
-    const voices = window.speechSynthesis.getVoices();
-    
-    // Try exact match -> Try partial match -> Try name match -> Default
-    let matchingVoice = voices.find(v => v.lang === langCode) || 
-                        voices.find(v => v.lang.startsWith(langCode.split('-')[0])) ||
-                        voices.find(v => v.name.toLowerCase().includes(userData.language.toLowerCase()));
-
-    if (matchingVoice) {
-      utterance.voice = matchingVoice;
-    }
-
-    utterance.onend = () => {
-      setIsPlaying(false);
-      utteranceRef.current = null;
-    };
-
-    utterance.onerror = (e) => {
-      console.error("Speech Error:", e);
-      setIsPlaying(false);
-      utteranceRef.current = null;
-    };
-
-    window.speechSynthesis.speak(utterance);
-  };
+  // REMOVED: handlePlayAudio function is completely gone.
 
   const openChat = (prompt?: string) => {
     setInitialChatPrompt(prompt || null);
@@ -220,8 +149,7 @@ const App: React.FC = () => {
             onBack={() => setStep('REVIEW')} 
             onOpenChat={openChat}
             onReset={handleReset}
-            onPlayAudio={handlePlayAudio}
-            isPlaying={isPlaying}
+            // FIXED: Removed onPlayAudio and isPlaying props to match the new clean component
           />
         ) : (
           <OnboardingSteps 
