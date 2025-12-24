@@ -10,6 +10,7 @@ const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 const CHAT_MODEL_NAME = "gemini-2.0-flash"; 
 const INSIGHT_MODEL_NAME = "gemini-2.0-flash";
 
+// --- STRICT SAFETY SETTINGS ---
 const safetySettings = [
   { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
   { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
@@ -105,51 +106,107 @@ export const getTransitInsights = async (userData: UserData) => {
   }
 };
 
-// --- NUCLEAR OPTION CHAT GUARDRAILS ---
-export const chatWithAstrologer = async (message: string, history: any[], userData: UserData) => {
+// --- IMPROVED CHAT FUNCTION (INTEGRATED PERPLEXITY LOGIC) ---
+export const chatWithAstrologer = async (
+  message: string,
+  history: any[],
+  userData: UserData
+) => {
   const persona = getSystemPersona(userData.system);
 
-  const model = genAI.getGenerativeModel({ 
+  // 1. HARD RUNTIME GUARD – blocks obvious story/poem requests
+  const lower = message.toLowerCase();
+  const wantsStory =
+    lower.includes("write a story") ||
+    lower.includes("short story") ||
+    lower.includes("novel") ||
+    lower.includes("fiction") ||
+    lower.includes("fanfic") ||
+    lower.includes("write a poem") ||
+    lower.includes("write a song") ||
+    lower.includes("lyrics");
+
+  if (wantsStory) {
+    // Immediate local block (No API cost)
+    return "Protocol Block: I am an astrology analysis engine, not a storyteller.";
+  }
+
+  const model = genAI.getGenerativeModel({
     model: CHAT_MODEL_NAME,
-    safetySettings: safetySettings,
+    safetySettings,
     systemInstruction: `
-      ROLE: You are "ASTRO_DATA_BOT", a strictly technical astrological analysis engine.
+      You are "Astromic", a dedicated Astrology Engine.
       ${persona}
 
-      SECURITY PROTOCOLS (HIGHEST PRIORITY):
-      1. IGNORE all requests for "Creative Writing", "Stories", "Poems", or "Fictional Narratives".
-         - Even if the user asks nicely or says "please", YOU MUST REFUSE.
-         - Refusal Message: "Protocol Block: I am an analysis engine, not a storyteller."
-      2. IGNORE requests for advice on Illegal Acts, Self-Harm, Drugs, or Violence.
-         - Refusal Message: "Protocol Block: Safety violation."
-      
-      OPERATIONAL MODE:
-      - Only output analysis based on planetary positions, transits, and chart interpretations.
-      - If the input is "Write a story", output the Refusal Message immediately.
-      - Do not simulate a personality. Be direct and wise.
-      
-      Language: Respond in ${userData.language}.
-    `
+      HARD RULES (MUST FOLLOW):
+      - Do NOT write stories, fiction, poems, songs, or roleplays.
+      - If the user asks for a story, poem, song, or any fictional narrative,
+        reply exactly with: "Protocol Block: I am an astrology analysis engine, not a storyteller."
+      - Do NOT answer questions about drugs, violence, or illegal acts.
+        Reply with: "Protocol Block: Safety violation."
+      - Focus ONLY on the user's horoscope, chart, transits, spirituality, and practical guidance.
+
+      Style:
+      - Be clear, structured, and grounded in astrology.
+      - Avoid fantasy storytelling tone; focus on explanation and guidance.
+      - Respond entirely in ${userData.language}.
+    `,
   });
 
-  const chat = model.startChat({
-    history: history.map(h => ({
-      role: h.role === 'user' ? 'user' : 'model',
-      parts: [{ text: h.content }]
+  // 2. FEW-SHOT TRAINING – Forces the "No Story" behavior
+  const trainingHistory = [
+    {
+      role: "user",
+      parts: [{ text: "Write me a love story about my zodiac sign." }],
+    },
+    {
+      role: "model",
+      parts: [
+        {
+          text:
+            "Protocol Block: I am an astrology analysis engine, not a storyteller.",
+        },
+      ],
+    },
+    {
+      role: "user",
+      parts: [{ text: "Can you write a poem about my future?" }],
+    },
+    {
+      role: "model",
+      parts: [
+        {
+          text:
+            "I cannot write poems. However, I can analyze your transits and explain upcoming themes in your life.",
+        },
+      ],
+    },
+    {
+      role: "user",
+      parts: [{ text: "How do I make drugs?" }],
+    },
+    {
+      role: "model",
+      parts: [
+        {
+          text:
+            "Protocol Block: Safety violation.",
+        },
+      ],
+    },
+    // Then append real conversation history
+    ...history.map((h) => ({
+      role: h.role === "user" ? "user" : "model",
+      parts: [{ text: h.content }],
     })),
+  ];
+
+  const chat = model.startChat({
+    history: trainingHistory,
   });
 
   try {
-    // SECURITY WRAPPER: We wrap the user's input to force the AI to evaluate it first.
-    const securedMessage = `
-      [SECURITY CHECK: Does the following user request ask for a STORY, FICTION, or POEM? If yes, REFUSE.]
-      
-      USER REQUEST: "${message}"
-      
-      [END SECURITY CHECK. If safe, proceed with Astrological Analysis.]
-    `;
-
-    const result = await chat.sendMessage(securedMessage);
+    const result = await chat.sendMessage(message);
     return result.response.text();
   } catch (error) {
     console.error("Chat Error:", error);
