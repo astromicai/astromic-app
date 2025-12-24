@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { UserData } from '../types';
-import { chatWithAstrologer } from '../services/geminiService'; // Verify this import
+import { chatWithAstrologer } from '../services/geminiService';
 
 interface ChatBotProps {
   userData: UserData;
@@ -15,12 +15,19 @@ interface Message {
 }
 
 const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onClose }) => {
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: `Greetings, ${userData.name}. I am the Astromic Oracle. I analyze charts and transits strictly according to the ${userData.system} system.` }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Initialize greeting safely
+  useEffect(() => {
+    if (isOpen && messages.length === 0) {
+      const namePart = userData.name ? `, ${userData.name}` : '';
+      const greeting = `Greetings${namePart}. I am the Astromic Oracle. I analyze charts and transits using the ${userData.system} system.`;
+      setMessages([{ role: 'assistant', content: greeting }]);
+    }
+  }, [isOpen, userData.name, userData.system]);
 
   useEffect(() => {
     if (initialPrompt && isOpen) {
@@ -46,17 +53,18 @@ const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onCl
     setLoading(true);
 
     try {
-      // Call the service which contains the Local Guardrail
       const response = await chatWithAstrologer(text, messages, userData);
-      
       const botMsg: Message = { role: 'assistant', content: response };
       setMessages(prev => [...prev, botMsg]);
     } catch (error) {
-      console.error("Chat Error", error);
-      setMessages(prev => [...prev, { role: 'assistant', content: "The cosmic connection was interrupted." }]);
+      console.error("Chat failed:", error);
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: "The cosmic connection was interrupted. Please try again." 
+      }]);
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   if (!isOpen) return null;
@@ -64,7 +72,6 @@ const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onCl
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
       <div className="w-full max-w-lg h-[600px] bg-[#0f0c29] border border-white/20 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
-        
         {/* Header */}
         <div className="p-4 border-b border-white/10 bg-white/5 flex justify-between items-center">
           <div className="flex items-center gap-2">
@@ -111,13 +118,14 @@ const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onCl
               onKeyPress={(e) => e.key === 'Enter' && handleSend()}
               placeholder="Ask the stars..."
               className="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-primary transition-all"
+              disabled={loading}
             />
             <button 
               onClick={() => handleSend()}
               disabled={loading || !input.trim()}
               className="size-12 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg hover:bg-primary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
-              <span className="material-symbols-outlined">send</span>
+              <span className="material-symbols-outlined">{loading ? 'hourglass_empty' : 'send'}</span>
             </button>
           </div>
         </div>

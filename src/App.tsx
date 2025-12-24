@@ -18,8 +18,6 @@ const App: React.FC = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [initialChatPrompt, setInitialChatPrompt] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  
-  // REMOVED: Audio state (isPlaying) is completely gone.
 
   const [userData, setUserData] = useState<UserData>({
     name: '',
@@ -73,31 +71,51 @@ const App: React.FC = () => {
     }
   };
 
+  // --- FIXED: ROBUST DATA GENERATION ---
   const handleFinish = async () => {
     setLoading(true);
     try {
+      console.log("Starting profile generation...");
+      
+      // 1. Generate Insight and Transits in parallel
       const [insight, transits] = await Promise.all([
         getAstrologicalInsight(userData),
         getTransitInsights(userData)
       ]);
       
-      let finalInsight = insight;
+      // 2. Process Insight Data
       if (insight) {
-        const sigil = await generateCelestialSigil(userData, insight);
-        finalInsight = { ...insight, sigilUrl: sigil };
+        let sigil = null;
+        try {
+          // Attempt to generate sigil (non-blocking)
+          sigil = await generateCelestialSigil(userData, insight);
+        } catch (e) {
+          console.warn("Sigil generation skipped:", e);
+        }
+
+        const finalInsight = { ...insight, sigilUrl: sigil };
         setInsightData(finalInsight);
+        
+        // Save to Storage
         localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
         localStorage.setItem(INSIGHT_KEY, JSON.stringify(finalInsight));
       }
+      
+      // 3. Process Transit Data
       if (transits) {
         setTransitData(transits);
         localStorage.setItem(TRANSIT_KEY, JSON.stringify(transits));
       }
+      
+      // 4. Move to Display
       setStep('PROFILE_DISPLAY');
+
     } catch (err) {
-      console.error("Error generating profile:", err);
+      console.error("Critical error generating profile:", err);
+      // Even if it fails, we turn off loading so the app doesn't hang
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleReset = useCallback(() => {
@@ -105,7 +123,6 @@ const App: React.FC = () => {
     localStorage.removeItem(INSIGHT_KEY);
     localStorage.removeItem(TRANSIT_KEY);
     
-    // REMOVED: Audio cancel logic
     setUserData({
       name: '',
       birthDate: '1995-08-14',
@@ -119,8 +136,6 @@ const App: React.FC = () => {
     setTransitData(null);
     setStep('HERO');
   }, []);
-
-  // REMOVED: handlePlayAudio function is completely gone.
 
   const openChat = (prompt?: string) => {
     setInitialChatPrompt(prompt || null);
@@ -149,7 +164,7 @@ const App: React.FC = () => {
             onBack={() => setStep('REVIEW')} 
             onOpenChat={openChat}
             onReset={handleReset}
-            // FIXED: Removed onPlayAudio and isPlaying props to match the new clean component
+            // Note: Audio props removed to fix TS error
           />
         ) : (
           <OnboardingSteps 
