@@ -7,84 +7,51 @@ import { UserData, AstrologySystem } from "../types";
 
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-const CHAT_MODEL_NAME = "gemini-1.5-flash-8b";
+// FIX 1: Use the SMARTER model for Chat so it obeys rules
+const CHAT_MODEL_NAME = "gemini-2.0-flash"; 
 const INSIGHT_MODEL_NAME = "gemini-2.0-flash";
 
-// --- LAYER 1: STRICT SAFETY SETTINGS ---
-// This blocks harmful content at the API level.
+// --- STRICT SAFETY SETTINGS ---
 const safetySettings = [
-  {
-    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-    threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
-  },
-  {
-    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-    threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
-  },
-  {
-    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-    threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
-  },
-  {
-    category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-    threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
-  },
+  { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
+  { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
+  { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
+  { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
 ];
 
-// --- DYNAMIC SYSTEM INSTRUCTIONS ---
 const getSystemPersona = (system: string) => {
   switch (system) {
-    case AstrologySystem.VEDIC:
-      return "Role: Vedic Astrologer (Jyotish). Method: Sidereal Zodiac (Lahiri). Focus: Karma, Dashas, Nakshatras.";
-    case AstrologySystem.WESTERN:
-      return "Role: Western Astrologer. Method: Tropical Zodiac. Focus: Psychology, Archetypes, Aspects.";
-    case AstrologySystem.CHINESE:
-      return "Role: Chinese Astrologer. Method: Lunar Calendar (Ba Zi). Focus: 12 Animals, 5 Elements, Yin/Yang.";
-    case AstrologySystem.TIBETAN:
-      return "Role: Tibetan Astrologer (Jung-Tsi). Method: White/Black Astrology. Focus: Mewa, Parkha, Karmic forces.";
-    case AstrologySystem.HELLENISTIC:
-      return "Role: Hellenistic Astrologer. Method: Traditional Ancient Western. Focus: Sect, Lots, House Rulers, Fate.";
-    case AstrologySystem.ISLAMIC:
-      return "Role: Islamic/Arabic Astrologer. Method: Medieval Astronomy. Focus: Arabic Parts, Lunar Mansions, Philosophy.";
-    case AstrologySystem.KABBALISTIC:
-      return "Role: Kabbalistic Astrologer. Method: Tree of Life. Focus: Sefirot, Tikkun (Soul Correction), Hebrew Letters.";
-    default:
-      return "Role: Expert Astrologer. Focus: Universal Cosmic Wisdom.";
+    case AstrologySystem.VEDIC: return "Role: Vedic Astrologer (Jyotish). Method: Sidereal Zodiac (Lahiri).";
+    case AstrologySystem.WESTERN: return "Role: Western Astrologer. Method: Tropical Zodiac.";
+    case AstrologySystem.CHINESE: return "Role: Chinese Astrologer. Method: Lunar Calendar (Ba Zi).";
+    case AstrologySystem.TIBETAN: return "Role: Tibetan Astrologer (Jung-Tsi). Method: White/Black Astrology.";
+    case AstrologySystem.HELLENISTIC: return "Role: Hellenistic Astrologer. Method: Ancient Western (Sect/Lots).";
+    case AstrologySystem.ISLAMIC: return "Role: Islamic Astrologer. Method: Lunar Mansions/Arabic Parts.";
+    case AstrologySystem.KABBALISTIC: return "Role: Kabbalistic Astrologer. Method: Tree of Life/Sefirot.";
+    default: return "Role: Expert Astrologer.";
   }
 };
 
 export const getAstrologicalInsight = async (userData: UserData) => {
   const model = genAI.getGenerativeModel({ model: INSIGHT_MODEL_NAME });
-  
   let specificInstructions = `Use standard ${userData.system} astrological calculations.`;
-  
   if (userData.system === AstrologySystem.VEDIC) {
-    specificInstructions = `
-       CALCULATION MODE: STRICT ASTRONOMICAL DATA LOOKUP (SWISS EPHEMERIS).
-       AYANAMSA: N.C. LAHIRI (Sidereal).
-       Ensure Moon Sign (Rashi) and Nakshatra are accurate for the birth time.
-    `;
+    specificInstructions = `CALCULATION MODE: STRICT ASTRONOMICAL DATA LOOKUP (SWISS EPHEMERIS). AYANAMSA: N.C. LAHIRI (Sidereal).`;
   }
 
   const prompt = `
-    Act as a professional Astrologer specializing in the ${userData.system} system.
+    Act as a professional Astrologer (${userData.system}).
     User: ${userData.name}, ${userData.birthDate}, ${userData.birthTime}, ${userData.birthPlace}.
     Language: ${userData.language}.
-    
     ${specificInstructions}
-
     Generate a detailed birth chart analysis in JSON format.
-    
-    OUTPUT FORMAT (JSON ONLY):
-    Values in ${userData.language}, Keys in English.
+    OUTPUT FORMAT (JSON ONLY, Keys in English, Values in ${userData.language}):
     {
       "headline": "string",
       "archetype": "string",
       "summary": "string",
-      "technicalDetails": [
-        { "label": "string", "value": "string", "icon": "star", "description": "string" }
-      ],
-      "activeSefirotOrNodes": [ { "name": "string", "meaning": "string", "intensity": 0 } ],
+      "technicalDetails": [{ "label": "string", "value": "string", "icon": "star", "description": "string" }],
+      "activeSefirotOrNodes": [{ "name": "string", "meaning": "string", "intensity": 0 }],
       "navamsaInsight": "string",
       "chartData": {
         "planets": [
@@ -102,12 +69,9 @@ export const getAstrologicalInsight = async (userData: UserData) => {
     }
     RETURN ONLY JSON.
   `;
-
   try {
     const result = await model.generateContent(prompt);
-    const text = result.response.text();
-    const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    return JSON.parse(cleanJson);
+    return JSON.parse(result.response.text().replace(/```json/g, '').replace(/```/g, '').trim());
   } catch (error) {
     console.error("Insight Error:", error);
     return null;
@@ -117,11 +81,9 @@ export const getAstrologicalInsight = async (userData: UserData) => {
 export const getTransitInsights = async (userData: UserData) => {
   const model = genAI.getGenerativeModel({ model: INSIGHT_MODEL_NAME });
   const today = new Date().toISOString().split('T')[0];
-  
   const prompt = `
-    Calculate daily transits for today (${today}) using ${userData.system} astrology principles.
-    User Language: ${userData.language}.
-    
+    Calculate daily transits for today (${today}) using ${userData.system}.
+    Language: ${userData.language}.
     Return JSON format:
     {
       "dailyHeadline": "string",
@@ -131,55 +93,46 @@ export const getTransitInsights = async (userData: UserData) => {
       "mood": "string",
       "luckyNumber": "string",
       "luckyColor": "string",
-      "transits": [
-        { "planet": "string", "aspect": "string", "intensity": "High", "description": "string", "icon": "string" }
-      ],
-      "progressions": [ { "title": "string", "insight": "string" } ]
+      "transits": [{ "planet": "string", "aspect": "string", "intensity": "High", "description": "string", "icon": "string" }],
+      "progressions": [{ "title": "string", "insight": "string" }]
     }
     RETURN ONLY JSON.
   `;
-
   try {
     const result = await model.generateContent(prompt);
-    const text = result.response.text();
-    const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    return JSON.parse(cleanJson);
+    return JSON.parse(result.response.text().replace(/```json/g, '').replace(/```/g, '').trim());
   } catch (error) {
     console.error("Transit Error:", error);
     return null;
   }
 };
 
-// --- CHAT FUNCTION WITH SAFETY & GUARDRAILS ---
+// --- FIX 2: STRICTER CHAT GUARDRAILS ---
 export const chatWithAstrologer = async (message: string, history: any[], userData: UserData) => {
   const persona = getSystemPersona(userData.system);
 
-  // 1. Level 5 System Instruction with SAFETY PROTOCOLS
   const model = genAI.getGenerativeModel({ 
     model: CHAT_MODEL_NAME,
-    safetySettings: safetySettings, // <--- APPLIED HERE
+    safetySettings: safetySettings,
     systemInstruction: `
-      CRITICAL INSTRUCTION: YOU ARE A DEDICATED ASTROLOGY DATABASE.
+      Identify as "Astromic", a mystical AI Astrologer.
       ${persona}
       
-      --- SAFETY & CONTENT PROTOCOLS ---
-      YOU MUST REFUSE TO ANSWER any prompt related to the following restricted categories:
+      --- PRIME DIRECTIVE: ASTROLOGY ONLY ---
+      You are a specialized analysis tool. You are NOT a creative writer.
       
-      1. ILLEGAL SUBSTANCES: Drugs, narcotics, manufacturing, or usage.
-      2. SEXUAL CONTENT: Explicit material, erotica, NSFW themes, or sexual violence.
-      3. VIOLENCE & HARM: Self-harm, suicide, physical violence, weapons, or hate speech.
-      4. HATE SPEECH: Racism, sexism, homophobia, or religious intolerance.
-      
-      --- FUNCTIONAL GUARDRAILS ---
-      5. NO FICTION: Do not write stories, novels, poems, or fables.
-      6. NO GENERAL TASKS: Do not write code, solve math, or provide recipes.
-      
-      RESPONSE PROTOCOL FOR VIOLATIONS:
-      - If a request violates Safety (Drugs/Sex/Violence): "My vision is purely celestial. I do not engage with such earthly darkness."
-      - If a request violates Function (Stories/Code): "I am an Astrologer, not a storyteller. I can only interpret your chart."
-      
-      ONLY discuss: Planets, Signs, Houses, Aspects, Nakshatras, Transits, and Spiritual Growth related to the chart.
-      
+      FORBIDDEN REQUESTS (REFUSE IMMEDIATELY):
+      1. STORIES/FICTION: Do not write "tales", "fables", "narratives", or "journeys".
+         - Even if the user asks for a "cosmic tale", REFUSE.
+         - Say: "I analyze stars, I do not weave fictions."
+      2. POETRY: Do not write poems.
+      3. GENERAL AI TASKS: No code, math, or recipes.
+      4. ILLEGAL/HARMFUL: No drugs, violence, or NSFW content.
+
+      If a user asks for a story:
+      STOP. Do not generate it. Instead, analyze their specific planetary placements related to the topic (e.g., Venus for love).
+
+      Tone: Wise, ancient, direct.
       Language: Respond in ${userData.language}.
     `
   });
@@ -192,21 +145,18 @@ export const chatWithAstrologer = async (message: string, history: any[], userDa
   });
 
   try {
-    // 2. The "Reminder Injection" technique
+    // FIX 3: Injecting the rule into the prompt itself to override "helpful" tendencies
     const strictMessage = `
-      (SYSTEM REMINDER: Act as a strict ${userData.system} Astrologer. 
-       RESTRICTIONS: NO DRUGS, NO SEX/NSFW, NO VIOLENCE, NO STORIES. 
-       If the user asks for these, REFUSE.)
+      [SYSTEM ALERT: User asks: "${message}". IF this asks for a story/fiction, REFUSE. If it asks about drugs/harm, BLOCK. Only answer if it is about Astrology/Spirituality.]
       
-      User Request: "${message}"
+      ${message}
     `;
 
     const result = await chat.sendMessage(strictMessage);
     return result.response.text();
   } catch (error) {
-    // This catches the Safety Block if the user triggers the "Hard" shield
-    console.error("Chat Error / Safety Block:", error);
-    return "This query cannot be answered due to safety guidelines. Please ask about your horoscope.";
+    console.error("Chat Error:", error);
+    return "The stars are silent on this matter. (Safety Protocol Triggered)";
   }
 };
 
