@@ -1,38 +1,61 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { 
+  GoogleGenerativeAI, 
+  HarmCategory, 
+  HarmBlockThreshold 
+} from "@google/generative-ai";
 import { UserData, AstrologySystem } from "../types";
 
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-// Use the 8B model for Chat (Fast & Cheap)
 const CHAT_MODEL_NAME = "gemini-1.5-flash-8b";
 const INSIGHT_MODEL_NAME = "gemini-2.0-flash";
+
+// --- LAYER 1: STRICT SAFETY SETTINGS ---
+// This blocks harmful content at the API level.
+const safetySettings = [
+  {
+    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+    threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+    threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+    threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+    threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+  },
+];
 
 // --- DYNAMIC SYSTEM INSTRUCTIONS ---
 const getSystemPersona = (system: string) => {
   switch (system) {
     case AstrologySystem.VEDIC:
-      return "Role: Vedic Astrologer (Jyotish). Method: Sidereal Zodiac (Lahiri). Focus: Karma, Dashas, Nakshatras, and remedial measures.";
+      return "Role: Vedic Astrologer (Jyotish). Method: Sidereal Zodiac (Lahiri). Focus: Karma, Dashas, Nakshatras.";
     case AstrologySystem.WESTERN:
-      return "Role: Western Astrologer. Method: Tropical Zodiac. Focus: Psychological growth, personality archetypes, and aspect patterns.";
+      return "Role: Western Astrologer. Method: Tropical Zodiac. Focus: Psychology, Archetypes, Aspects.";
     case AstrologySystem.CHINESE:
-      return "Role: Chinese Astrologer. Method: Lunar Calendar (Ba Zi). Focus: 12 Animal Signs, 5 Elements (Wu Xing), Yin/Yang balance, and yearly fortune.";
+      return "Role: Chinese Astrologer. Method: Lunar Calendar (Ba Zi). Focus: 12 Animals, 5 Elements, Yin/Yang.";
     case AstrologySystem.TIBETAN:
-      return "Role: Tibetan Astrologer. Method: White/Black Astrology (Jung-Tsi). Focus: Mewa, Parkha, and animal signs. Tone: Spiritual and karmic.";
+      return "Role: Tibetan Astrologer (Jung-Tsi). Method: White/Black Astrology. Focus: Mewa, Parkha, Karmic forces.";
     case AstrologySystem.HELLENISTIC:
-      return "Role: Hellenistic Astrologer. Method: Ancient Traditional. Focus: Fate, Planetary Rulers, Sect (Day/Night), and House Lords. Tone: Deterministic and precise.";
+      return "Role: Hellenistic Astrologer. Method: Traditional Ancient Western. Focus: Sect, Lots, House Rulers, Fate.";
     case AstrologySystem.ISLAMIC:
-      return "Role: Medieval Islamic Astrologer. Method: Arabic Parts (Lots) and Mansions of the Moon. Tone: Philosophical, poetic, and fatalistic.";
+      return "Role: Islamic/Arabic Astrologer. Method: Medieval Astronomy. Focus: Arabic Parts, Lunar Mansions, Philosophy.";
     case AstrologySystem.KABBALISTIC:
-      return "Role: Kabbalistic Astrologer. Focus: Tree of Life, Sefirot, Soul Correction (Tikkun), and Hebrew letter associations. Tone: Mystical and soul-focused.";
+      return "Role: Kabbalistic Astrologer. Method: Tree of Life. Focus: Sefirot, Tikkun (Soul Correction), Hebrew Letters.";
     default:
-      return "Role: General Astrologer. Focus: Universal cosmic wisdom.";
+      return "Role: Expert Astrologer. Focus: Universal Cosmic Wisdom.";
   }
 };
 
 export const getAstrologicalInsight = async (userData: UserData) => {
   const model = genAI.getGenerativeModel({ model: INSIGHT_MODEL_NAME });
   
-  // Specific instruction based on System
   let specificInstructions = `Use standard ${userData.system} astrological calculations.`;
   
   if (userData.system === AstrologySystem.VEDIC) {
@@ -40,11 +63,6 @@ export const getAstrologicalInsight = async (userData: UserData) => {
        CALCULATION MODE: STRICT ASTRONOMICAL DATA LOOKUP (SWISS EPHEMERIS).
        AYANAMSA: N.C. LAHIRI (Sidereal).
        Ensure Moon Sign (Rashi) and Nakshatra are accurate for the birth time.
-    `;
-  } else if (userData.system === AstrologySystem.CHINESE) {
-    specificInstructions = `
-       CALCULATION MODE: CHINESE LUNAR CALENDAR.
-       Identify the accurate Lunar Animal and Element based on the birth date.
     `;
   }
 
@@ -132,30 +150,37 @@ export const getTransitInsights = async (userData: UserData) => {
   }
 };
 
-// --- CHAT FUNCTION WITH DYNAMIC PERSONAS ---
+// --- CHAT FUNCTION WITH SAFETY & GUARDRAILS ---
 export const chatWithAstrologer = async (message: string, history: any[], userData: UserData) => {
-  // Get the specific personality for the selected system
   const persona = getSystemPersona(userData.system);
 
+  // 1. Level 5 System Instruction with SAFETY PROTOCOLS
   const model = genAI.getGenerativeModel({ 
     model: CHAT_MODEL_NAME,
+    safetySettings: safetySettings, // <--- APPLIED HERE
     systemInstruction: `
-      You are the Astromic Oracle.
+      CRITICAL INSTRUCTION: YOU ARE A DEDICATED ASTROLOGY DATABASE.
       ${persona}
       
-      STRICT BOUNDARIES & GUARDRAILS:
-      1. YOUR TOPIC IS ASTROLOGY ONLY. Interpret the user's query based on the "${userData.system}" system rules defined above.
-      2. REFUSAL PROTOCOL: If the user asks for:
-         - Stories, Poems, Fiction
-         - Coding, Math, General Knowledge
-         - Recipes, Politics, Sports
-         
-         YOU MUST REFUSE. Use this exact phrase:
-         "My vision is limited to the celestial sphere. I cannot aid you with earthly fictions. Shall we look at your chart instead?"
+      --- SAFETY & CONTENT PROTOCOLS ---
+      YOU MUST REFUSE TO ANSWER any prompt related to the following restricted categories:
       
-      3. Do NOT write stories even if the user begs.
-      4. Speak with a mystical, wise tone appropriate for a ${userData.system} master.
-      5. Answer in ${userData.language}.
+      1. ILLEGAL SUBSTANCES: Drugs, narcotics, manufacturing, or usage.
+      2. SEXUAL CONTENT: Explicit material, erotica, NSFW themes, or sexual violence.
+      3. VIOLENCE & HARM: Self-harm, suicide, physical violence, weapons, or hate speech.
+      4. HATE SPEECH: Racism, sexism, homophobia, or religious intolerance.
+      
+      --- FUNCTIONAL GUARDRAILS ---
+      5. NO FICTION: Do not write stories, novels, poems, or fables.
+      6. NO GENERAL TASKS: Do not write code, solve math, or provide recipes.
+      
+      RESPONSE PROTOCOL FOR VIOLATIONS:
+      - If a request violates Safety (Drugs/Sex/Violence): "My vision is purely celestial. I do not engage with such earthly darkness."
+      - If a request violates Function (Stories/Code): "I am an Astrologer, not a storyteller. I can only interpret your chart."
+      
+      ONLY discuss: Planets, Signs, Houses, Aspects, Nakshatras, Transits, and Spiritual Growth related to the chart.
+      
+      Language: Respond in ${userData.language}.
     `
   });
 
@@ -167,11 +192,21 @@ export const chatWithAstrologer = async (message: string, history: any[], userDa
   });
 
   try {
-    const result = await chat.sendMessage(message);
+    // 2. The "Reminder Injection" technique
+    const strictMessage = `
+      (SYSTEM REMINDER: Act as a strict ${userData.system} Astrologer. 
+       RESTRICTIONS: NO DRUGS, NO SEX/NSFW, NO VIOLENCE, NO STORIES. 
+       If the user asks for these, REFUSE.)
+      
+      User Request: "${message}"
+    `;
+
+    const result = await chat.sendMessage(strictMessage);
     return result.response.text();
   } catch (error) {
-    console.error("Chat Error:", error);
-    return "The stars are clouded. Please ask again.";
+    // This catches the Safety Block if the user triggers the "Hard" shield
+    console.error("Chat Error / Safety Block:", error);
+    return "This query cannot be answered due to safety guidelines. Please ask about your horoscope.";
   }
 };
 
