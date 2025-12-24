@@ -37,15 +37,14 @@ function shouldBlockRequest(userInput: string): boolean {
   return triggers.some(t => lower.includes(t));
 }
 
-// ✅ THE CRITICAL FIX: Date Formatter
-// Converts ambiguous "23-08-1975" -> "23 August 1975"
-// This prevents the AI from reading it as "Month 23" or crashing
+// ✅ CRITICAL FIX: Date Formatter
+// Converts "23-08-1975" -> "23 August 1975"
+// This stops the AI from confusing Month (08) and Day (23)
 function formatDateClear(dateString: string): string {
   try {
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return dateString; // Return original if parsing fails
+    if (isNaN(date.getTime())) return dateString; 
     
-    // Explicitly format to remove ambiguity
     return date.toLocaleDateString('en-GB', {
       day: 'numeric',
       month: 'long',
@@ -66,7 +65,7 @@ export const getAstrologicalInsight = async (userData: UserData) => {
   try {
     const model = genAI.getGenerativeModel({ model: INSIGHT_MODEL_NAME });
     
-    // ✅ APPLY THE FIX
+    // ✅ Apply Date Fix
     const clearDate = formatDateClear(userData.birthDate);
     
     let specificInstructions = `Use standard ${userData.system} astrological calculations.`;
@@ -87,7 +86,7 @@ export const getAstrologicalInsight = async (userData: UserData) => {
       
       INPUT DATA:
       - Name: ${userData.name || 'User'}
-      - Birth Date: ${clearDate} (Format: Day Month Year)
+      - Birth Date: ${clearDate}
       - Birth Time: ${userData.birthTime}
       - Location: ${userData.birthPlace}
       - System: ${userData.system}
@@ -142,7 +141,6 @@ export const getTransitInsights = async (userData: UserData) => {
 
   try {
     const model = genAI.getGenerativeModel({ model: INSIGHT_MODEL_NAME });
-    // Also fix today's date format just in case
     const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
     
     const prompt = `Calculate Daily Transits for ${today} using ${userData.system}. Language: ${userData.language}. RETURN ONLY JSON:
@@ -175,6 +173,7 @@ export const chatWithAstrologer = async (message: string, history: any[], userDa
     const model = genAI.getGenerativeModel({
       model: CHAT_MODEL_NAME,
       safetySettings,
+      // ✅ Backticks used to prevent TS1002 error
       systemInstruction: `You are Astromic. You must act as a strict calculator. When asked about charts, calculate exact planetary positions for ${formatDateClear(userData.birthDate)} using ${userData.system} system. NO stories. NO approximations.`
     });
 
@@ -199,4 +198,29 @@ function getFallbackInsight() {
   return {
     headline: "Chart Generation Failed",
     archetype: "Unknown",
-    summary: "Could not calculate the
+    summary: "Could not calculate the chart. Please check the birth details.",
+    technicalDetails: [],
+    activeSefirotOrNodes: [],
+    navamsaInsight: "Retry needed.",
+    chartData: { planets: [] }
+  };
+}
+
+function getFallbackTransit() {
+  return {
+    dailyHeadline: "Daily Update Unavailable",
+    weeklySummary: "Please check connection.",
+    dailyHoroscope: "Transit data not available.",
+    dailyAdvice: [],
+    mood: "-",
+    luckyNumber: "-",
+    luckyColor: "-",
+    transits: [],
+    progressions: []
+  };
+}
+
+// ✅ FIXED: These stubs now accept arguments to satisfy TypeScript and prevent build errors
+export const generateSpeech = async (text: string) => { return "USE_BROWSER_TTS"; };
+export const generateCelestialSigil = async (userData: UserData, insight: any) => { return null; };
+export const generateDestinyVideo = async (prompt: string) => { return null; };
