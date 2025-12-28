@@ -77,12 +77,19 @@ const HoroscopeSection: React.FC<{
         <div className="space-y-4 pt-2">
           <h4 className="text-xs font-bold uppercase tracking-widest text-primary">Advice for {userData.name}</h4>
           <div className="space-y-3">
-            {transitData.dailyAdvice.map((advice, i) => (
-              <div key={i} className="flex items-start gap-3 bg-white/5 rounded-2xl p-4 border border-white/5">
+            {transitData.dailyAdvice && transitData.dailyAdvice.length > 0 ? (
+              transitData.dailyAdvice.map((advice, i) => (
+                <div key={i} className="flex items-start gap-3 bg-white/5 rounded-2xl p-4 border border-white/5">
+                  <span className="material-symbols-outlined text-primary text-xl">star_rate</span>
+                  <p className="text-sm text-white/70">{advice}</p>
+                </div>
+              ))
+            ) : (
+              <div className="flex items-start gap-3 bg-white/5 rounded-2xl p-4 border border-white/5">
                 <span className="material-symbols-outlined text-primary text-xl">star_rate</span>
-                <p className="text-sm text-white/70">{advice}</p>
+                <p className="text-sm text-white/70">Reflect on your inner peace today.</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
 
