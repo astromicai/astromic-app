@@ -4,11 +4,17 @@ export const CHAT_MODEL_NAME = "gemini-2.0-flash";
 
 export const getAstrologicalInsight = async (userData: UserData): Promise<InsightData | { error: string }> => {
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s timeout
+
     const response = await fetch('/api/insight', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userData, type: 'insight' })
+      body: JSON.stringify({ userData, type: 'insight' }),
+      signal: controller.signal
     });
+
+    clearTimeout(timeoutId);
 
     const text = await response.text();
     let data;
@@ -26,6 +32,9 @@ export const getAstrologicalInsight = async (userData: UserData): Promise<Insigh
 
     return data as InsightData;
   } catch (error: any) {
+    if (error.name === 'AbortError') {
+      return { error: "Connection Timed Out. Please check your network or try again." };
+    }
     console.error("Error fetching insight:", error);
     return { error: error.message || "Network Request Failed" };
   }

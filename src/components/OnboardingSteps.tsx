@@ -360,6 +360,27 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
   }
 
   if (step === 'BIRTH_TIME') {
+    // Parse existing time or default
+    const parseTime = (str: string) => {
+      if (!str) return { h: '12', m: '00', p: 'PM' };
+      const parts = str.match(/(\d+):(\d+)\s?(AM|PM)/i);
+      if (parts) return { h: parts[1], m: parts[2], p: parts[3].toUpperCase() };
+      return { h: '12', m: '00', p: 'PM' };
+    };
+
+    const { h, m, p } = parseTime(userData.birthTime);
+
+    const updateTime = (newH: string, newM: string, newP: string) => {
+      updateField('birthTime', `${newH}:${newM} ${newP}`);
+    };
+
+    const hours = Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0'));
+    const minutes = Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, '0')); // 5 min steps
+    // Or full 60? 5 min is usually better for mobile UX unless precise birth time is critical (it is for astrology)
+    // Let's do full 60 or simplified? User said "select the drop down".
+    // 00-59 is a lot for a dropdown. Let's do 00-59.
+    const allMinutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'));
+
     return (
       <div className="flex-1 flex flex-col px-6 pt-10 pb-8 relative z-[20]">
         <header className="flex items-center justify-between mb-8">
@@ -377,19 +398,52 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
           <h1 className="text-white tracking-tight text-[36px] font-bold leading-tight mb-4">What was the time <br />of birth?</h1>
           <p className="text-white/60 text-base">Crucial for your Rising Sign, {displayName}.</p>
         </div>
-        <div className="relative w-full mb-10">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-primary">
-            <span className="material-symbols-outlined">schedule</span>
+
+        <div className="relative w-full mb-10 flex gap-2">
+          <div className="flex-1 relative">
+            <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block pl-2">Hour</label>
+            <select
+              value={h}
+              onChange={(e) => updateTime(e.target.value, m, p)}
+              className="w-full h-16 bg-white/10 border border-white/10 rounded-2xl px-4 text-2xl font-bold text-white appearance-none focus:border-primary outline-none text-center"
+            >
+              {hours.map(hour => <option key={hour} value={hour} className="text-black">{hour}</option>)}
+            </select>
           </div>
-          <input
-            type="text"
-            className="w-full bg-white/10 border-2 border-white/10 focus:border-primary text-white text-2xl font-bold py-5 pl-12 pr-4 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-            placeholder="e.g. 10:30 PM"
-            value={userData.birthTime}
-            onChange={(e) => updateField('birthTime', e.target.value)}
-            autoComplete="off"
-          />
+
+          <div className="flex items-end pb-5 text-2xl font-bold">:</div>
+
+          <div className="flex-1 relative">
+            <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block pl-2">Minute</label>
+            <select
+              value={m}
+              onChange={(e) => updateTime(h, e.target.value, p)}
+              className="w-full h-16 bg-white/10 border border-white/10 rounded-2xl px-4 text-2xl font-bold text-white appearance-none focus:border-primary outline-none text-center"
+            >
+              {allMinutes.map(min => <option key={min} value={min} className="text-black">{min}</option>)}
+            </select>
+          </div>
+
+          <div className="flex-1 relative">
+            <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block pl-2">AM/PM</label>
+            <select
+              value={p}
+              onChange={(e) => updateTime(h, m, e.target.value)}
+              className="w-full h-16 bg-white/10 border border-white/10 rounded-2xl px-4 text-2xl font-bold text-white appearance-none focus:border-primary outline-none text-center"
+            >
+              <option value="AM" className="text-black">AM</option>
+              <option value="PM" className="text-black">PM</option>
+            </select>
+          </div>
         </div>
+
+        <div className="flex justify-center mb-8">
+          <div className="bg-white/5 px-6 py-3 rounded-xl border border-white/5 text-center">
+            <span className="block text-xs text-white/40 uppercase tracking-widest mb-1">Preview</span>
+            <span className="text-xl font-bold text-primary">{userData.birthTime}</span>
+          </div>
+        </div>
+
         <div className="mt-auto">
           <button
             disabled={!userData.birthTime.trim()}
