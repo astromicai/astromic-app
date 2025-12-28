@@ -113,7 +113,7 @@ const PulseSection: React.FC<{ transitData: TransitData | null, userData: UserDa
 
       <section className="space-y-4">
         <div className="grid gap-4">
-          {transitData.transits.map((t, i) => (
+          {transitData.transits && transitData.transits.length > 0 ? transitData.transits.map((t, i) => (
             <div key={i} className="bg-surface-dark border border-white/5 rounded-2xl p-5 group hover:border-primary/30 transition-all">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
@@ -136,7 +136,7 @@ const PulseSection: React.FC<{ transitData: TransitData | null, userData: UserDa
                 Interpret alignment
               </button>
             </div>
-          ))}
+          )) : <div className="text-white/40 text-center py-4">No active transits detected.</div>}
         </div>
       </section>
 

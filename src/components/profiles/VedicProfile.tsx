@@ -22,7 +22,7 @@ const VedicProfile: React.FC<ProfileProps> = ({ userData, insight, onOpenChat })
                         <div className="absolute inset-0 rounded-full bg-primary/20 blur-[30px] animate-pulse" />
 
                         {/* If sigilUrl starts with <svg, render it directly, else treat as image URL */}
-                        {insight.sigilUrl.trim().startsWith('<svg') ? (
+                        {typeof insight.sigilUrl === 'string' && insight.sigilUrl.trim().startsWith('<svg') ? (
                             <div
                                 className="relative size-full rounded-full border-2 border-primary/30 shadow-2xl transition-transform duration-700 group-hover:scale-110 bg-background-dark overflow-hidden p-4"
                                 dangerouslySetInnerHTML={{ __html: insight.sigilUrl }}
@@ -67,12 +67,12 @@ const VedicProfile: React.FC<ProfileProps> = ({ userData, insight, onOpenChat })
                     )}
                 </div>
                 <div className="grid grid-cols-2 gap-4 w-full mb-8">
-                    {remainingDetails.map((detail, i: number) => (
+                    {remainingDetails && remainingDetails.length > 0 ? remainingDetails.map((detail, i: number) => (
                         <button key={i} onClick={() => onOpenChat(`What is the significance of ${detail.label}: ${detail.value}?`)} className="flex flex-col p-4 rounded-3xl bg-surface-dark/60 border border-white/10 backdrop-blur-md text-left hover:border-primary transition-all shadow-md active:scale-95">
                             <span className="text-white/40 text-[9px] font-bold uppercase mb-1 tracking-widest">{detail.label}</span>
                             <h3 className="text-sm text-white font-bold leading-tight">{detail.value}</h3>
                         </button>
-                    ))}
+                    )) : null}
                 </div>
                 {insight.navamsaInsight && (
                     <div className="w-full bg-gradient-to-br from-card-surface to-background-dark border border-white/10 rounded-[2.5rem] p-6 shadow-xl text-left">
