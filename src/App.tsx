@@ -1,5 +1,5 @@
 import './index.css';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react'; // Trigger redeploy
 // ✅ FIXED: Changed import path from '../types' to './types'
 import { UserData, AppStep, AstrologySystem, TransitData, InsightData } from './types';
 import OnboardingSteps from './components/OnboardingSteps';
