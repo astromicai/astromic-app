@@ -25,6 +25,18 @@ export default async function handler(req: Request) {
       generationConfig: { responseMimeType: "application/json" }
     });
 
+    // Helper to clean JSON string
+    const cleanJson = (text: string) => {
+      let clean = text.replace(/```json/g, '').replace(/```/g, '').trim();
+      // Sometimes the model adds text before or after the JSON
+      const firstBrace = clean.indexOf('{');
+      const lastBrace = clean.lastIndexOf('}');
+      if (firstBrace >= 0 && lastBrace >= 0) {
+        clean = clean.substring(firstBrace, lastBrace + 1);
+      }
+      return clean;
+    };
+
     if (type === 'transit') {
       const prompt = `
         Generates daily transit data for:
@@ -36,8 +48,8 @@ export default async function handler(req: Request) {
         
         MANDATORY REQUIREMENTS:
         1. "dailyAdvice" MUST contain at least 3 distinct strings.
-        2. "transits" MUST contain at least 3 distinct planetary transits.
-        3. "progressions" MUST contain at least 1 progression.
+        2. "transits" MUST contain at least 4 distinct planetary transits as per current ephemeris.
+        3. "progressions" MUST contain at least 2 relevant progressions.
         4. NO empty strings. NO null values.
         
         Structure:
@@ -49,7 +61,7 @@ export default async function handler(req: Request) {
           "luckyColor": "Color name",
           "dailyAdvice": ["Advice 1", "Advice 2", "Advice 3"],
           "transits": [
-            { "planet": "Mars", "sign": "Aries", "aspect": "Conjunction", "description": "Short description", "intensity": "High", "icon": "bolt" }
+            { "planet": "Planet Name", "sign": "Sign Name", "aspect": "Aspect Name", "description": "Short description", "intensity": "High", "icon": "bolt" }
           ],
           "progressions": [
             { "title": "Progression Name", "insight": "Start date..." }
@@ -57,7 +69,8 @@ export default async function handler(req: Request) {
         }
       `;
       const result = await model.generateContent(prompt);
-      return new Response(result.response.text(), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      const cleanedText = cleanJson(result.response.text());
+      return new Response(cleanedText, { status: 200, headers: { 'Content-Type': 'application/json' } });
 
     } else {
       // Profile Insight
@@ -70,8 +83,8 @@ export default async function handler(req: Request) {
          Language: ${userData.language}
          
          MANDATORY REQUIREMENTS:
-         1. "technicalDetails" MUST contain at least 6 items (Sun, Moon, Rising, etc).
-         2. "chartData.planets" MUST contain positions for Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn.
+         1. "technicalDetails" MUST contain at least 8 items (Sun, Moon, Rising, Mercury, Venus, Mars, Jupiter, Saturn).
+         2. "chartData.planets" MUST contain positions for Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto.
          3. NO empty strings.
          
          Return JSON:
@@ -94,7 +107,8 @@ export default async function handler(req: Request) {
       `;
 
       const result = await model.generateContent(prompt);
-      return new Response(result.response.text(), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      const cleanedText = cleanJson(result.response.text());
+      return new Response(cleanedText, { status: 200, headers: { 'Content-Type': 'application/json' } });
     }
 
   } catch (error: any) {
