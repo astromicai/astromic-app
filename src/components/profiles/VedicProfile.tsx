@@ -69,8 +69,8 @@ const VedicProfile: React.FC<ProfileProps> = ({ userData, insight, onOpenChat })
                 <div className="grid grid-cols-2 gap-4 w-full mb-8">
                     {remainingDetails && remainingDetails.length > 0 ? remainingDetails.map((detail, i: number) => (
                         <button key={i} onClick={() => onOpenChat(`What is the significance of ${detail.label}: ${detail.value}?`)} className="flex flex-col p-4 rounded-3xl bg-surface-dark/60 border border-white/10 backdrop-blur-md text-left hover:border-primary transition-all shadow-md active:scale-95">
-                            <span className="text-white/40 text-[9px] font-bold uppercase mb-1 tracking-widest">{detail.label}</span>
-                            <h3 className="text-sm text-white font-bold leading-tight">{detail.value}</h3>
+                            <span className="text-white/50 text-[10px] font-bold uppercase mb-1.5 tracking-wider truncate w-full">{detail.label}</span>
+                            <h3 className="text-base text-white font-bold leading-snug">{detail.value}</h3>
                         </button>
                     )) : null}
                 </div>

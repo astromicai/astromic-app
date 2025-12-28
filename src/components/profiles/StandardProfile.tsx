@@ -18,9 +18,12 @@ const StandardProfile: React.FC<ProfileProps> = ({ userData, insight, onOpenChat
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
             {insight.technicalDetails && insight.technicalDetails.length > 0 ? (
                 insight.technicalDetails.map((detail, i: number) => (
-                    <button key={i} onClick={() => onOpenChat(`What does it mean for ${detail.label} to be at ${detail.value}?`)} className="flex items-center gap-5 bg-surface-dark p-6 rounded-3xl border border-white/5 shadow-xl hover:border-primary/50 transition-all text-left active:scale-95 group">
-                        <div className="p-4 bg-primary/10 rounded-2xl text-primary group-hover:bg-primary/20 transition-colors"><span className="material-symbols-outlined text-2xl">{detail.icon}</span></div>
-                        <div><p className="text-[10px] text-white/40 uppercase font-bold tracking-widest mb-1">{detail.label}</p><p className="text-lg font-bold text-white leading-none">{detail.value}</p></div>
+                    <button key={i} onClick={() => onOpenChat(`What does it mean for ${detail.label} to be at ${detail.value}?`)} className="flex items-center gap-4 bg-surface-dark p-5 rounded-3xl border border-white/5 shadow-xl hover:border-primary/50 transition-all text-left active:scale-95 group">
+                        <div className="p-3 bg-primary/10 rounded-2xl text-primary group-hover:bg-primary/20 transition-colors shrink-0"><span className="material-symbols-outlined text-2xl">{detail.icon}</span></div>
+                        <div className="min-w-0">
+                            <p className="text-xs text-white/50 uppercase font-bold tracking-wider mb-0.5 truncate">{detail.label}</p>
+                            <p className="text-lg font-bold text-white leading-snug break-words">{detail.value}</p>
+                        </div>
                     </button>
                 ))
             ) : (
