@@ -2,7 +2,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export const config = {
-  runtime: 'edge',
+  runtime: 'nodejs',
 };
 
 export default async function handler(req: Request) {
@@ -85,7 +85,8 @@ export default async function handler(req: Request) {
           // Import dynamically or assume it's available if compilation succeeds
           // Since we are in the same project, we import from adjacent file
           // Note: In Vercel Edge, standard imports work if bundled.
-          const { calculateVedicChart } = await import('./vedic-engine');
+          // Using .js extension for node16 resolution
+          const { calculateVedicChart } = await import('./vedic-engine.js');
           const chart = calculateVedicChart(birthDate, birthTime, latitude, longitude);
 
           calculatedChartFormatted = `
