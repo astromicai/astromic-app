@@ -126,6 +126,7 @@ function calculateVedicChart(dateWrapper: string, timeString: string, lat: numbe
 
 export const config = {
   runtime: 'nodejs',
+  maxDuration: 60, // Allow up to 60 seconds for execution
 };
 
 export default async function handler(req: Request) {
