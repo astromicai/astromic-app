@@ -39,7 +39,7 @@ const App: React.FC = () => {
     if (savedUser) {
       const parsedUser = JSON.parse(savedUser);
       setUserData(parsedUser);
-      
+
       if (savedInsight) {
         setInsightData(JSON.parse(savedInsight));
         if (savedTransit) setTransitData(JSON.parse(savedTransit));
@@ -54,7 +54,7 @@ const App: React.FC = () => {
   // Navigation Helpers
   const nextStep = () => {
     const sequence: AppStep[] = [
-      'HERO', 'NAME_INPUT', 'LANGUAGE_SELECT', 'BIRTH_DATE', 'BIRTH_PLACE', 'BIRTH_TIME', 
+      'HERO', 'NAME_INPUT', 'LANGUAGE_SELECT', 'BIRTH_DATE', 'BIRTH_PLACE', 'BIRTH_TIME',
       'FOCUS_AREAS', 'SYSTEM_SELECT', 'REVIEW', 'PROFILE_DISPLAY'
     ];
     const currentIndex = sequence.indexOf(step);
@@ -65,7 +65,7 @@ const App: React.FC = () => {
 
   const prevStep = () => {
     const sequence: AppStep[] = [
-      'HERO', 'NAME_INPUT', 'LANGUAGE_SELECT', 'BIRTH_DATE', 'BIRTH_PLACE', 'BIRTH_TIME', 
+      'HERO', 'NAME_INPUT', 'LANGUAGE_SELECT', 'BIRTH_DATE', 'BIRTH_PLACE', 'BIRTH_TIME',
       'FOCUS_AREAS', 'SYSTEM_SELECT', 'REVIEW', 'PROFILE_DISPLAY'
     ];
     const currentIndex = sequence.indexOf(step);
@@ -79,14 +79,14 @@ const App: React.FC = () => {
     setLoading(true);
     try {
       console.log("Starting generation...");
-      
+
       const [insight, transits] = await Promise.all([
         getAstrologicalInsight(userData),
         getTransitInsights(userData)
       ]);
-      
+
       if (insight) {
-        let sigil = null;
+        let sigil: string | undefined;
         try {
           // This call is now TypeScript-safe thanks to geminiService fix
           sigil = await generateCelestialSigil(userData, insight);
@@ -97,14 +97,14 @@ const App: React.FC = () => {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
         localStorage.setItem(INSIGHT_KEY, JSON.stringify(finalInsight));
       }
-      
+
       if (transits) {
         setTransitData(transits);
         localStorage.setItem(TRANSIT_KEY, JSON.stringify(transits));
       }
-      
+
       setStep('PROFILE_DISPLAY');
-      
+
     } catch (err) {
       console.error("Critical Profile Error:", err);
       setStep('PROFILE_DISPLAY');
@@ -117,7 +117,7 @@ const App: React.FC = () => {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(INSIGHT_KEY);
     localStorage.removeItem(TRANSIT_KEY);
-    
+
     setUserData({
       name: '',
       birthDate: '1995-08-14',
@@ -152,39 +152,39 @@ const App: React.FC = () => {
       <Background />
       <div className="relative z-10 w-full max-w-md h-screen flex flex-col">
         {step === 'PROFILE_DISPLAY' ? (
-          <AstrologyProfiles 
-            userData={userData} 
-            insight={insightData} 
+          <AstrologyProfiles
+            userData={userData}
+            insight={insightData}
             transitData={transitData}
-            onBack={() => setStep('REVIEW')} 
+            onBack={() => setStep('REVIEW')}
             onOpenChat={openChat}
             onReset={handleReset}
           />
         ) : (
-          <OnboardingSteps 
-            step={step} 
-            userData={userData} 
-            setUserData={setUserData} 
-            onNext={nextStep} 
-            onPrev={prevStep} 
+          <OnboardingSteps
+            step={step}
+            userData={userData}
+            setUserData={setUserData}
+            onNext={nextStep}
+            onPrev={prevStep}
             onFinish={handleFinish}
             loading={loading}
           />
         )}
       </div>
 
-      <ChatBot 
-        userData={userData} 
-        isOpen={isChatOpen} 
+      <ChatBot
+        userData={userData}
+        isOpen={isChatOpen}
         initialPrompt={initialChatPrompt}
         onClose={() => {
           setIsChatOpen(false);
           setInitialChatPrompt(null);
-        }} 
+        }}
       />
 
       {step === 'PROFILE_DISPLAY' && !isChatOpen && (
-        <button 
+        <button
           onClick={() => openChat()}
           className="fixed bottom-6 right-6 z-50 size-14 rounded-full bg-primary flex items-center justify-center text-white shadow-2xl hover:bg-primary-alt transition-all animate-bounce hover:animate-none"
         >
