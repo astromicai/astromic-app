@@ -1,5 +1,5 @@
 
-import { Astronomy, DefineStar, Equator, Observer, Time } from 'astronomy-engine';
+import Astronomy from 'astronomy-engine';
 
 // ZODIAC SIGNS (0 = Aries, 1 = Taurus, ... 11 = Pisces)
 const ZODIAC = [
@@ -108,7 +108,7 @@ export function calculateVedicChart(dateString: string, timeString: string, lat:
 
     // Let's just use the JS Date, assuming the client sent a valid ISO string or we can construct one.
 
-    const observer = new Observer(lat, lon, 0);
+    const observer = new Astronomy.Observer(lat, lon, 0);
     const ayanamsa = getLahiriAyanamsa(date);
 
     const planets = [
