@@ -1,22 +1,9 @@
-
-import Astronomy from 'astronomy-engine';
+import { calculateVedicChart } from './api/vedic-engine.js';
 
 try {
-    console.log("Testing Vedic Engine Debug...");
-    console.log("Astronomy Keys (O*):", Object.keys(Astronomy).filter(k => k.startsWith('O') || k.toLowerCase().includes('obliq')));
-    const date = new Date();
-    const observer = new Astronomy.Observer(10, 77, 0);
-    const eq = Astronomy.Equator("Sun", date, observer, false, true);
-    console.log("Equator Result Keys:", Object.keys(eq));
-    console.log("Vector:", eq.vec);
-
-    // Try Ecliptic
-    console.log("Trying Ecliptic(eq)...");
-    try {
-        const ecl = Astronomy.Ecliptic(eq.vec);
-        console.log("Ecliptic Result:", ecl);
-    } catch (e) { console.log("Ecliptic(vec) Failed:", e.message); }
-
+    console.log("Testing Vedic Engine Full...");
+    const result = calculateVedicChart("1975-08-23", "08:30 PM", 10.73, 77.52);
+    console.log("Success:", JSON.stringify(result, null, 2));
 } catch (error) {
     console.error("Crash:", error);
 }

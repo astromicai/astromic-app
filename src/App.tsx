@@ -23,11 +23,11 @@ const App: React.FC = () => {
 
   const [userData, setUserData] = useState<UserData>({
     name: '',
-    birthDate: '1995-08-14',
-    birthTime: '10:30 PM',
-    birthPlace: 'San Francisco, CA',
+    birthDate: '',
+    birthTime: '',
+    birthPlace: '',
     language: 'English',
-    focusAreas: ['Love', 'Spirituality'],
+    focusAreas: [],
     system: AstrologySystem.WESTERN,
   });
 
@@ -115,11 +115,11 @@ const App: React.FC = () => {
 
     setUserData({
       name: '',
-      birthDate: '1995-08-14',
-      birthTime: '10:30 PM',
-      birthPlace: 'San Francisco, CA',
+      birthDate: '',
+      birthTime: '',
+      birthPlace: '',
       language: 'English',
-      focusAreas: ['Love', 'Spirituality'],
+      focusAreas: [],
       system: AstrologySystem.WESTERN,
     });
     setInsightData(null);

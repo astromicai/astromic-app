@@ -93,7 +93,7 @@ const LocationStep: React.FC<{
         <input
           type="text"
           className="w-full bg-white/10 border-2 border-white/10 focus:border-primary text-white placeholder-white/30 text-xl rounded-2xl py-5 pl-12 pr-4 shadow-lg focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-          placeholder="Search City..."
+          placeholder="Type your birth city..."
           value={searchTerm}
           onChange={(e) => searchLocation(e.target.value)}
           autoComplete="off"
