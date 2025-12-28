@@ -3,6 +3,7 @@ import Astronomy from 'astronomy-engine';
 
 try {
     console.log("Testing Vedic Engine Debug...");
+    console.log("Astronomy Keys (O*):", Object.keys(Astronomy).filter(k => k.startsWith('O') || k.toLowerCase().includes('obliq')));
     const date = new Date();
     const observer = new Astronomy.Observer(10, 77, 0);
     const eq = Astronomy.Equator("Sun", date, observer, false, true);

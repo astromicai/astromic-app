@@ -152,7 +152,21 @@ export function calculateVedicChart(dateString: string, timeString: string, lat:
     const ramc = lst * 15.0; // in degrees
 
     // Obliquity of Ecliptic
-    const obliquity = Astronomy.Obliquity(date); // degrees? Astronomy engine returns degrees? (Usually yes)
+    // Astronomy engine's public API might not expose Obliquity directly.
+    // We calculate Mean Obliquity of Ecliptic (J2000).
+    // Formula: eps = 23.4392911 - 46.815 * T / 3600
+    // T = (TT - 2000.0) / 100.0
+    // We use a simplified version for ~1 arcmin accuracy or just standard J2000 value.
+    // Better: Use the date object to find years from 2000.
+
+    function getMeanObliquity(date: Date): number {
+        const jd = date.getTime() / 86400000 + 2440587.5; // Unix to Julian Day
+        const t = (jd - 2451545.0) / 36525.0; // Julian Centuries from J2000
+        const eps = 23.4392911 - (46.8150 * t + 0.00059 * t * t - 0.001813 * t * t * t) / 3600.0;
+        return eps;
+    }
+
+    const obliquity = getMeanObliquity(date);
 
     // Convert to Rad
     const rad = (d: number) => d * Math.PI / 180;
