@@ -74,32 +74,59 @@ export default async function handler(req: Request) {
       return new Response(cleanedText, { status: 200, headers: { 'Content-Type': 'application/json' } });
 
     } else {
-      // Profile Insight
+      // Profile Insight with VEDIC CALCULATION ENGINE
+      let calculatedChartFormatted = "No calculation available.";
+
+      const { system, birthDate, birthTime, birthPlace, latitude, longitude } = userData;
+
+      // Only run engine if coordinates exist
+      if (latitude && longitude && system === 'Indian Vedic') {
+        try {
+          // Import dynamically or assume it's available if compilation succeeds
+          // Since we are in the same project, we import from adjacent file
+          // Note: In Vercel Edge, standard imports work if bundled.
+          const { calculateVedicChart } = await import('./vedic-engine');
+          const chart = calculateVedicChart(birthDate, birthTime, latitude, longitude);
+
+          calculatedChartFormatted = `
+            CALCULATED VEDIC DATA (Lahiri Ayanamsa):
+            Ascendant (Lagnam): ${chart.ascendant.sign} (${chart.ascendant.nakshatra})
+            Sun: ${chart.planets.find(p => p.name === 'Sun')?.sign}
+            Moon: ${chart.planets.find(p => p.name === 'Moon')?.sign} (${chart.planets.find(p => p.name === 'Moon')?.nakshatra})
+            Mars: ${chart.planets.find(p => p.name === 'Mars')?.sign}
+            Mercury: ${chart.planets.find(p => p.name === 'Mercury')?.sign}
+            Jupiter: ${chart.planets.find(p => p.name === 'Jupiter')?.sign}
+            Venus: ${chart.planets.find(p => p.name === 'Venus')?.sign}
+            Saturn: ${chart.planets.find(p => p.name === 'Saturn')?.sign}
+            `;
+        } catch (e) {
+          console.error("Vedic Engine Calculation Failed:", e);
+          calculatedChartFormatted = "Calculation Error. Proceed with estimation.";
+        }
+      }
+
       const prompt = `
-         PERFORM EXACT ASTRONOMICAL CALCULATION.
-         Role: Expert Vedic Astrologer & Astronomer.
+         PERFORM ASTROLOGICAL INTERPRETATION.
+         Role: Expert Vedic Astrologer.
          
          Input Data:
          Name: ${userData.name}
-         Birth Date: ${userData.birthDate}
-         Birth Time: ${userData.birthTime}
-         Location: ${userData.birthPlace}
-         EXACT COORDINATES: Latitude ${userData.latitude}, Longitude ${userData.longitude}
-         Timezone: ${userData.timezone || 'Auto-detect'}
+         Birth: ${userData.birthDate} ${userData.birthTime} in ${userData.birthPlace}
          System: ${userData.system}
          Language: ${userData.language}
          
-         CRITICAL CALCULATION RULES:
-         1. Use ${userData.system === 'Indian Vedic' ? 'SIDEREAL Zodiac with CHITRA PAKSHA (LAHIRI) Ayanamsa' : 'TROPICAL Zodiac'}.
-         2. Calculate Ascendant (Lagnam) precisely based on Lat: ${userData.latitude}, Long: ${userData.longitude}, Time: ${userData.birthTime}.
-         3. Ensure Rashi (Moon Sign) and Nakshatra correspond exactly to the Moon's longitude.
-         4. Correct for Timezone offsets.
+         ${calculatedChartFormatted !== "No calculation available." ? `
+         CRITICAL: USE THESE PRE-CALCULATED PLANETARY POSITIONS (DO NOT HALLUCINATE POSITIONS):
+         ${calculatedChartFormatted}
+         ` : `
+         CRITICAL: Calculate planetary positions accurately for the date.
+         `}
          
          MANDATORY INSTRUCTIONS:
          1. OUTPUT MUST BE IN ${userData.language} LANGUAGE (except JSON keys).
          2. KEEP ALL JSON KEYS IN ENGLISH.
          3. TRANSLATE ALL VALUES.
-         4. "technicalDetails" MUST contain at least 8 items.
+         4. If "Lagnam" is provided above, YOU MUST USE IT.
          5. NO empty strings.
          
          Return JSON:
@@ -118,7 +145,6 @@ export default async function handler(req: Request) {
            "chartData": {
              "planets": [
                { "name": "Sun", "degree": 45, "sign": "Translated Sign", "house": 10 }
-               // Include All Planets + Rahu/Ketu
              ]
            },
            "navamsaInsight": "Translated insight...",
