@@ -10,7 +10,7 @@ import StandardProfile from './profiles/StandardProfile';
 
 interface ProfileProps {
   userData: UserData;
-  insight: InsightData | null;
+  insight: InsightData | null | { error: string };
   transitData: TransitData | null;
   onBack: () => void;
   onOpenChat: (prompt?: string) => void;
@@ -180,26 +180,31 @@ const PulseSection: React.FC<{ transitData: TransitData | null, userData: UserDa
 const AstrologyProfiles: React.FC<ProfileProps> = ({ userData, insight, transitData, onBack, onOpenChat, onReset }) => {
   const [activeTab, setActiveTab] = useState<'blueprint' | 'pulse' | 'horoscope'>('horoscope');
 
-  if (!insight) return (
-    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center gap-6 animate-in fade-in zoom-in duration-500">
-      <div className="relative">
-        <div className="absolute inset-0 bg-red-500/20 blur-xl rounded-full" />
-        <span className="material-symbols-outlined text-6xl text-red-400 relative z-10">cloud_off</span>
+  if (!insight || 'error' in insight) {
+    const errorMessage = insight && 'error' in insight ? insight.error : "The celestial link could not be established.";
+
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center gap-6 animate-in fade-in zoom-in duration-500">
+        <div className="relative">
+          <div className="absolute inset-0 bg-red-500/20 blur-xl rounded-full" />
+          <span className="material-symbols-outlined text-6xl text-red-400 relative z-10">cloud_off</span>
+        </div>
+        <div className="space-y-2 max-w-xs">
+          <h3 className="text-xl font-bold text-white">Connection Interrupted</h3>
+          <p className="text-white/60 text-sm">{errorMessage}</p>
+          <p className="text-white/30 text-xs mt-2">Please try again or Reset App.</p>
+        </div>
+        <div className="flex flex-col gap-3 w-full max-w-xs">
+          <button onClick={onBack} className="w-full py-3 rounded-xl bg-surface-dark border border-white/10 hover:bg-white/5 font-bold transition-all flex items-center justify-center gap-2">
+            <span className="material-symbols-outlined text-sm">arrow_back</span> Go Back and Edit
+          </button>
+          <button onClick={onReset} className="w-full py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 font-bold transition-all flex items-center justify-center gap-2">
+            <span className="material-symbols-outlined text-sm">refresh</span> Reset App
+          </button>
+        </div>
       </div>
-      <div className="space-y-2 max-w-xs">
-        <h3 className="text-xl font-bold text-white">Connection Interrupted</h3>
-        <p className="text-white/60 text-sm">The celestial link could not be established. Please try again.</p>
-      </div>
-      <div className="flex flex-col gap-3 w-full max-w-xs">
-        <button onClick={onBack} className="w-full py-3 rounded-xl bg-surface-dark border border-white/10 hover:bg-white/5 font-bold transition-all flex items-center justify-center gap-2">
-          <span className="material-symbols-outlined text-sm">arrow_back</span> Go Back and Edit
-        </button>
-        <button onClick={onReset} className="w-full py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 font-bold transition-all flex items-center justify-center gap-2">
-          <span className="material-symbols-outlined text-sm">refresh</span> Reset App
-        </button>
-      </div>
-    </div>
-  );
+    );
+  }
 
   const renderProfile = () => {
     switch (userData.system) {

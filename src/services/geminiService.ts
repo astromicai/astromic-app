@@ -2,7 +2,7 @@ import { UserData, InsightData, TransitData } from '../types';
 
 export const CHAT_MODEL_NAME = "gemini-2.0-flash";
 
-export const getAstrologicalInsight = async (userData: UserData): Promise<InsightData | null> => {
+export const getAstrologicalInsight = async (userData: UserData): Promise<InsightData | { error: string }> => {
   try {
     const response = await fetch('/api/insight', {
       method: 'POST',
@@ -10,15 +10,16 @@ export const getAstrologicalInsight = async (userData: UserData): Promise<Insigh
       body: JSON.stringify({ userData, type: 'insight' })
     });
 
+    const data = await response.json();
+
     if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`);
+      return { error: data.error || response.statusText };
     }
 
-    const data = await response.json();
     return data as InsightData;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error fetching insight:", error);
-    return null;
+    return { error: error.message || "Network Request Failed" };
   }
 };
 

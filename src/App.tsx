@@ -15,7 +15,7 @@ const TRANSIT_KEY = 'astromic_transit_data';
 const App: React.FC = () => {
   const [step, setStep] = useState<AppStep>('HERO');
   const [loading, setLoading] = useState(false);
-  const [insightData, setInsightData] = useState<InsightData | null>(null);
+  const [insightData, setInsightData] = useState<InsightData | { error: string } | null>(null);
   const [transitData, setTransitData] = useState<TransitData | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [initialChatPrompt, setInitialChatPrompt] = useState<string | null>(null);
