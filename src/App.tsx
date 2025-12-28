@@ -86,16 +86,10 @@ const App: React.FC = () => {
       ]);
 
       if (insight) {
-        let sigil: string | undefined;
-        try {
-          // This call is now TypeScript-safe thanks to geminiService fix
-          sigil = await generateCelestialSigil(userData, insight);
-        } catch (e) { console.warn("Sigil skipped"); }
-
-        const finalInsight = { ...insight, sigilUrl: sigil };
-        setInsightData(finalInsight);
+        // Insight now comes with sigilUrl from the server
+        setInsightData(insight);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
-        localStorage.setItem(INSIGHT_KEY, JSON.stringify(finalInsight));
+        localStorage.setItem(INSIGHT_KEY, JSON.stringify(insight));
       }
 
       if (transits) {
