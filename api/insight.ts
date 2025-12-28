@@ -2,36 +2,40 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export const config = {
-    runtime: 'edge',
+  runtime: 'edge',
 };
 
 export default async function handler(req: Request) {
-    if (req.method !== 'POST') {
-        return new Response('Method Not Allowed', { status: 405 });
+  if (req.method !== 'POST') {
+    return new Response('Method Not Allowed', { status: 405 });
+  }
+
+  try {
+    const { userData, type } = await req.json(); // type: 'insight' or 'transit'
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+      return new Response(JSON.stringify({ error: "Server misconfiguration: API key missing" }), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
 
-    try {
-        const { userData, type } = await req.json(); // type: 'insight' or 'transit'
-        const apiKey = process.env.GEMINI_API_KEY;
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.0-flash",
+      systemInstruction: "You are Astromic, an expert astrologer engine. Your purpose is to generate deep, accurate, and mystical astrological insights in strict JSON format. Never return empty strings or null values. Always provide rich, descriptive content.",
+      generationConfig: { responseMimeType: "application/json" }
+    });
 
-        if (!apiKey) {
-            return new Response(JSON.stringify({ error: "Server misconfiguration: API key missing" }), { status: 500, headers: { 'Content-Type': 'application/json' } });
-        }
-
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({
-            model: "gemini-2.0-flash",
-            generationConfig: { responseMimeType: "application/json" }
-        });
-
-        if (type === 'transit') {
-            const prompt = `
+    if (type === 'transit') {
+      const prompt = `
         Generates daily transit data for:
         User: ${userData.name}, ${userData.birthDate}, ${userData.birthTime}, ${userData.birthPlace}.
         System: ${userData.system}.
         Date: ${new Date().toISOString()}.
         
-        Return JSON structure matching TransitData interface:
+        Return JSON structure matching TransitData interface.
+        ENSURE ALL FIELDS ARE POPULATED WITH RICH TEXT. NO EMPTY STRINGS.
+        
+        Structure:
         {
           "dailyHeadline": "Short punchy cosmic headline",
           "dailyHoroscope": "2-3 sentences of guidance",
@@ -47,27 +51,20 @@ export default async function handler(req: Request) {
           ]
         }
       `;
-            const result = await model.generateContent(prompt);
-            return new Response(result.response.text(), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      const result = await model.generateContent(prompt);
+      return new Response(result.response.text(), { status: 200, headers: { 'Content-Type': 'application/json' } });
 
-        } else {
-            // Profile Insight
-            const prompt = `
+    } else {
+      // Profile Insight
+      const prompt = `
          Generate a detailed astrological profile for:
          Name: ${userData.name}
          Birth: ${userData.birthDate} at ${userData.birthTime} in ${userData.birthPlace}
          System: ${userData.system}
          Focus: ${userData.focusAreas.join(', ')}
          Language: ${userData.language}
-
-         IMPORTANT: Also generate a 'Celestial Sigil' for this user. 
-         This should be a unique SVG XML string. 
-         The SVG should be abstract, geometric, and mystical. 
-         Use paths, circles, and lines. 
-         Stroke color should be predominantly white or magenta (#f20db9). 
-         Background transparent.
-         Size 512x512. 
-         NO TEXT inside the SVG.
+         
+          ENSURE ALL FIELDS ARE POPULATED WITH RICH TEXT. NO EMPTY STRINGS.
          
          Return JSON:
          {
@@ -89,17 +86,16 @@ export default async function handler(req: Request) {
            "navamsaInsight": "Optional insight string if Vedic...",
            "activeSefirotOrNodes": [
              // Optional for Kabbalah
-           ],
-           "sigilUrl": "<svg ...>...</svg>" 
+           ]
          }
       `;
 
-            const result = await model.generateContent(prompt);
-            return new Response(result.response.text(), { status: 200, headers: { 'Content-Type': 'application/json' } });
-        }
-
-    } catch (error: any) {
-        console.error("API Error In Insight:", error);
-        return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+      const result = await model.generateContent(prompt);
+      return new Response(result.response.text(), { status: 200, headers: { 'Content-Type': 'application/json' } });
     }
+
+  } catch (error: any) {
+    console.error("API Error In Insight:", error);
+    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+  }
 }
