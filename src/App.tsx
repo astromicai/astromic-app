@@ -8,7 +8,7 @@ import ChatBot from './components/ChatBot';
 import { getAstrologicalInsight, getTransitInsights, generateCelestialSigil } from './services/geminiService';
 import ErrorBoundary from './components/ErrorBoundary';
 
-const STORAGE_KEY = 'astromic_user_profile';
+const STORAGE_KEY = 'astromic_user_profile_v2';
 const INSIGHT_KEY = 'astromic_insight_data';
 const TRANSIT_KEY = 'astromic_transit_data';
 

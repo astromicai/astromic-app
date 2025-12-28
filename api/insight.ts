@@ -1,5 +1,110 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { calculateVedicChart } from './vedic-engine.js';
+import Astronomy from 'astronomy-engine';
+
+// --- ENGINE LOGIC START ---
+const ZODIAC = [
+  "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
+  "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"
+];
+
+const NAKSHATRAS = [
+  "Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra",
+  "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni",
+  "Hasta", "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha",
+  "Mula", "Purva Ashadha", "Uttara Ashadha", "Shravana", "Dhanishta",
+  "Shatabhisha", "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"
+];
+
+function getLahiriAyanamsa(date: Date): number {
+  const year = date.getUTCFullYear() + (date.getUTCMonth() / 12) + (date.getUTCDate() / 365);
+  return 23.8616 + 0.01396 * (year - 2000);
+}
+
+function normalizeDegree(deg: number): number {
+  let d = deg % 360;
+  while (d < 0) d += 360;
+  return d;
+}
+
+function getSign(deg: number): string {
+  return ZODIAC[Math.floor(normalizeDegree(deg) / 30)] || "Aries";
+}
+
+function getNakshatra(deg: number): string {
+  return NAKSHATRAS[Math.floor(normalizeDegree(deg) / 13.33333)] || "Ashwini";
+}
+
+function getMeanObliquity(date: Date): number {
+  const jd = date.getTime() / 86400000 + 2440587.5;
+  const t = (jd - 2451545.0) / 36525.0;
+  const eps = 23.4392911 - (46.8150 * t + 0.00059 * t * t - 0.001813 * t * t * t) / 3600.0;
+  return eps;
+}
+
+function calculateVedicChart(dateWrapper: string, timeString: string, lat: number, lon: number) {
+  let [hours, minutes] = timeString.split(':').map(part => part.trim());
+  let isPM = false;
+  let isAM = false;
+
+  if (timeString.toUpperCase().includes('PM')) {
+    isPM = true;
+    minutes = minutes.replace(/PM/i, '').trim();
+  } else if (timeString.toUpperCase().includes('AM')) {
+    isAM = true;
+    minutes = minutes.replace(/AM/i, '').trim();
+  }
+
+  let hourInt = parseInt(hours, 10);
+  const minuteInt = parseInt(minutes, 10);
+
+  if (isPM && hourInt < 12) hourInt += 12;
+  if (isAM && hourInt === 12) hourInt = 0;
+
+  const paddedHour = hourInt.toString().padStart(2, '0');
+  const paddedMinute = minuteInt.toString().padStart(2, '0');
+  const dateTimeStr = `${dateWrapper}T${paddedHour}:${paddedMinute}:00`;
+
+  // Attempt to parse, or default to now if fail (fail-safe)
+  let date = new Date(dateTimeStr);
+  if (isNaN(date.getTime())) {
+    console.error("Invalid Date parsed, using current time fallback");
+    date = new Date();
+  }
+
+  const observer = new Astronomy.Observer(lat, lon, 0);
+  const ayanamsa = getLahiriAyanamsa(date);
+  const planetsList = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"];
+  const results = [];
+
+  for (const p of planetsList) {
+    const eq = Astronomy.Equator(p as any, date, observer, false, true);
+    const ecliptic = Astronomy.Ecliptic(eq.vec);
+    const tropicalLon = ecliptic.elon;
+    const siderealLon = normalizeDegree(tropicalLon - ayanamsa);
+    results.push({ name: p, degree: siderealLon, sign: getSign(siderealLon), nakshatra: getNakshatra(siderealLon) });
+  }
+
+  const gst = Astronomy.SiderealTime(date);
+  const lst = (gst + lon / 15.0) % 24;
+  const ramc = lst * 15.0;
+  const obliquity = getMeanObliquity(date);
+
+  const rad = (d: number) => d * Math.PI / 180;
+  const deg = (r: number) => r * 180 / Math.PI;
+  const eps = rad(obliquity);
+  const phi = rad(lat);
+  const ramcRad = rad(ramc);
+
+  let ascRad = Math.atan2(Math.cos(ramcRad), -Math.sin(ramcRad) * Math.cos(eps) - Math.tan(phi) * Math.sin(eps));
+  let ascDeg = normalizeDegree(deg(ascRad));
+  const siderealAsc = normalizeDegree(ascDeg - ayanamsa);
+
+  return {
+    ascendant: { degree: siderealAsc, sign: getSign(siderealAsc), nakshatra: getNakshatra(siderealAsc) },
+    planets: results
+  };
+}
+// --- ENGINE LOGIC END ---
 
 export const config = {
   runtime: 'nodejs',
