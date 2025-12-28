@@ -189,8 +189,9 @@ const App: React.FC = () => {
           </button>
         )}
       </div>
-      );
+    </ErrorBoundary>
+  );
 };
 
-      // ✅ FIXED: Added default export
-      export default App;
+// ✅ FIXED: Added default export
+export default App;
