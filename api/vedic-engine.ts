@@ -119,8 +119,9 @@ export function calculateVedicChart(dateString: string, timeString: string, lat:
 
     // 1. Calculate Planets (Tropical -> Sidereal)
     for (const p of planets) {
-        const eq = Astronomy.Equator(p, date, observer, false, true);
-        const ecliptic = Astronomy.Ecliptic(eq);
+        // Cast string to any to avoid TS error, runtime supports strings
+        const eq = Astronomy.Equator(p as any, date, observer, false, true);
+        const ecliptic = Astronomy.Ecliptic(eq.vec);
         const tropicalLon = ecliptic.elon;
         const siderealLon = normalizeDegree(tropicalLon - ayanamsa);
 
