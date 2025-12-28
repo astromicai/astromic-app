@@ -71,12 +71,35 @@ export function calculateVedicChart(dateString: string, timeString: string, lat:
     // Let's create a UTC date and subtract the offset?
     // For now, let's treat the inputs as ISO if possible.
 
-    const dateTimeStr = `${dateString}T${timeString}:00`;
-    // This creates a Local date if no Z. 
-    // Actually we need to be careful.
-    // Let's assume input 'date' and 'time' are passed from valid JS Date components.
+    // Handle 12-hour format "08:30 PM" to 24-hour "20:30"
+    let [hours, minutes] = timeString.split(':').map(part => part.trim());
+    let isPM = false;
+    let isAM = false;
 
-    const date = new Date(dateTimeStr); // This uses Server/Browser Local time?
+    if (timeString.toUpperCase().includes('PM')) {
+        isPM = true;
+        minutes = minutes.replace(/PM/i, '').trim();
+    } else if (timeString.toUpperCase().includes('AM')) {
+        isAM = true;
+        minutes = minutes.replace(/AM/i, '').trim();
+    }
+
+    let hourInt = parseInt(hours, 10);
+    const minuteInt = parseInt(minutes, 10);
+
+    if (isPM && hourInt < 12) hourInt += 12;
+    if (isAM && hourInt === 12) hourInt = 0;
+
+    const paddedHour = hourInt.toString().padStart(2, '0');
+    const paddedMinute = minuteInt.toString().padStart(2, '0');
+
+    const dateTimeStr = `${dateString}T${paddedHour}:${paddedMinute}:00`;
+
+    const date = new Date(dateTimeStr);
+
+    if (isNaN(date.getTime())) {
+        throw new Error(`Invalid Date for input: ${dateTimeStr}`);
+    }
     // In Edge function, 'new Date()' might be UTC.
     // We strictly need the Observer's UT.
 
