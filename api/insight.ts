@@ -43,28 +43,29 @@ export default async function handler(req: Request) {
         User: ${userData.name}, ${userData.birthDate}, ${userData.birthTime}, ${userData.birthPlace}.
         System: ${userData.system}.
         Date: ${new Date().toISOString()}.
+        Language: ${userData.language}.
         
-        Return JSON structure matching TransitData interface.
+        MANDATORY INSTRUCTIONS:
+        1. OUTPUT MUST BE IN ${userData.language} LANGUAGE (except JSON keys).
+        2. KEEP ALL JSON KEYS IN ENGLISH (e.g. "dailyHeadline", "transits").
+        3. TRANSLATE ALL VALUES to ${userData.language}.
+        4. "dailyAdvice" MUST contain at least 3 distinct strings.
+        5. "transits" MUST contain at least 4 distinct planetary transits.
+        6. NO empty strings. NO null values.
         
-        MANDATORY REQUIREMENTS:
-        1. "dailyAdvice" MUST contain at least 3 distinct strings.
-        2. "transits" MUST contain at least 4 distinct planetary transits as per current ephemeris.
-        3. "progressions" MUST contain at least 2 relevant progressions.
-        4. NO empty strings. NO null values.
-        
-        Structure:
+        Return JSON structure matching TransitData interface:
         {
-          "dailyHeadline": "Short punchy cosmic headline",
-          "dailyHoroscope": "2-3 sentences of guidance",
-          "mood": "Word",
+          "dailyHeadline": "Translated Headline",
+          "dailyHoroscope": "Translated horoscope text...",
+          "mood": "Translated Word",
           "luckyNumber": 0,
-          "luckyColor": "Color name",
-          "dailyAdvice": ["Advice 1", "Advice 2", "Advice 3"],
+          "luckyColor": "Translated Color",
+          "dailyAdvice": ["Translated Advice 1", "Translated Advice 2", "Translated Advice 3"],
           "transits": [
-            { "planet": "Planet Name", "sign": "Sign Name", "aspect": "Aspect Name", "description": "Short description", "intensity": "High", "icon": "bolt" }
+            { "planet": "Planet Name", "sign": "Translated Sign", "aspect": "Translated Aspect", "description": "Translated description", "intensity": "High", "icon": "bolt" }
           ],
           "progressions": [
-            { "title": "Progression Name", "insight": "Start date..." }
+            { "title": "Translated Title", "insight": "Translated insight..." }
           ]
         }
       `;
@@ -82,26 +83,28 @@ export default async function handler(req: Request) {
          Focus: ${userData.focusAreas.join(', ')}
          Language: ${userData.language}
          
-         MANDATORY REQUIREMENTS:
-         1. "technicalDetails" MUST contain at least 8 items (Sun, Moon, Rising, Mercury, Venus, Mars, Jupiter, Saturn).
-         2. "chartData.planets" MUST contain positions for Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto.
-         3. NO empty strings.
+         MANDATORY INSTRUCTIONS:
+         1. OUTPUT MUST BE IN ${userData.language} LANGUAGE (except JSON keys).
+         2. KEEP ALL JSON KEYS IN ENGLISH (e.g. "headline", "summary").
+         3. TRANSLATE ALL VALUES to ${userData.language}.
+         4. "technicalDetails" MUST contain at least 8 items.
+         5. NO empty strings.
          
          Return JSON:
          {
-           "headline": "Cosmic Title",
-           "archetype": "The Archetype Name",
-           "summary": "2 paragraph summary...",
+           "headline": "Translated Title",
+           "archetype": "Translated Archetype",
+           "summary": "Translated summary...",
            "technicalDetails": [
-             { "label": "Sun", "value": "Sign", "icon": "sunny" },
-             { "label": "Moon", "value": "Sign", "icon": "bedtime" }
+             { "label": "Translated Label (Sun)", "value": "Translated Sign", "icon": "sunny" },
+             { "label": "Translated Label (Moon)", "value": "Translated Sign", "icon": "bedtime" }
            ],
            "chartData": {
              "planets": [
-               { "name": "Sun", "degree": 45, "sign": "Taurus", "house": 10 }
+               { "name": "Sun", "degree": 45, "sign": "Translated Sign", "house": 10 }
              ]
            },
-           "navamsaInsight": "Optional insight string if Vedic...",
+           "navamsaInsight": "Translated insight...",
            "activeSefirotOrNodes": []
          }
       `;
