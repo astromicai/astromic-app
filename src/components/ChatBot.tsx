@@ -53,7 +53,11 @@ const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onCl
 
     try {
       // Map local messages to service history format
-      const history = messages.map(m => ({
+      // Gemini API requires history to start with 'user' role
+      let startIndex = messages.findIndex(m => m.role === 'user');
+      if (startIndex === -1) startIndex = messages.length; // No user messages yet
+
+      const history = messages.slice(startIndex).map(m => ({
         role: m.role,
         parts: [{ text: m.text }]
       }));
