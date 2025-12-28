@@ -69,11 +69,11 @@ const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onCl
         return newMessages;
       });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Chat error:", error);
       setMessages(prev => [
         ...prev.slice(0, -1),
-        { role: 'model', text: "A cosmic shadow has temporarily blocked our transmission. Please try again." }
+        { role: 'model', text: `Connection Error: ${error.message || "Unknown error"}. Please check API key and console.` }
       ]);
     } finally {
       setIsStreaming(false);
