@@ -150,23 +150,27 @@ const PulseSection: React.FC<{ transitData: TransitData | null, userData: UserDa
       <section className="space-y-4 w-full">
         <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-white/40 px-1">Personal Progressions</h3>
         <div className="flex flex-col gap-4">
-          {transitData.progressions.map((p, i) => (
-            <div key={i} className="w-full bg-indigo-900/10 border border-white/10 rounded-3xl p-6 flex flex-col justify-between shadow-lg animate-in slide-in-from-right-4 duration-300" style={{ animationDelay: `${i * 100}ms` }}>
-              <div className="mb-4">
-                <h4 className="font-bold text-indigo-300 mb-3 text-lg leading-tight flex items-center gap-2">
-                  <span className="material-symbols-outlined text-indigo-400">timeline</span>
-                  {p.title}
-                </h4>
-                <p className="text-sm text-white/70 leading-relaxed">{p.insight}</p>
+          {transitData.progressions && transitData.progressions.length > 0 ? (
+            transitData.progressions.map((p, i) => (
+              <div key={i} className="w-full bg-indigo-900/10 border border-white/10 rounded-3xl p-6 flex flex-col justify-between shadow-lg animate-in slide-in-from-right-4 duration-300" style={{ animationDelay: `${i * 100}ms` }}>
+                <div className="mb-4">
+                  <h4 className="font-bold text-indigo-300 mb-3 text-lg leading-tight flex items-center gap-2">
+                    <span className="material-symbols-outlined text-indigo-400">timeline</span>
+                    {p.title}
+                  </h4>
+                  <p className="text-sm text-white/70 leading-relaxed">{p.insight}</p>
+                </div>
+                <button
+                  onClick={() => onOpenChat(`I'm interested in my progression: "${p.title}".`)}
+                  className="w-max text-[11px] text-indigo-400 font-bold uppercase tracking-widest flex items-center gap-1 hover:text-indigo-300 transition-colors border-b border-indigo-400/20 pb-0.5"
+                >
+                  Explore Path <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                </button>
               </div>
-              <button
-                onClick={() => onOpenChat(`I'm interested in my progression: "${p.title}".`)}
-                className="w-max text-[11px] text-indigo-400 font-bold uppercase tracking-widest flex items-center gap-1 hover:text-indigo-300 transition-colors border-b border-indigo-400/20 pb-0.5"
-              >
-                Explore Path <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-              </button>
-            </div>
-          ))}
+            ))
+          ) : (
+            <div className="text-white/40 text-center py-4">No major progressions active.</div>
+          )}
         </div>
       </section>
     </div>
