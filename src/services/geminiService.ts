@@ -10,7 +10,15 @@ export const getAstrologicalInsight = async (userData: UserData): Promise<Insigh
       body: JSON.stringify({ userData, type: 'insight' })
     });
 
-    const data = await response.json();
+    const text = await response.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      // If not JSON, it's likely a Vercel text error page
+      console.error("Non-JSON API Response:", text);
+      return { error: `API Error: ${text.substring(0, 100)}...` };
+    }
 
     if (!response.ok) {
       return { error: data.error || response.statusText };
@@ -31,11 +39,19 @@ export const getTransitInsights = async (userData: UserData): Promise<TransitDat
       body: JSON.stringify({ userData, type: 'transit' })
     });
 
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`);
+    const text = await response.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error("Non-JSON Transit Response:", text);
+      return null;
     }
 
-    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(`API Error: ${data.error || response.statusText}`);
+    }
+
     return data as TransitData;
   } catch (error) {
     console.error("Error fetching transits:", error);
