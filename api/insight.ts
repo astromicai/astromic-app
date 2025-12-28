@@ -33,7 +33,12 @@ export default async function handler(req: Request) {
         Date: ${new Date().toISOString()}.
         
         Return JSON structure matching TransitData interface.
-        ENSURE ALL FIELDS ARE POPULATED WITH RICH TEXT. NO EMPTY STRINGS.
+        
+        MANDATORY REQUIREMENTS:
+        1. "dailyAdvice" MUST contain at least 3 distinct strings.
+        2. "transits" MUST contain at least 3 distinct planetary transits.
+        3. "progressions" MUST contain at least 1 progression.
+        4. NO empty strings. NO null values.
         
         Structure:
         {
@@ -42,9 +47,9 @@ export default async function handler(req: Request) {
           "mood": "Word",
           "luckyNumber": 0,
           "luckyColor": "Color name",
-          "dailyAdvice": ["Tip 1", "Tip 2", "Tip 3"],
+          "dailyAdvice": ["Advice 1", "Advice 2", "Advice 3"],
           "transits": [
-            { "planet": "Mars", "sign": "Aries", "aspect": "Conjunction", "description": "...", "intensity": "High", "icon": "bolt" }
+            { "planet": "Mars", "sign": "Aries", "aspect": "Conjunction", "description": "Short description", "intensity": "High", "icon": "bolt" }
           ],
           "progressions": [
             { "title": "Progression Name", "insight": "Start date..." }
@@ -64,7 +69,10 @@ export default async function handler(req: Request) {
          Focus: ${userData.focusAreas.join(', ')}
          Language: ${userData.language}
          
-          ENSURE ALL FIELDS ARE POPULATED WITH RICH TEXT. NO EMPTY STRINGS.
+         MANDATORY REQUIREMENTS:
+         1. "technicalDetails" MUST contain at least 6 items (Sun, Moon, Rising, etc).
+         2. "chartData.planets" MUST contain positions for Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn.
+         3. NO empty strings.
          
          Return JSON:
          {
@@ -72,21 +80,16 @@ export default async function handler(req: Request) {
            "archetype": "The Archetype Name",
            "summary": "2 paragraph summary...",
            "technicalDetails": [
-             { "label": "Sun", "value": "Aries", "icon": "sunny" },
-             { "label": "Moon", "value": "Pisces", "icon": "bedtime" },
-             { "label": "Ascendant", "value": "Leo", "icon": "star" }
-             // ... include others relevant to system (e.g. Nakshatra for Vedic)
+             { "label": "Sun", "value": "Sign", "icon": "sunny" },
+             { "label": "Moon", "value": "Sign", "icon": "bedtime" }
            ],
            "chartData": {
              "planets": [
                { "name": "Sun", "degree": 45, "sign": "Taurus", "house": 10 }
-               // ... full planetary positions
              ]
            },
            "navamsaInsight": "Optional insight string if Vedic...",
-           "activeSefirotOrNodes": [
-             // Optional for Kabbalah
-           ]
+           "activeSefirotOrNodes": []
          }
       `;
 
