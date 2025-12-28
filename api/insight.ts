@@ -76,17 +76,29 @@ export default async function handler(req: Request) {
     } else {
       // Profile Insight
       const prompt = `
-         Generate a detailed astrological profile for:
+         PERFORM EXACT ASTRONOMICAL CALCULATION.
+         Role: Expert Vedic Astrologer & Astronomer.
+         
+         Input Data:
          Name: ${userData.name}
-         Birth: ${userData.birthDate} at ${userData.birthTime} in ${userData.birthPlace}
+         Birth Date: ${userData.birthDate}
+         Birth Time: ${userData.birthTime}
+         Location: ${userData.birthPlace}
+         EXACT COORDINATES: Latitude ${userData.latitude}, Longitude ${userData.longitude}
+         Timezone: ${userData.timezone || 'Auto-detect'}
          System: ${userData.system}
-         Focus: ${userData.focusAreas.join(', ')}
          Language: ${userData.language}
+         
+         CRITICAL CALCULATION RULES:
+         1. Use ${userData.system === 'Indian Vedic' ? 'SIDEREAL Zodiac with CHITRA PAKSHA (LAHIRI) Ayanamsa' : 'TROPICAL Zodiac'}.
+         2. Calculate Ascendant (Lagnam) precisely based on Lat: ${userData.latitude}, Long: ${userData.longitude}, Time: ${userData.birthTime}.
+         3. Ensure Rashi (Moon Sign) and Nakshatra correspond exactly to the Moon's longitude.
+         4. Correct for Timezone offsets.
          
          MANDATORY INSTRUCTIONS:
          1. OUTPUT MUST BE IN ${userData.language} LANGUAGE (except JSON keys).
-         2. KEEP ALL JSON KEYS IN ENGLISH (e.g. "headline", "summary").
-         3. TRANSLATE ALL VALUES to ${userData.language}.
+         2. KEEP ALL JSON KEYS IN ENGLISH.
+         3. TRANSLATE ALL VALUES.
          4. "technicalDetails" MUST contain at least 8 items.
          5. NO empty strings.
          
@@ -96,12 +108,17 @@ export default async function handler(req: Request) {
            "archetype": "Translated Archetype",
            "summary": "Translated summary...",
            "technicalDetails": [
-             { "label": "Translated Label (Sun)", "value": "Translated Sign", "icon": "sunny" },
-             { "label": "Translated Label (Moon)", "value": "Translated Sign", "icon": "bedtime" }
+             { "label": "Lagnam (Ascendant)", "value": "Sign", "icon": "star" },
+             { "label": "Rashi (Moon Sign)", "value": "Sign", "icon": "bedtime" },
+             { "label": "Nakshatra", "value": "Star Name", "icon": "auto_awesome" },
+             { "label": "Thithi", "value": "Lunar Day", "icon": "dark_mode" },
+             { "label": "Yogam", "value": "Yoga Name", "icon": "join_inner" },
+             { "label": "Karanam", "value": "Karana Name", "icon": "timeline" }
            ],
            "chartData": {
              "planets": [
                { "name": "Sun", "degree": 45, "sign": "Translated Sign", "house": 10 }
+               // Include All Planets + Rahu/Ketu
              ]
            },
            "navamsaInsight": "Translated insight...",

@@ -14,6 +14,9 @@ export interface UserData {
   birthDate: string;
   birthTime: string;
   birthPlace: string;
+  latitude?: number;
+  longitude?: number;
+  timezone?: string;
   language: string;
   focusAreas: string[];
   system: AstrologySystem;
