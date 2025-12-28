@@ -22,6 +22,114 @@ const SYSTEM_INFOS: Record<AstrologySystem, string> = {
   [AstrologySystem.KABBALISTIC]: "Jewish mystical astrology linked to the Sefirot and the Hebrew alphabet to reveal soul root paths.",
 };
 
+// Extracted component for location search to adhere to Rules of Hooks
+const LocationStep: React.FC<{
+  userData: UserData;
+  updateField: (field: keyof UserData, value: any) => void;
+  onNext: () => void;
+  onPrev: () => void;
+  displayName: string;
+}> = ({ userData, updateField, onNext, onPrev, displayName }) => {
+  const [searchTerm, setSearchTerm] = useState(userData.birthPlace || "");
+  const [results, setResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const searchLocation = async (query: string) => {
+    setSearchTerm(query);
+    if (query.length < 3) {
+      setResults([]);
+      setShowDropdown(false);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en&format=json`);
+      const data = await response.json();
+      if (data.results) {
+        setResults(data.results);
+        setShowDropdown(true);
+      } else {
+        setResults([]);
+      }
+    } catch (err) {
+      console.error("Geocoding failed", err);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const selectLocation = (loc: any) => {
+    setSearchTerm(`${loc.name}, ${loc.country}`);
+    updateField('birthPlace', `${loc.name}, ${loc.country}`);
+    updateField('latitude', loc.latitude);
+    updateField('longitude', loc.longitude);
+    updateField('timezone', loc.timezone);
+    setShowDropdown(false);
+  };
+
+  return (
+    <div className="flex-1 flex flex-col px-6 pt-10 pb-8 relative z-[20]">
+      <header className="flex items-center justify-between mb-8">
+        <button onClick={onPrev} className="text-white flex size-12 items-center justify-center rounded-full active:bg-white/10">
+          <span className="material-symbols-outlined text-[28px]">arrow_back_ios_new</span>
+        </button>
+        <div className="flex gap-2">
+          <div className="h-1.5 w-1.5 rounded-full bg-primary/30" />
+          <div className="h-1.5 w-1.5 rounded-full bg-primary/30" />
+          <div className="h-1.5 w-8 rounded-full bg-primary" />
+        </div>
+        <div className="w-12" />
+      </header>
+      <div className="mb-10">
+        <h1 className="text-white tracking-tight text-[32px] font-bold leading-tight mb-4">Where did your journey begin, {displayName}?</h1>
+        <p className="text-white/60 text-base">Select precise location for accurate astronomical calculations.</p>
+      </div>
+      <div className="relative w-full mb-10">
+        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-primary">
+          <span className="material-symbols-outlined">location_on</span>
+        </div>
+        <input
+          type="text"
+          className="w-full bg-white/10 border-2 border-white/10 focus:border-primary text-white placeholder-white/30 text-xl rounded-2xl py-5 pl-12 pr-4 shadow-lg focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+          placeholder="Search City..."
+          value={searchTerm}
+          onChange={(e) => searchLocation(e.target.value)}
+          autoComplete="off"
+        />
+        {showDropdown && results.length > 0 && (
+          <div className="absolute top-full left-0 w-full mt-2 bg-surface-dark border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden max-h-60 overflow-y-auto">
+            {results.map((loc: any) => (
+              <button
+                key={loc.id}
+                onClick={() => selectLocation(loc)}
+                className="w-full text-left p-4 hover:bg-white/5 border-b border-white/5 flex items-center justify-between group transition-colors"
+              >
+                <div>
+                  <p className="text-white font-bold">{loc.name}</p>
+                  <p className="text-xs text-white/50">{loc.admin1}, {loc.country}</p>
+                </div>
+                <span className="text-[10px] bg-primary/20 text-primary px-2 py-1 rounded-full font-mono">{loc.latitude.toFixed(2)}, {loc.longitude.toFixed(2)}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      <div className="mt-auto">
+        <button
+          disabled={!userData.latitude}
+          onClick={onNext}
+          className="w-full h-14 bg-primary text-white font-bold text-lg rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:grayscale"
+        >
+          Continue
+          <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const OnboardingSteps: React.FC<OnboardingProps> = ({
   step, userData, setUserData, onNext, onPrev, onFinish, loading
 }) => {
@@ -240,103 +348,14 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
   }
 
   if (step === 'BIRTH_PLACE') {
-    const [searchTerm, setSearchTerm] = useState(userData.birthPlace || "");
-    const [results, setResults] = useState<any[]>([]);
-    const [isSearching, setIsSearching] = useState(false);
-    const [showDropdown, setShowDropdown] = useState(false);
-
-    const searchLocation = async (query: string) => {
-      setSearchTerm(query);
-      if (query.length < 3) {
-        setResults([]);
-        setShowDropdown(false);
-        return;
-      }
-
-      setIsSearching(true);
-      try {
-        const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en&format=json`);
-        const data = await response.json();
-        if (data.results) {
-          setResults(data.results);
-          setShowDropdown(true);
-        } else {
-          setResults([]);
-        }
-      } catch (err) {
-        console.error("Geocoding failed", err);
-      } finally {
-        setIsSearching(false);
-      }
-    };
-
-    const selectLocation = (loc: any) => {
-      setSearchTerm(`${loc.name}, ${loc.country}`);
-      updateField('birthPlace', `${loc.name}, ${loc.country}`);
-      updateField('latitude', loc.latitude);
-      updateField('longitude', loc.longitude);
-      updateField('timezone', loc.timezone);
-      setShowDropdown(false);
-    };
-
     return (
-      <div className="flex-1 flex flex-col px-6 pt-10 pb-8 relative z-[20]">
-        <header className="flex items-center justify-between mb-8">
-          <button onClick={onPrev} className="text-white flex size-12 items-center justify-center rounded-full active:bg-white/10">
-            <span className="material-symbols-outlined text-[28px]">arrow_back_ios_new</span>
-          </button>
-          <div className="flex gap-2">
-            <div className="h-1.5 w-1.5 rounded-full bg-primary/30" />
-            <div className="h-1.5 w-1.5 rounded-full bg-primary/30" />
-            <div className="h-1.5 w-8 rounded-full bg-primary" />
-          </div>
-          <div className="w-12" />
-        </header>
-        <div className="mb-10">
-          <h1 className="text-white tracking-tight text-[32px] font-bold leading-tight mb-4">Where did your journey begin, {displayName}?</h1>
-          <p className="text-white/60 text-base">Select precise location for accurate astronomical calculations.</p>
-        </div>
-        <div className="relative w-full mb-10">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-primary">
-            <span className="material-symbols-outlined">location_on</span>
-          </div>
-          <input
-            type="text"
-            className="w-full bg-white/10 border-2 border-white/10 focus:border-primary text-white placeholder-white/30 text-xl rounded-2xl py-5 pl-12 pr-4 shadow-lg focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-            placeholder="Search City..."
-            value={searchTerm}
-            onChange={(e) => searchLocation(e.target.value)}
-            autoComplete="off"
-          />
-          {showDropdown && results.length > 0 && (
-            <div className="absolute top-full left-0 w-full mt-2 bg-surface-dark border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden max-h-60 overflow-y-auto">
-              {results.map((loc: any) => (
-                <button
-                  key={loc.id}
-                  onClick={() => selectLocation(loc)}
-                  className="w-full text-left p-4 hover:bg-white/5 border-b border-white/5 flex items-center justify-between group transition-colors"
-                >
-                  <div>
-                    <p className="text-white font-bold">{loc.name}</p>
-                    <p className="text-xs text-white/50">{loc.admin1}, {loc.country}</p>
-                  </div>
-                  <span className="text-[10px] bg-primary/20 text-primary px-2 py-1 rounded-full font-mono">{loc.latitude.toFixed(2)}, {loc.longitude.toFixed(2)}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-        <div className="mt-auto">
-          <button
-            disabled={!userData.latitude}
-            onClick={onNext}
-            className="w-full h-14 bg-primary text-white font-bold text-lg rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:grayscale"
-          >
-            Continue
-            <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
-          </button>
-        </div>
-      </div>
+      <LocationStep
+        userData={userData}
+        updateField={updateField}
+        onNext={onNext}
+        onPrev={onPrev}
+        displayName={displayName}
+      />
     );
   }
 
