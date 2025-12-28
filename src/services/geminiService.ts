@@ -86,164 +86,78 @@ function containsProhibitedNarrative(text: string): boolean {
   ];
 
   return patterns.some(re => re.test(lower));
-}
+  // Simplified service that calls our Vercel API
+  import { UserData, InsightData, TransitData } from '../types';
 
-// ───────────────────────────────────────────────────────────────
-//                   CORE APP FUNCTIONS (INSIGHTS)
-// ───────────────────────────────────────────────────────────────
+  export const CHAT_MODEL_NAME = "gemini-2.0-flash";
 
-export const getAstrologicalInsight = async (userData: UserData) => {
-  const model = genAI.getGenerativeModel({ model: INSIGHT_MODEL_NAME });
-  let specificInstructions = `Use standard ${userData.system} astrological calculations.`;
-  if (userData.system === AstrologySystem.VEDIC) {
-    specificInstructions = `CALCULATION MODE: STRICT ASTRONOMICAL DATA LOOKUP (SWISS EPHEMERIS). AYANAMSA: N.C. LAHIRI (Sidereal).`;
-  }
+  export const getAstrologicalInsight = async (userData: UserData): Promise<InsightData | null> => {
+    try {
+      const response = await fetch('/api/insight', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userData, type: 'insight' })
+      });
 
-  const prompt = `
-    Act as a professional Astrologer (${userData.system}).
-    User: ${userData.name}, ${userData.birthDate}, ${userData.birthTime}, ${userData.birthPlace}.
-    Language: ${userData.language}.
-    ${specificInstructions}
-    Generate a detailed birth chart analysis in JSON format.
-    OUTPUT FORMAT (JSON ONLY, Keys in English, Values in ${userData.language}):
-    {
-      "headline": "string",
-      "archetype": "string",
-      "summary": "string",
-      "technicalDetails": [{ "label": "string", "value": "string", "icon": "star", "description": "string" }],
-      "activeSefirotOrNodes": [{ "name": "string", "meaning": "string", "intensity": 0 }],
-      "navamsaInsight": "string",
-      "chartData": {
-        "planets": [
-          { "name": "Sun", "degree": 0, "sign": "string", "icon": "sunny" },
-          { "name": "Moon", "degree": 0, "sign": "string", "icon": "bedtime" },
-          { "name": "Mars", "degree": 0, "sign": "string", "icon": "swords" },
-          { "name": "Mercury", "degree": 0, "sign": "string", "icon": "science" },
-          { "name": "Jupiter", "degree": 0, "sign": "string", "icon": "auto_awesome" },
-          { "name": "Venus", "degree": 0, "sign": "string", "icon": "favorite" },
-          { "name": "Saturn", "degree": 0, "sign": "string", "icon": "verified" },
-          { "name": "Rahu", "degree": 0, "sign": "string", "icon": "hdr_strong" },
-          { "name": "Ketu", "degree": 0, "sign": "string", "icon": "hdr_weak" }
-        ]
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.statusText}`);
       }
+
+      const data = await response.json();
+      return data as InsightData;
+    } catch (error) {
+      console.error("Error fetching insight:", error);
+      return null;
     }
-    RETURN ONLY JSON.
-  `;
-  try {
-    const result = await model.generateContent(prompt);
-    return JSON.parse(result.response.text().replace(/```json/g, '').replace(/```/g, '').trim());
-  } catch (error) {
-    console.error("Insight Error:", error);
-    return null;
-  }
-};
+  };
 
-export const getTransitInsights = async (userData: UserData) => {
-  const model = genAI.getGenerativeModel({ model: INSIGHT_MODEL_NAME });
-  const today = new Date().toISOString().split('T')[0];
-  const prompt = `
-    Calculate daily transits for today (${today}) using ${userData.system}.
-    Language: ${userData.language}.
-    Return JSON format:
-    {
-      "dailyHeadline": "string",
-      "weeklySummary": "string",
-      "dailyHoroscope": "string",
-      "dailyAdvice": ["string", "string", "string"],
-      "mood": "string",
-      "luckyNumber": "string",
-      "luckyColor": "string",
-      "transits": [{ "planet": "string", "aspect": "string", "intensity": "High", "description": "string", "icon": "string" }],
-      "progressions": [{ "title": "string", "insight": "string" }]
+  export const getTransitInsights = async (userData: UserData): Promise<TransitData | null> => {
+    try {
+      const response = await fetch('/api/insight', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userData, type: 'transit' })
+      });
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data as TransitData;
+    } catch (error) {
+      console.error("Error fetching transits:", error);
+      return null;
     }
-    RETURN ONLY JSON.
-  `;
-  try {
-    const result = await model.generateContent(prompt);
-    return JSON.parse(result.response.text().replace(/```json/g, '').replace(/```/g, '').trim());
-  } catch (error) {
-    console.error("Transit Error:", error);
-    return null;
-  }
-};
+  };
 
-// ───────────────────────────────────────────────────────────────
-//                    STRICT CHAT FUNCTION
-// ───────────────────────────────────────────────────────────────
+  export const chatWithAstrologer = async (
+    message: string,
+    history: { role: 'user' | 'model'; parts: { text: string }[] }[] = [],
+    userData: UserData
+  ) => {
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, history, userData })
+      });
 
-export const chatWithAstrologer = async (
-  message: string,
-  history: { role: 'user' | 'model'; parts: { text: string }[] }[] = [],
-  userData: UserData
-) => {
-  try {
-    // Layer 1: Fast pre-check - prevent model call entirely
-    if (shouldBlockRequest(message)) {
-      return BLOCK_MESSAGE;
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || response.statusText);
+      }
+
+      const data = await response.json();
+      return data.response;
+    } catch (error: any) {
+      console.error("Chat service error:", error);
+      return `System Error: ${error.message || "Unknown error occurred"}`;
     }
+  };
 
-    if (!import.meta.env.VITE_GEMINI_API_KEY) {
-      throw new Error("VITE_GEMINI_API_KEY is missing. Please check your .env file.");
-    }
 
-    const model = genAI.getGenerativeModel({
-      model: CHAT_MODEL_NAME, // Ensures we use Gemini 2.0
-      safetySettings,
-      systemInstruction: `
-        You are Astromic — a pure astrology analysis engine. 
-        You are strictly prohibited from:
-  
-        - Writing, starting, continuing or finishing ANY story, tale, narrative, journey, saga, myth, legend
-        - Writing poems, songs, lyrics, rhymes, verses
-        - Roleplaying, pretending, creating characters/dialogues/scenarios
-        - Producing fiction, fanfiction, creative prose or any literary form
-  
-        If the request contains even a hint of storytelling, creative writing, roleplay or narrative intent — respond ONLY and exactly with:
-  
-        "${BLOCK_MESSAGE}"
-  
-        You NEVER explain. You NEVER soften. You NEVER offer alternatives.
-        You NEVER use any storytelling language even "to illustrate".
-  
-        You are allowed to discuss ONLY:
-        • Planets, signs, houses, aspects, transits, progressions
-        • Dignities, receptions, synastry, composite charts
-        • Technical astrological calculations and interpretations within the ${userData.system} system.
-  
-        Style: dry, technical, factual. 
-        No metaphors. No named characters. No fantasy tone. No emojis in answers.
-        Language: ${userData.language}.
-      `
-    });
-
-    // Prepare conversation history
-    const chatHistory = history.map(msg => ({
-      role: msg.role === "user" ? "user" : "model",
-      parts: [{ text: msg.parts[0].text }]
-    }));
-
-    const chat = model.startChat({ history: chatHistory });
-
-    const result = await chat.sendMessage(message);
-    let response = result.response.text().trim();
-
-    // Layer 2: Final safety net - catch model bypassing instructions
-    if (containsProhibitedNarrative(response)) {
-      return BLOCK_MESSAGE + "\n(Safety override triggered)";
-    }
-
-    return response;
-  } catch (error: any) {
-    console.error("Chat error in service:", error);
-    // Return the actual error message for debugging if it's safe, otherwise generic
-    // For now, let's bubble it up or return string?
-    // The previous contract returned a string on error.
-    // Let's return a string that includes the error message for now to help the user debug.
-    return `System Error: ${error.message || "Unknown error occurred"}`;
-  }
-};
-
-// Placeholders to satisfy imports
-export const generateSpeech = async (text: string) => { return "USE_BROWSER_TTS"; };
-export const generateCelestialSigil = async (userData: UserData, insight: any) => { return null; };
-export const generateDestinyVideo = async (prompt: string) => { return null; };
+  // Placeholders to satisfy imports
+  export const generateSpeech = async (text: string) => { return "USE_BROWSER_TTS"; };
+  export const generateCelestialSigil = async (userData: UserData, insight: any) => { return null; };
+  export const generateDestinyVideo = async (prompt: string) => { return null; };

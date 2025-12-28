@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { UserData, AstrologySystem, TransitData, InsightData, ChartPlanet } from '../types';
+import { UserData, AstrologySystem, TransitData, InsightData } from '../types';
+import VedicChartSquare from './charts/VedicChartSquare';
+import NatalChartWheel from './charts/NatalChartWheel';
+import VedicProfile from './profiles/VedicProfile';
+import KabbalisticProfile from './profiles/KabbalisticProfile';
+import HellenisticProfile from './profiles/HellenisticProfile';
+import IslamicProfile from './profiles/IslamicProfile';
+import StandardProfile from './profiles/StandardProfile';
 
 interface ProfileProps {
   userData: UserData;
@@ -8,7 +15,6 @@ interface ProfileProps {
   onBack: () => void;
   onOpenChat: (prompt?: string) => void;
   onReset: () => void;
-  // REMOVED: onPlayAudio and isPlaying props
 }
 
 // FIX: Helper to prevent broken icons
@@ -20,113 +26,6 @@ const getSafeIcon = (iconName: string) => {
   if (iconName.includes('mars') || iconName.includes('venus')) return 'wc';
   if (iconName.includes('mercury') || iconName.includes('jupiter')) return 'school';
   return 'auto_awesome';
-};
-
-const VedicChartSquare: React.FC<{ planets: ChartPlanet[] }> = ({ planets = [] }) => {
-  const size = 320;
-  const strokeColor = "rgba(242, 13, 185, 0.4)";
-
-  const houses = [
-    { id: 1, path: `M 160 160 L 80 80 L 160 0 L 240 80 Z`, labelPos: { x: 160, y: 50 } },
-    { id: 2, path: `M 80 80 L 0 0 L 160 0 Z`, labelPos: { x: 80, y: 25 } },
-    { id: 3, path: `M 80 80 L 0 0 L 0 160 Z`, labelPos: { x: 30, y: 80 } },
-    { id: 4, path: `M 160 160 L 80 80 L 0 160 L 80 240 Z`, labelPos: { x: 80, y: 160 } },
-    { id: 5, path: `M 80 240 L 0 160 L 0 320 Z`, labelPos: { x: 30, y: 240 } },
-    { id: 6, path: `M 80 240 L 0 320 L 160 320 Z`, labelPos: { x: 80, y: 295 } },
-    { id: 7, path: `M 160 160 L 80 240 L 160 320 L 240 240 Z`, labelPos: { x: 160, y: 260 } },
-    { id: 8, path: `M 240 240 L 160 320 L 320 320 Z`, labelPos: { x: 240, y: 295 } },
-    { id: 9, path: `M 240 240 L 320 320 L 320 160 Z`, labelPos: { x: 290, y: 240 } },
-    { id: 10, path: `M 160 160 L 240 240 L 320 160 L 240 80 Z`, labelPos: { x: 240, y: 160 } },
-    { id: 11, path: `M 240 80 L 320 160 L 320 0 Z`, labelPos: { x: 290, y: 80 } },
-    { id: 12, path: `M 240 80 L 320 0 L 160 0 Z`, labelPos: { x: 240, y: 25 } },
-  ];
-
-  const getHouseFromDegree = (degree: number) => {
-    return Math.floor(degree / 30) + 1;
-  };
-
-  return (
-    <div className="flex flex-col items-center justify-center p-4 w-full">
-      <div className="relative w-full max-w-[320px] aspect-square">
-        <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full drop-shadow-[0_0_20px_rgba(242,13,185,0.15)]">
-          <rect x="0" y="0" width={size} height={size} fill="none" stroke={strokeColor} strokeWidth="2" />
-          <line x1="0" y1="0" x2={size} y2={size} stroke={strokeColor} strokeWidth="1" />
-          <line x1={size} y1="0" x2="0" y2={size} stroke={strokeColor} strokeWidth="1" />
-          <path d={`M ${size / 2} 0 L 0 ${size / 2} L ${size / 2} ${size} L ${size} ${size / 2} Z`} fill="none" stroke={strokeColor} strokeWidth="1" />
-          {houses.map((house) => {
-            const planetsInHouse = planets.filter(p => getHouseFromDegree(p.degree) === house.id);
-            return (
-              <g key={house.id}>
-                <text x={house.labelPos.x} y={house.labelPos.y} textAnchor="middle" fill="rgba(255,255,255,0.2)" fontSize="10" className="font-bold pointer-events-none">{house.id}</text>
-                {planetsInHouse.map((p, idx) => {
-                  const xOffset = (idx % 2 === 0 ? -12 : 12) * (idx > 1 ? 1.5 : 1);
-                  const yOffset = (idx < 2 ? 15 : 30);
-                  return (
-                    <g key={p.name + idx} className="cursor-help">
-                      <title>{p.name}: {p.degree}° in {p.sign}</title>
-                      <text x={house.labelPos.x + (planetsInHouse.length > 1 ? xOffset : 0)} y={house.labelPos.y + yOffset} textAnchor="middle" fill="#f20db9" fontSize="12" className="font-bold drop-shadow-md">{p.name.substring(0, 2)}</text>
-                    </g>
-                  );
-                })}
-              </g>
-            );
-          })}
-        </svg>
-        <div className="mt-4 text-center">
-          <p className="text-[10px] uppercase tracking-widest text-primary font-bold">Janma Kundali</p>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const NatalChartWheel: React.FC<{ planets: ChartPlanet[] }> = ({ planets = [] }) => {
-  const size = 320;
-  const center = size / 2;
-  const radius = center - 20;
-  const innerRadius = radius - 40;
-  const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
-  const getCoordinates = (deg: number, r: number) => {
-    const angle = (deg - 90) * (Math.PI / 180);
-    return { x: center + r * Math.cos(angle), y: center + r * Math.sin(angle) };
-  };
-
-  return (
-    <div className="flex flex-col items-center justify-center p-4 w-full">
-      <div className="relative group w-full max-w-[320px] aspect-square">
-        <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full drop-shadow-[0_0_15px_rgba(242,13,185,0.2)]">
-          <circle cx={center} cy={center} r={radius} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-          <circle cx={center} cy={center} r={innerRadius} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-          {signs.map((sign, i) => {
-            const startAngle = i * 30;
-            const endAngle = (i + 1) * 30;
-            const start = getCoordinates(startAngle, radius);
-            const innerStart = getCoordinates(startAngle, innerRadius);
-            const innerEnd = getCoordinates(endAngle, innerRadius);
-            return (
-              <g key={sign}>
-                <line x1={innerStart.x} y1={innerStart.y} x2={start.x} y2={start.y} stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
-                <path d={`M ${innerStart.x} ${innerStart.y} A ${innerRadius} ${innerRadius} 0 0 1 ${innerEnd.x} ${innerEnd.y}`} fill="none" stroke="rgba(242,13,185,0.2)" strokeWidth="1" />
-              </g>
-            );
-          })}
-          {planets.map((planet, i) => {
-            const pos = getCoordinates(planet.degree, innerRadius - 20);
-            const labelPos = getCoordinates(planet.degree, innerRadius - 45);
-            return (
-              <g key={i} className="cursor-help transition-all duration-300 hover:scale-110">
-                <title>{planet.name}: {planet.degree}° {planet.sign}</title>
-                <line x1={center} y1={center} x2={pos.x} y2={pos.y} stroke="rgba(204,13,242,0.1)" strokeWidth="1" strokeDasharray="4 2" />
-                <circle cx={pos.x} cy={pos.y} r="8" fill="#f20db9" className="animate-pulse-slow" />
-                <text x={labelPos.x} y={labelPos.y} textAnchor="middle" alignmentBaseline="middle" fill="white" fontSize="10" className="font-bold pointer-events-none">{planet.name.substring(0, 2)}</text>
-              </g>
-            );
-          })}
-          <circle cx={center} cy={center} r="4" fill="white" opacity="0.5" />
-        </svg>
-      </div>
-    </div>
-  );
 };
 
 const HoroscopeSection: React.FC<{
@@ -151,54 +50,52 @@ const HoroscopeSection: React.FC<{
 
         <div className="relative z-10 space-y-6">
           <div className="flex justify-between items-start">
-            <div className="space-y-1">
-              <span className="text-primary text-[10px] uppercase tracking-[0.3em] font-bold">Your Daily Guidance</span>
-              <h2 className="text-3xl font-bold leading-tight text-white">{transitData.dailyHeadline}</h2>
-            </div>
-            {/* REMOVED AUDIO BUTTON HERE */}
+            <span className="text-primary text-[10px] uppercase tracking-[0.3em] font-bold">Your Daily Guidance</span>
+            <h2 className="text-3xl font-bold leading-tight text-white">{transitData.dailyHeadline}</h2>
           </div>
-
-          <p className="text-lg leading-relaxed text-white/80 font-medium italic">
-            "{transitData.dailyHoroscope}"
-          </p>
-
-          <div className="grid grid-cols-3 gap-2 py-4 border-y border-white/5">
-            <div className="text-center">
-              <span className="block text-[10px] uppercase text-white/40 tracking-widest mb-1">Vibe</span>
-              <span className="text-primary font-bold">{transitData.mood}</span>
-            </div>
-            <div className="text-center border-x border-white/5">
-              <span className="block text-[10px] uppercase text-white/40 tracking-widest mb-1">Number</span>
-              <span className="text-white font-bold">{transitData.luckyNumber}</span>
-            </div>
-            <div className="text-center">
-              <span className="block text-[10px] uppercase text-white/40 tracking-widest mb-1">Color</span>
-              <span className="text-white font-bold">{transitData.luckyColor}</span>
-            </div>
-          </div>
-
-          <div className="space-y-4 pt-2">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-primary">Advice for {userData.name}</h4>
-            <div className="space-y-3">
-              {transitData.dailyAdvice.map((advice, i) => (
-                <div key={i} className="flex items-start gap-3 bg-white/5 rounded-2xl p-4 border border-white/5">
-                  <span className="material-symbols-outlined text-primary text-xl">star_rate</span>
-                  <p className="text-sm text-white/70">{advice}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <button
-            onClick={() => onOpenChat(`Can you elaborate on my daily horoscope? Specifically about "${transitData.dailyHeadline}" and how it affects my ${userData.focusAreas[0]} energy today?`)}
-            className="w-full mt-4 flex items-center justify-center gap-2 py-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-sm transition-all"
-          >
-            <span className="material-symbols-outlined text-primary text-lg">psychology</span>
-            Discuss Today's Advice
-          </button>
         </div>
+
+        <p className="text-lg leading-relaxed text-white/80 font-medium italic">
+          "{transitData.dailyHoroscope}"
+        </p>
+
+        <div className="grid grid-cols-3 gap-2 py-4 border-y border-white/5">
+          <div className="text-center">
+            <span className="block text-[10px] uppercase text-white/40 tracking-widest mb-1">Vibe</span>
+            <span className="text-primary font-bold">{transitData.mood}</span>
+          </div>
+          <div className="text-center border-x border-white/5">
+            <span className="block text-[10px] uppercase text-white/40 tracking-widest mb-1">Number</span>
+            <span className="text-white font-bold">{transitData.luckyNumber}</span>
+          </div>
+          <div className="text-center">
+            <span className="block text-[10px] uppercase text-white/40 tracking-widest mb-1">Color</span>
+            <span className="text-white font-bold">{transitData.luckyColor}</span>
+          </div>
+        </div>
+
+        <div className="space-y-4 pt-2">
+          <h4 className="text-xs font-bold uppercase tracking-widest text-primary">Advice for {userData.name}</h4>
+          <div className="space-y-3">
+            {transitData.dailyAdvice.map((advice, i) => (
+              <div key={i} className="flex items-start gap-3 bg-white/5 rounded-2xl p-4 border border-white/5">
+                <span className="material-symbols-outlined text-primary text-xl">star_rate</span>
+                <p className="text-sm text-white/70">{advice}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <button
+          onClick={() => onOpenChat(`Can you elaborate on my daily horoscope? Specifically about "${transitData.dailyHeadline}" and how it affects my ${userData.focusAreas[0]} energy today?`)}
+          className="w-full mt-4 flex items-center justify-center gap-2 py-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-sm transition-all"
+        >
+          <span className="material-symbols-outlined text-primary text-lg">psychology</span>
+          Discuss Today's Advice
+        </button>
       </div>
     </div>
+    </div >
   );
 };
 
@@ -339,77 +236,70 @@ const AstrologyProfiles: React.FC<ProfileProps> = ({ userData, insight, transitD
   );
 };
 
-const VedicProfile: React.FC<{ userData: UserData, insight: InsightData, onOpenChat: (p?: string) => void }> = ({ userData, insight, onOpenChat }) => {
-  const nakshatra = insight.technicalDetails?.find((d) => d.label.toLowerCase().includes('nakshatra'));
-  const yoga = insight.technicalDetails?.find((d) => d.label.toLowerCase().includes('yoga') || d.label.toLowerCase().includes('yogam'));
-  const rashi = insight.technicalDetails?.find((d) => d.label.toLowerCase().includes('rashi') || d.label.toLowerCase().includes('moon sign'));
-  const remainingDetails = insight.technicalDetails?.filter((d) => d !== nakshatra && d !== yoga && d !== rashi) || [];
-
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col items-center text-center">
-        <h1 className="text-3xl font-bold text-white mb-2">{userData.name}'s Janma Kundali</h1>
-        {insight.sigilUrl && (
-          <div className="relative size-48 my-8 group">
-            <div className="absolute inset-0 rounded-full bg-primary/20 blur-[30px] animate-pulse" />
-            <img src={insight.sigilUrl} alt="Celestial Sigil" className="relative size-full rounded-full object-cover border-2 border-primary/30 shadow-2xl transition-transform duration-700 group-hover:scale-110" />
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-surface-dark border border-white/10 px-3 py-1 rounded-full shadow-lg">
-              <span className="text-[8px] font-bold uppercase tracking-widest text-primary">Your Celestial Sigil</span>
-            </div>
-          </div>
-        )}
-        <p className="text-white/60 text-sm mb-6 leading-relaxed px-4">{insight.summary}</p>
-        <div className="w-full grid grid-cols-1 gap-3 mb-6">
-          {nakshatra && (
-            <div className="bg-gradient-to-r from-primary/20 to-transparent border border-primary/30 rounded-2xl p-4 flex items-center justify-between group hover:bg-primary/30 transition-all cursor-pointer" onClick={() => onOpenChat(`Explain the Nakshatra of ${nakshatra.value} in my chart.`)}>
-              <div className="flex items-center gap-3 text-left">
-                <div className="size-10 rounded-full bg-primary flex items-center justify-center text-white"><span className="material-symbols-outlined">star</span></div>
-                <div><p className="text-[10px] font-bold uppercase tracking-widest text-primary">Nakshatra</p><p className="text-lg font-bold text-white">{nakshatra.value}</p></div>
-              </div>
-              <span className="material-symbols-outlined text-white/30 group-hover:text-white transition-colors">chevron_right</span>
-            </div>
-          )}
-          {rashi && (
-            <div className="bg-gradient-to-r from-purple-500/20 to-transparent border border-purple-500/30 rounded-2xl p-4 flex items-center justify-between group hover:bg-purple-500/30 transition-all cursor-pointer" onClick={() => onOpenChat(`What is the meaning of ${rashi.value} Rashi?`)}>
-              <div className="flex items-center gap-3 text-left">
-                <div className="size-10 rounded-full bg-purple-500 flex items-center justify-center text-white"><span className="material-symbols-outlined">nightlight</span></div>
-                <div><p className="text-[10px] font-bold uppercase tracking-widest text-purple-400">Chandra Rashi</p><p className="text-lg font-bold text-white">{rashi.value}</p></div>
-              </div>
-              <span className="material-symbols-outlined text-white/30 group-hover:text-white transition-colors">chevron_right</span>
-            </div>
-          )}
-          {yoga && (
-            <div className="bg-gradient-to-r from-indigo-500/20 to-transparent border border-indigo-500/30 rounded-2xl p-4 flex items-center justify-between group hover:bg-indigo-500/30 transition-all cursor-pointer" onClick={() => onOpenChat(`Tell me more about the ${yoga.value} Yogam in my profile.`)}>
-              <div className="flex items-center gap-3 text-left">
-                <div className="size-10 rounded-full bg-indigo-500 flex items-center justify-center text-white"><span className="material-symbols-outlined">join_inner</span></div>
-                <div><p className="text-[10px] font-bold uppercase tracking-widest text-indigo-400">Yogam</p><p className="text-lg font-bold text-white">{yoga.value}</p></div>
-              </div>
-              <span className="material-symbols-outlined text-white/30 group-hover:text-white transition-colors">chevron_right</span>
-            </div>
-          )}
+<div className="space-y-6">
+  <div className="flex flex-col items-center text-center">
+    <h1 className="text-3xl font-bold text-white mb-2">{userData.name}'s Janma Kundali</h1>
+    {insight.sigilUrl && (
+      <div className="relative size-48 my-8 group">
+        <div className="absolute inset-0 rounded-full bg-primary/20 blur-[30px] animate-pulse" />
+        <img src={insight.sigilUrl} alt="Celestial Sigil" className="relative size-full rounded-full object-cover border-2 border-primary/30 shadow-2xl transition-transform duration-700 group-hover:scale-110" />
+        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-surface-dark border border-white/10 px-3 py-1 rounded-full shadow-lg">
+          <span className="text-[8px] font-bold uppercase tracking-widest text-primary">Your Celestial Sigil</span>
         </div>
-        <div className="grid grid-cols-2 gap-4 w-full mb-8">
-          {remainingDetails.map((detail, i: number) => (
-            <button key={i} onClick={() => onOpenChat(`What is the significance of ${detail.label}: ${detail.value}?`)} className="flex flex-col p-4 rounded-3xl bg-surface-dark/60 border border-white/10 backdrop-blur-md text-left hover:border-primary transition-all shadow-md active:scale-95">
-              <span className="text-white/40 text-[9px] font-bold uppercase mb-1 tracking-widest">{detail.label}</span>
-              <h3 className="text-sm text-white font-bold leading-tight">{detail.value}</h3>
-            </button>
-          ))}
-        </div>
-        {insight.navamsaInsight && (
-          <div className="w-full bg-gradient-to-br from-card-surface to-background-dark border border-white/10 rounded-[2.5rem] p-6 shadow-xl text-left">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="material-symbols-outlined text-primary">diversity_1</span>
-              <h4 className="text-xs font-bold uppercase tracking-widest text-white/60">Navamsa (D9) Soul Insight</h4>
-            </div>
-            <p className="text-sm text-white/80 leading-relaxed font-medium mb-4 italic">"{insight.navamsaInsight}"</p>
-            <button onClick={() => onOpenChat(`I want a deep dive into my Navamsa chart. You mentioned: ${insight.navamsaInsight}`)} className="text-primary text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
-              Explore soul purpose <span className="material-symbols-outlined text-sm">arrow_forward</span>
-            </button>
-          </div>
-        )}
       </div>
+    )}
+    <p className="text-white/60 text-sm mb-6 leading-relaxed px-4">{insight.summary}</p>
+    <div className="w-full grid grid-cols-1 gap-3 mb-6">
+      {nakshatra && (
+        <div className="bg-gradient-to-r from-primary/20 to-transparent border border-primary/30 rounded-2xl p-4 flex items-center justify-between group hover:bg-primary/30 transition-all cursor-pointer" onClick={() => onOpenChat(`Explain the Nakshatra of ${nakshatra.value} in my chart.`)}>
+          <div className="flex items-center gap-3 text-left">
+            <div className="size-10 rounded-full bg-primary flex items-center justify-center text-white"><span className="material-symbols-outlined">star</span></div>
+            <div><p className="text-[10px] font-bold uppercase tracking-widest text-primary">Nakshatra</p><p className="text-lg font-bold text-white">{nakshatra.value}</p></div>
+          </div>
+          <span className="material-symbols-outlined text-white/30 group-hover:text-white transition-colors">chevron_right</span>
+        </div>
+      )}
+      {rashi && (
+        <div className="bg-gradient-to-r from-purple-500/20 to-transparent border border-purple-500/30 rounded-2xl p-4 flex items-center justify-between group hover:bg-purple-500/30 transition-all cursor-pointer" onClick={() => onOpenChat(`What is the meaning of ${rashi.value} Rashi?`)}>
+          <div className="flex items-center gap-3 text-left">
+            <div className="size-10 rounded-full bg-purple-500 flex items-center justify-center text-white"><span className="material-symbols-outlined">nightlight</span></div>
+            <div><p className="text-[10px] font-bold uppercase tracking-widest text-purple-400">Chandra Rashi</p><p className="text-lg font-bold text-white">{rashi.value}</p></div>
+          </div>
+          <span className="material-symbols-outlined text-white/30 group-hover:text-white transition-colors">chevron_right</span>
+        </div>
+      )}
+      {yoga && (
+        <div className="bg-gradient-to-r from-indigo-500/20 to-transparent border border-indigo-500/30 rounded-2xl p-4 flex items-center justify-between group hover:bg-indigo-500/30 transition-all cursor-pointer" onClick={() => onOpenChat(`Tell me more about the ${yoga.value} Yogam in my profile.`)}>
+          <div className="flex items-center gap-3 text-left">
+            <div className="size-10 rounded-full bg-indigo-500 flex items-center justify-center text-white"><span className="material-symbols-outlined">join_inner</span></div>
+            <div><p className="text-[10px] font-bold uppercase tracking-widest text-indigo-400">Yogam</p><p className="text-lg font-bold text-white">{yoga.value}</p></div>
+          </div>
+          <span className="material-symbols-outlined text-white/30 group-hover:text-white transition-colors">chevron_right</span>
+        </div>
+      )}
     </div>
+    <div className="grid grid-cols-2 gap-4 w-full mb-8">
+      {remainingDetails.map((detail, i: number) => (
+        <button key={i} onClick={() => onOpenChat(`What is the significance of ${detail.label}: ${detail.value}?`)} className="flex flex-col p-4 rounded-3xl bg-surface-dark/60 border border-white/10 backdrop-blur-md text-left hover:border-primary transition-all shadow-md active:scale-95">
+          <span className="text-white/40 text-[9px] font-bold uppercase mb-1 tracking-widest">{detail.label}</span>
+          <h3 className="text-sm text-white font-bold leading-tight">{detail.value}</h3>
+        </button>
+      ))}
+    </div>
+    {insight.navamsaInsight && (
+      <div className="w-full bg-gradient-to-br from-card-surface to-background-dark border border-white/10 rounded-[2.5rem] p-6 shadow-xl text-left">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="material-symbols-outlined text-primary">diversity_1</span>
+          <h4 className="text-xs font-bold uppercase tracking-widest text-white/60">Navamsa (D9) Soul Insight</h4>
+        </div>
+        <p className="text-sm text-white/80 leading-relaxed font-medium mb-4 italic">"{insight.navamsaInsight}"</p>
+        <button onClick={() => onOpenChat(`I want a deep dive into my Navamsa chart. You mentioned: ${insight.navamsaInsight}`)} className="text-primary text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
+          Explore soul purpose <span className="material-symbols-outlined text-sm">arrow_forward</span>
+        </button>
+      </div>
+    )}
+  </div>
+</div>
   );
 };
 
