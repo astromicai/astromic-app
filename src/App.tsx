@@ -86,7 +86,7 @@ const App: React.FC = () => {
       ]);
 
       if (insight) {
-        // Insight now comes with sigilUrl from the server
+        // Simplified: Storing insight directly without separate sigil handling
         setInsightData(insight);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
         localStorage.setItem(INSIGHT_KEY, JSON.stringify(insight));

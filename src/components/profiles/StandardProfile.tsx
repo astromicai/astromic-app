@@ -11,20 +11,7 @@ const StandardProfile: React.FC<ProfileProps> = ({ userData, insight, onOpenChat
     <div className="space-y-8">
         <div className="text-center px-4">
             <h1 className="text-4xl font-bold mb-4 tracking-tight">{userData.name}'s {userData.system} Chart</h1>
-            {insight.sigilUrl && (
-                <div className="relative size-56 mx-auto my-8 group">
-                    <div className="absolute inset-0 rounded-[2.5rem] bg-primary/20 blur-[40px] group-hover:blur-[60px] transition-all" />
 
-                    {insight.sigilUrl && typeof insight.sigilUrl === 'string' && insight.sigilUrl.trim().startsWith('<svg') ? (
-                        <div
-                            className="relative size-full rounded-[2.5rem] border-2 border-primary/30 shadow-2xl bg-background-dark p-6 overflow-hidden"
-                            dangerouslySetInnerHTML={{ __html: insight.sigilUrl }}
-                        />
-                    ) : (
-                        <img src={insight.sigilUrl} className="relative size-full rounded-[2.5rem] object-cover border-2 border-primary/30 shadow-2xl" />
-                    )}
-                </div>
-            )}
             <p className="text-xl text-primary font-bold mb-8 uppercase tracking-[0.1em]">{insight.archetype}</p>
             <div className="bg-surface-dark/80 rounded-[2.5rem] p-8 border border-white/10 shadow-2xl backdrop-blur-md"><p className="text-lg leading-relaxed text-white/80 mb-6 font-medium">{insight.summary}</p></div>
         </div>
