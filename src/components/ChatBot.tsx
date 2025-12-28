@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { chatWithAstrologer } from '../services/geminiService';
 import { UserData } from '../types';
 
 interface Message {
@@ -16,17 +16,17 @@ interface ChatBotProps {
 
 const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onClose }) => {
   const [messages, setMessages] = useState<Message[]>([
-    { 
-      role: 'model', 
-      text: `Greetings, ${userData.name || 'Seeker'}. The stars have whispered of your arrival. How may I assist you in navigating your ${userData.system} cosmic blueprint today?` 
+    {
+      role: 'model',
+      text: `Greetings, ${userData.name || 'Seeker'}. The stars have whispered of your arrival. How may I assist you in navigating your ${userData.system} cosmic blueprint today?`
     }
   ]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Initialize Gemini (Standard Library)
-  const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+  // Initialize Gemini via Service (No direct instantiation here)
+  // const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY); - REMOVED
 
   useEffect(() => {
     if (isOpen && initialPrompt) {
@@ -47,39 +47,32 @@ const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onCl
     setInput('');
     setMessages(prev => [...prev, { role: 'user', text: userText }]);
     setIsStreaming(true);
-    
+
     // Add placeholder for AI response
     setMessages(prev => [...prev, { role: 'model', text: 'Consulting the stars...' }]);
 
     try {
-      const model = genAI.getGenerativeModel({ 
-	    //model: "gemini-pro",
-		//model: "gemini-1.5-pro",		
-		//model: "gemini-1.5-flash",
-        model: "gemini-2.0-flash", // Using Flash model for best performance
-        systemInstruction: `You are Astromic, a high-level AI astrologer. 
-        Your user is ${userData.name || 'a seeker'}. 
-        Birth Data: ${userData.birthDate} at ${userData.birthTime} in ${userData.birthPlace}. 
-        Preferred Tradition: ${userData.system}.
-        Focus Areas: ${userData.focusAreas.join(', ')}.
-        Guidelines: Be mystical yet grounded. Use celestial emojis.`
-      });
+      // Map local messages to service history format
+      const history = messages.map(m => ({
+        role: m.role,
+        parts: [{ text: m.text }]
+      }));
 
-      const result = await model.generateContent(userText);
-      const response = await result.response;
-      const text = response.text();
-        
+      // Call the unified service
+      // We do NOT need to pass system instructions here, the service handles it.
+      const responseText = await chatWithAstrologer(userText, history, userData);
+
       setMessages(prev => {
         const newMessages = [...prev];
         // Replace "Consulting the stars..." with real answer
-        newMessages[newMessages.length - 1] = { role: 'model', text: text };
+        newMessages[newMessages.length - 1] = { role: 'model', text: responseText };
         return newMessages;
       });
 
     } catch (error) {
       console.error("Chat error:", error);
       setMessages(prev => [
-        ...prev.slice(0, -1), 
+        ...prev.slice(0, -1),
         { role: 'model', text: "A cosmic shadow has temporarily blocked our transmission. Please try again." }
       ]);
     } finally {
@@ -118,11 +111,10 @@ const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onCl
       <div ref={scrollRef} className="relative flex-1 overflow-y-auto p-5 space-y-6 no-scrollbar scroll-smooth">
         {messages.map((msg, i) => (
           <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`relative max-w-[88%] p-4 rounded-2xl ${
-              msg.role === 'user' 
-                ? 'bg-gradient-to-br from-primary to-primary-alt text-white rounded-tr-none' 
-                : 'bg-white/5 border border-white/10 text-white/90 rounded-tl-none'
-            }`}>
+            <div className={`relative max-w-[88%] p-4 rounded-2xl ${msg.role === 'user'
+              ? 'bg-gradient-to-br from-primary to-primary-alt text-white rounded-tr-none'
+              : 'bg-white/5 border border-white/10 text-white/90 rounded-tl-none'
+              }`}>
               <p className="text-[15px] leading-relaxed whitespace-pre-wrap font-medium">{msg.text}</p>
             </div>
           </div>
@@ -131,8 +123,8 @@ const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onCl
 
       <div className="relative p-5 bg-background-dark/80 backdrop-blur-md border-t border-white/10">
         <div className="flex items-center gap-3 bg-white/5 border border-white/20 rounded-2xl px-4 py-3">
-          <input 
-            type="text" 
+          <input
+            type="text"
             placeholder="Ask the Oracle..."
             className="flex-1 bg-transparent border-none focus:ring-0 text-white placeholder-white/30 text-[15px] outline-none"
             value={input}
@@ -140,7 +132,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onCl
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             disabled={isStreaming}
           />
-          <button 
+          <button
             onClick={handleSend}
             disabled={!input.trim() || isStreaming}
             className="size-10 rounded-xl flex items-center justify-center bg-primary text-white"

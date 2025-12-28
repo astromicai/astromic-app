@@ -43,20 +43,40 @@ export interface TransitData {
   destinyVideoUrl?: string;
 }
 
+export interface TechnicalDetail {
+  label: string;
+  value: string;
+  icon?: string;
+  description?: string;
+}
+
+export interface SefirotNode {
+  name: string;
+  meaning: string;
+  intensity?: number;
+}
+
+export interface ChartPlanet {
+  name: string;
+  degree: number;
+  sign: string;
+  icon: string;
+}
+
 export interface InsightData {
   headline: string;
   archetype: string;
   summary: string;
-  technicalDetails: any[];
+  technicalDetails: TechnicalDetail[];
   chartData: {
-    planets: any[];
+    planets: ChartPlanet[];
   };
   navamsaInsight?: string;
-  activeSefirotOrNodes?: any[];
+  activeSefirotOrNodes?: SefirotNode[];
   sigilUrl?: string;
 }
 
-export type AppStep = 
+export type AppStep =
   | 'HERO'
   | 'NAME_INPUT'
   | 'LANGUAGE_SELECT'

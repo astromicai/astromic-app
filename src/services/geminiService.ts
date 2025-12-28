@@ -1,7 +1,7 @@
-import { 
-  GoogleGenerativeAI, 
-  HarmCategory, 
-  HarmBlockThreshold 
+import {
+  GoogleGenerativeAI,
+  HarmCategory,
+  HarmBlockThreshold
 } from "@google/generative-ai";
 import { UserData, AstrologySystem } from "../types";
 
@@ -9,7 +9,7 @@ import { UserData, AstrologySystem } from "../types";
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
 // 2. Constants for Model Names
-const CHAT_MODEL_NAME = "gemini-2.0-flash"; 
+const CHAT_MODEL_NAME = "gemini-2.0-flash";
 const INSIGHT_MODEL_NAME = "gemini-2.0-flash";
 
 // ───────────────────────────────────────────────────────────────
@@ -23,7 +23,7 @@ const safetySettings = [
   { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
 ];
 
-const BLOCK_MESSAGE = 
+const BLOCK_MESSAGE =
   "Protocol Block: Creative writing, stories, poems, roleplay, fiction, " +
   "narrative content, harmful topics and instruction overrides are permanently disabled.\n\n" +
   "I can only provide factual astrological analysis about placements, aspects, transits, houses or compatibility.";
@@ -72,7 +72,7 @@ function shouldBlockRequest(userInput: string): boolean {
 // 2. Post-Check: Catches if the AI hallucinates and tries to write a story anyway
 function containsProhibitedNarrative(text: string): boolean {
   const lower = text.toLowerCase();
-  
+
   const patterns = [
     /once upon/i,
     /there lived/i,
@@ -173,7 +173,7 @@ export const getTransitInsights = async (userData: UserData) => {
 
 export const chatWithAstrologer = async (
   message: string,
-  history: any[],
+  history: { role: 'user' | 'model'; parts: { text: string }[] }[] = [],
   userData: UserData
 ) => {
   // Layer 1: Fast pre-check - prevent model call entirely
@@ -214,7 +214,7 @@ export const chatWithAstrologer = async (
   // Prepare conversation history
   const chatHistory = history.map(msg => ({
     role: msg.role === "user" ? "user" : "model",
-    parts: [{ text: msg.content }]
+    parts: [{ text: msg.parts[0].text }]
   }));
 
   const chat = model.startChat({ history: chatHistory });

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserData, AstrologySystem, TransitData, InsightData } from '../types';
+import { UserData, AstrologySystem, TransitData, InsightData, ChartPlanet } from '../types';
 
 interface ProfileProps {
   userData: UserData;
@@ -14,31 +14,31 @@ interface ProfileProps {
 // FIX: Helper to prevent broken icons
 const getSafeIcon = (iconName: string) => {
   const validIcons = ['star', 'bedtime', 'sunny', 'public', 'favorite', 'bolt', 'auto_awesome', 'timeline', 'psychology', 'flare', 'diversity_1', 'nightlight', 'join_inner', 'verified', 'hdr_strong', 'hdr_weak', 'science', 'swords', 'contrast', 'wc', 'school', 'hourglass_empty'];
-  
+
   if (validIcons.includes(iconName)) return iconName;
   if (iconName.includes('sun') || iconName.includes('moon')) return 'contrast';
   if (iconName.includes('mars') || iconName.includes('venus')) return 'wc';
   if (iconName.includes('mercury') || iconName.includes('jupiter')) return 'school';
-  return 'auto_awesome'; 
+  return 'auto_awesome';
 };
 
-const VedicChartSquare: React.FC<{ planets: any[] }> = ({ planets = [] }) => {
+const VedicChartSquare: React.FC<{ planets: ChartPlanet[] }> = ({ planets = [] }) => {
   const size = 320;
   const strokeColor = "rgba(242, 13, 185, 0.4)";
-  
+
   const houses = [
-    { id: 1, path: `M 160 160 L 80 80 L 160 0 L 240 80 Z`, labelPos: { x: 160, y: 50 } }, 
-    { id: 2, path: `M 80 80 L 0 0 L 160 0 Z`, labelPos: { x: 80, y: 25 } },              
-    { id: 3, path: `M 80 80 L 0 0 L 0 160 Z`, labelPos: { x: 30, y: 80 } },             
-    { id: 4, path: `M 160 160 L 80 80 L 0 160 L 80 240 Z`, labelPos: { x: 80, y: 160 } }, 
-    { id: 5, path: `M 80 240 L 0 160 L 0 320 Z`, labelPos: { x: 30, y: 240 } },            
-    { id: 6, path: `M 80 240 L 0 320 L 160 320 Z`, labelPos: { x: 80, y: 295 } },          
-    { id: 7, path: `M 160 160 L 80 240 L 160 320 L 240 240 Z`, labelPos: { x: 160, y: 260 } }, 
-    { id: 8, path: `M 240 240 L 160 320 L 320 320 Z`, labelPos: { x: 240, y: 295 } },      
-    { id: 9, path: `M 240 240 L 320 320 L 320 160 Z`, labelPos: { x: 290, y: 240 } },      
-    { id: 10, path: `M 160 160 L 240 240 L 320 160 L 240 80 Z`, labelPos: { x: 240, y: 160 } }, 
-    { id: 11, path: `M 240 80 L 320 160 L 320 0 Z`, labelPos: { x: 290, y: 80 } },          
-    { id: 12, path: `M 240 80 L 320 0 L 160 0 Z`, labelPos: { x: 240, y: 25 } },            
+    { id: 1, path: `M 160 160 L 80 80 L 160 0 L 240 80 Z`, labelPos: { x: 160, y: 50 } },
+    { id: 2, path: `M 80 80 L 0 0 L 160 0 Z`, labelPos: { x: 80, y: 25 } },
+    { id: 3, path: `M 80 80 L 0 0 L 0 160 Z`, labelPos: { x: 30, y: 80 } },
+    { id: 4, path: `M 160 160 L 80 80 L 0 160 L 80 240 Z`, labelPos: { x: 80, y: 160 } },
+    { id: 5, path: `M 80 240 L 0 160 L 0 320 Z`, labelPos: { x: 30, y: 240 } },
+    { id: 6, path: `M 80 240 L 0 320 L 160 320 Z`, labelPos: { x: 80, y: 295 } },
+    { id: 7, path: `M 160 160 L 80 240 L 160 320 L 240 240 Z`, labelPos: { x: 160, y: 260 } },
+    { id: 8, path: `M 240 240 L 160 320 L 320 320 Z`, labelPos: { x: 240, y: 295 } },
+    { id: 9, path: `M 240 240 L 320 320 L 320 160 Z`, labelPos: { x: 290, y: 240 } },
+    { id: 10, path: `M 160 160 L 240 240 L 320 160 L 240 80 Z`, labelPos: { x: 240, y: 160 } },
+    { id: 11, path: `M 240 80 L 320 160 L 320 0 Z`, labelPos: { x: 290, y: 80 } },
+    { id: 12, path: `M 240 80 L 320 0 L 160 0 Z`, labelPos: { x: 240, y: 25 } },
   ];
 
   const getHouseFromDegree = (degree: number) => {
@@ -52,7 +52,7 @@ const VedicChartSquare: React.FC<{ planets: any[] }> = ({ planets = [] }) => {
           <rect x="0" y="0" width={size} height={size} fill="none" stroke={strokeColor} strokeWidth="2" />
           <line x1="0" y1="0" x2={size} y2={size} stroke={strokeColor} strokeWidth="1" />
           <line x1={size} y1="0" x2="0" y2={size} stroke={strokeColor} strokeWidth="1" />
-          <path d={`M ${size/2} 0 L 0 ${size/2} L ${size/2} ${size} L ${size} ${size/2} Z`} fill="none" stroke={strokeColor} strokeWidth="1" />
+          <path d={`M ${size / 2} 0 L 0 ${size / 2} L ${size / 2} ${size} L ${size} ${size / 2} Z`} fill="none" stroke={strokeColor} strokeWidth="1" />
           {houses.map((house) => {
             const planetsInHouse = planets.filter(p => getHouseFromDegree(p.degree) === house.id);
             return (
@@ -80,7 +80,7 @@ const VedicChartSquare: React.FC<{ planets: any[] }> = ({ planets = [] }) => {
   );
 };
 
-const NatalChartWheel: React.FC<{ planets: any[] }> = ({ planets = [] }) => {
+const NatalChartWheel: React.FC<{ planets: ChartPlanet[] }> = ({ planets = [] }) => {
   const size = 320;
   const center = size / 2;
   const radius = center - 20;
@@ -129,12 +129,12 @@ const NatalChartWheel: React.FC<{ planets: any[] }> = ({ planets = [] }) => {
   );
 };
 
-const HoroscopeSection: React.FC<{ 
-  transitData: TransitData | null, 
-  userData: UserData, 
+const HoroscopeSection: React.FC<{
+  transitData: TransitData | null,
+  userData: UserData,
   onOpenChat: (p?: string) => void
 }> = ({ transitData, userData, onOpenChat }) => {
-  
+
   if (!transitData) return (
     <div className="py-20 text-center">
       <div className="size-12 rounded-full border-2 border-primary border-t-transparent animate-spin mx-auto mb-4" />
@@ -148,7 +148,7 @@ const HoroscopeSection: React.FC<{
         <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-40 transition-opacity">
           <span className="material-symbols-outlined text-6xl text-primary animate-spin-slow">auto_awesome</span>
         </div>
-        
+
         <div className="relative z-10 space-y-6">
           <div className="flex justify-between items-start">
             <div className="space-y-1">
@@ -157,11 +157,11 @@ const HoroscopeSection: React.FC<{
             </div>
             {/* REMOVED AUDIO BUTTON HERE */}
           </div>
-          
+
           <p className="text-lg leading-relaxed text-white/80 font-medium italic">
             "{transitData.dailyHoroscope}"
           </p>
-          
+
           <div className="grid grid-cols-3 gap-2 py-4 border-y border-white/5">
             <div className="text-center">
               <span className="block text-[10px] uppercase text-white/40 tracking-widest mb-1">Vibe</span>
@@ -176,7 +176,7 @@ const HoroscopeSection: React.FC<{
               <span className="text-white font-bold">{transitData.luckyColor}</span>
             </div>
           </div>
-          
+
           <div className="space-y-4 pt-2">
             <h4 className="text-xs font-bold uppercase tracking-widest text-primary">Advice for {userData.name}</h4>
             <div className="space-y-3">
@@ -189,7 +189,7 @@ const HoroscopeSection: React.FC<{
             </div>
           </div>
 
-          <button 
+          <button
             onClick={() => onOpenChat(`Can you elaborate on my daily horoscope? Specifically about "${transitData.dailyHeadline}" and how it affects my ${userData.focusAreas[0]} energy today?`)}
             className="w-full mt-4 flex items-center justify-center gap-2 py-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-sm transition-all"
           >
@@ -214,7 +214,7 @@ const PulseSection: React.FC<{ transitData: TransitData | null, userData: UserDa
         </div>
         <h1 className="text-2xl font-bold leading-tight">Cosmic Alignments</h1>
       </header>
-      
+
       <section className="space-y-4">
         <div className="grid gap-4">
           {transitData.transits.map((t, i) => (
@@ -232,7 +232,7 @@ const PulseSection: React.FC<{ transitData: TransitData | null, userData: UserDa
                 <div className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest shrink-0 ${t.intensity === 'High' ? 'bg-red-500/20 text-red-400' : t.intensity === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-green-500/20 text-green-400'}`}>{t.intensity}</div>
               </div>
               <p className="text-sm text-white/70 leading-relaxed mb-4 font-normal">{t.description}</p>
-              <button 
+              <button
                 onClick={() => onOpenChat(`Can you tell me more about the current transit of ${t.planet} making a ${t.aspect} aspect?`)}
                 className="flex items-center gap-2 text-primary text-xs font-bold uppercase tracking-widest hover:opacity-80"
               >
@@ -256,7 +256,7 @@ const PulseSection: React.FC<{ transitData: TransitData | null, userData: UserDa
                 </h4>
                 <p className="text-sm text-white/70 leading-relaxed">{p.insight}</p>
               </div>
-              <button 
+              <button
                 onClick={() => onOpenChat(`I'm interested in my progression: "${p.title}".`)}
                 className="w-max text-[11px] text-indigo-400 font-bold uppercase tracking-widest flex items-center gap-1 hover:text-indigo-300 transition-colors border-b border-indigo-400/20 pb-0.5"
               >
@@ -309,7 +309,7 @@ const AstrologyProfiles: React.FC<ProfileProps> = ({ userData, insight, transitD
         <div className="flex items-center p-4 justify-between">
           <button onClick={onBack} className="flex size-10 items-center justify-center rounded-full hover:bg-white/5 transition-colors"><span className="material-symbols-outlined">arrow_back</span></button>
           <div className="flex flex-col items-center">
-             <h2 className="font-bold text-lg tracking-tight">{userData.system} Profile</h2>
+            <h2 className="font-bold text-lg tracking-tight">{userData.system} Profile</h2>
           </div>
           <button onClick={onReset} className="flex size-10 items-center justify-center rounded-full hover:bg-red-500/20 text-white/60 hover:text-white transition-colors"><span className="material-symbols-outlined">restart_alt</span></button>
         </div>
@@ -339,11 +339,11 @@ const AstrologyProfiles: React.FC<ProfileProps> = ({ userData, insight, transitD
   );
 };
 
-const VedicProfile: React.FC<{userData: UserData, insight: InsightData, onOpenChat: (p?: string) => void}> = ({ userData, insight, onOpenChat }) => {
-  const nakshatra = insight.technicalDetails?.find((d: any) => d.label.toLowerCase().includes('nakshatra'));
-  const yoga = insight.technicalDetails?.find((d: any) => d.label.toLowerCase().includes('yoga') || d.label.toLowerCase().includes('yogam'));
-  const rashi = insight.technicalDetails?.find((d: any) => d.label.toLowerCase().includes('rashi') || d.label.toLowerCase().includes('moon sign'));
-  const remainingDetails = insight.technicalDetails?.filter((d: any) => d !== nakshatra && d !== yoga && d !== rashi) || [];
+const VedicProfile: React.FC<{ userData: UserData, insight: InsightData, onOpenChat: (p?: string) => void }> = ({ userData, insight, onOpenChat }) => {
+  const nakshatra = insight.technicalDetails?.find((d) => d.label.toLowerCase().includes('nakshatra'));
+  const yoga = insight.technicalDetails?.find((d) => d.label.toLowerCase().includes('yoga') || d.label.toLowerCase().includes('yogam'));
+  const rashi = insight.technicalDetails?.find((d) => d.label.toLowerCase().includes('rashi') || d.label.toLowerCase().includes('moon sign'));
+  const remainingDetails = insight.technicalDetails?.filter((d) => d !== nakshatra && d !== yoga && d !== rashi) || [];
 
   return (
     <div className="space-y-6">
@@ -389,7 +389,7 @@ const VedicProfile: React.FC<{userData: UserData, insight: InsightData, onOpenCh
           )}
         </div>
         <div className="grid grid-cols-2 gap-4 w-full mb-8">
-          {remainingDetails.map((detail: any, i: number) => (
+          {remainingDetails.map((detail, i: number) => (
             <button key={i} onClick={() => onOpenChat(`What is the significance of ${detail.label}: ${detail.value}?`)} className="flex flex-col p-4 rounded-3xl bg-surface-dark/60 border border-white/10 backdrop-blur-md text-left hover:border-primary transition-all shadow-md active:scale-95">
               <span className="text-white/40 text-[9px] font-bold uppercase mb-1 tracking-widest">{detail.label}</span>
               <h3 className="text-sm text-white font-bold leading-tight">{detail.value}</h3>
@@ -413,7 +413,7 @@ const VedicProfile: React.FC<{userData: UserData, insight: InsightData, onOpenCh
   );
 };
 
-const KabbalisticProfile: React.FC<{userData: UserData, insight: InsightData, onOpenChat: (p?: string) => void}> = ({ userData, insight, onOpenChat }) => (
+const KabbalisticProfile: React.FC<{ userData: UserData, insight: InsightData, onOpenChat: (p?: string) => void }> = ({ userData, insight, onOpenChat }) => (
   <div className="space-y-6">
     <div className="flex flex-col items-center text-center pt-4">
       <div className="relative mb-6">
@@ -430,7 +430,7 @@ const KabbalisticProfile: React.FC<{userData: UserData, insight: InsightData, on
     <div className="space-y-4">
       <h2 className="text-xl font-bold px-1">Active Sefirot</h2>
       <div className="flex overflow-x-auto gap-4 no-scrollbar pb-6 -mx-4 px-4">
-        {insight.activeSefirotOrNodes?.map((node: any, i: number) => (
+        {insight.activeSefirotOrNodes?.map((node, i: number) => (
           <div key={i} className="shrink-0 w-[280px] bg-card-surface/60 backdrop-blur-md p-6 rounded-3xl border border-white/5 shadow-xl flex flex-col justify-between">
             <div><h3 className="text-white font-bold text-lg mb-2">{node.name}</h3><p className="text-slate-300 text-sm leading-relaxed mb-4">{node.meaning}</p></div>
             <button onClick={() => onOpenChat(`Explain the Sefirot of ${node.name}.`)} className="text-primary text-[10px] font-bold uppercase tracking-widest hover:text-white transition-colors text-left">Deep Interpret →</button>
@@ -441,7 +441,7 @@ const KabbalisticProfile: React.FC<{userData: UserData, insight: InsightData, on
   </div>
 );
 
-const HellenisticProfile: React.FC<{userData: UserData, insight: InsightData, onOpenChat: (p?: string) => void}> = ({ userData, insight, onOpenChat }) => (
+const HellenisticProfile: React.FC<{ userData: UserData, insight: InsightData, onOpenChat: (p?: string) => void }> = ({ userData, insight, onOpenChat }) => (
   <div className="space-y-6">
     <div className="relative overflow-hidden rounded-[2.5rem] bg-surface-dark shadow-2xl border border-white/5">
       <div className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-overlay">{insight.sigilUrl ? <img src={insight.sigilUrl} className="size-full object-cover" /> : <div className="size-full bg-[url('https://picsum.photos/id/160/800/800')] bg-cover" />}</div>
@@ -461,7 +461,7 @@ const HellenisticProfile: React.FC<{userData: UserData, insight: InsightData, on
   </div>
 );
 
-const IslamicProfile: React.FC<{userData: UserData, insight: InsightData, onOpenChat: (p?: string) => void}> = ({ userData, insight, onOpenChat }) => (
+const IslamicProfile: React.FC<{ userData: UserData, insight: InsightData, onOpenChat: (p?: string) => void }> = ({ userData, insight, onOpenChat }) => (
   <div className="space-y-6">
     <div className="relative rounded-[2.5rem] overflow-hidden bg-gradient-to-br from-surface-dark to-[#451d3b] border border-white/5 shadow-2xl">
       <div className="h-56 bg-cover bg-center opacity-60 overflow-hidden">{insight.sigilUrl ? <img src={insight.sigilUrl} className="size-full object-cover" /> : <div className="size-full bg-[url('https://picsum.photos/id/180/800/800')] bg-cover" />}</div>
@@ -471,11 +471,11 @@ const IslamicProfile: React.FC<{userData: UserData, insight: InsightData, onOpen
     <div className="space-y-4">
       <h3 className="text-white text-lg font-bold px-1">The Lots (Arabic Parts)</h3>
       <div className="flex overflow-x-auto no-scrollbar gap-4 -mx-4 px-4 pb-4">
-        {insight.technicalDetails?.map((lot: any, i: number) => (
+        {insight.technicalDetails?.map((lot, i: number) => (
           <button key={i} onClick={() => onOpenChat(`Tell me more about the Part of ${lot.label}.`)} className="shrink-0 w-44 p-4 bg-surface-dark/60 backdrop-blur-sm border border-white/5 rounded-3xl hover:border-primary transition-all text-left shadow-lg active:scale-95">
-             <div className="w-full aspect-square bg-primary/10 rounded-2xl flex items-center justify-center mb-4 shadow-inner"><span className="material-symbols-outlined text-4xl text-primary">{lot.icon}</span></div>
-             <p className="text-white text-sm font-bold mb-1">{lot.label}</p>
-             <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest">{lot.value}</p>
+            <div className="w-full aspect-square bg-primary/10 rounded-2xl flex items-center justify-center mb-4 shadow-inner"><span className="material-symbols-outlined text-4xl text-primary">{lot.icon}</span></div>
+            <p className="text-white text-sm font-bold mb-1">{lot.label}</p>
+            <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest">{lot.value}</p>
           </button>
         ))}
       </div>
@@ -483,7 +483,7 @@ const IslamicProfile: React.FC<{userData: UserData, insight: InsightData, onOpen
   </div>
 );
 
-const StandardProfile: React.FC<{userData: UserData, insight: InsightData, onOpenChat: (p?: string) => void}> = ({ userData, insight, onOpenChat }) => (
+const StandardProfile: React.FC<{ userData: UserData, insight: InsightData, onOpenChat: (p?: string) => void }> = ({ userData, insight, onOpenChat }) => (
   <div className="space-y-8">
     <div className="text-center px-4">
       <h1 className="text-4xl font-bold mb-4 tracking-tight">{userData.name}'s {userData.system} Chart</h1>
@@ -492,7 +492,7 @@ const StandardProfile: React.FC<{userData: UserData, insight: InsightData, onOpe
       <div className="bg-surface-dark/80 rounded-[2.5rem] p-8 border border-white/10 shadow-2xl backdrop-blur-md"><p className="text-lg leading-relaxed text-white/80 mb-6 font-medium">{insight.summary}</p></div>
     </div>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-      {insight.technicalDetails?.map((detail: any, i: number) => (
+      {insight.technicalDetails?.map((detail, i: number) => (
         <button key={i} onClick={() => onOpenChat(`What does it mean for ${detail.label} to be at ${detail.value}?`)} className="flex items-center gap-5 bg-surface-dark p-6 rounded-3xl border border-white/5 shadow-xl hover:border-primary/50 transition-all text-left active:scale-95 group">
           <div className="p-4 bg-primary/10 rounded-2xl text-primary group-hover:bg-primary/20 transition-colors"><span className="material-symbols-outlined text-2xl">{detail.icon}</span></div>
           <div><p className="text-[10px] text-white/40 uppercase font-bold tracking-widest mb-1">{detail.label}</p><p className="text-lg font-bold text-white leading-none">{detail.value}</p></div>
