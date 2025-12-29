@@ -1,12 +1,12 @@
 import './index.css';
-import React, { useState, useEffect, useCallback } from 'react'; // Trigger redeploy
-// ✅ FIXED: Changed import path from '../types' to './types'
+import React, { useState, useEffect, useCallback } from 'react';
 import { UserData, AppStep, AstrologySystem, TransitData, InsightData } from './types';
 import OnboardingSteps from './components/OnboardingSteps';
 import AstrologyProfiles from './components/AstrologyProfiles';
 import ChatBot from './components/ChatBot';
-import { getAstrologicalInsight, getTransitInsights, generateCelestialSigil } from './services/geminiService';
+import { getAstrologicalInsight, getTransitInsights } from './services/geminiService';
 import ErrorBoundary from './components/ErrorBoundary';
+import CosmicBackground from './components/layout/CosmicBackground';
 
 const STORAGE_KEY = 'astromic_user_profile_v2';
 const INSIGHT_KEY = 'astromic_insight_data';
@@ -87,7 +87,6 @@ const App: React.FC = () => {
       ]);
 
       if (insight) {
-        // Simplified: Storing insight directly without separate sigil handling
         setInsightData(insight);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
         localStorage.setItem(INSIGHT_KEY, JSON.stringify(insight));
@@ -127,77 +126,63 @@ const App: React.FC = () => {
     setStep('HERO');
   }, []);
 
-  import CosmicBackground from './components/layout/CosmicBackground';
-
-  // ... (other imports)
-
-  const App: React.FC = () => {
-    // ... (state)
-
-    const handleReset = useCallback(() => {
-      // ... (reset logic)
-    }, []);
-
-    const openChat = (prompt?: string) => {
-      setInitialChatPrompt(prompt || null);
-      setIsChatOpen(true);
-    };
-
-    if (!isInitialized) return null;
-
-    return (
-      <ErrorBoundary>
-        <div className="relative min-h-screen w-full flex flex-col items-center justify-start overflow-x-hidden font-display text-white selection:bg-primary selection:text-white">
-
-          <CosmicBackground />
-
-          <div className="relative z-10 w-full max-w-md h-screen flex flex-col">
-            {/* ... rest of the app */}
-            <div className="relative z-10 w-full max-w-md h-screen flex flex-col">
-              {step === 'PROFILE_DISPLAY' ? (
-                <AstrologyProfiles
-                  userData={userData}
-                  insight={insightData}
-                  transitData={transitData}
-                  onBack={() => setStep('REVIEW')}
-                  onOpenChat={openChat}
-                  onReset={handleReset}
-                />
-              ) : (
-                <OnboardingSteps
-                  step={step}
-                  userData={userData}
-                  setUserData={setUserData}
-                  onNext={nextStep}
-                  onPrev={prevStep}
-                  onFinish={handleFinish}
-                  loading={loading}
-                />
-              )}
-            </div>
-
-            <ChatBot
-              userData={userData}
-              isOpen={isChatOpen}
-              initialPrompt={initialChatPrompt}
-              onClose={() => {
-                setIsChatOpen(false);
-                setInitialChatPrompt(null);
-              }}
-            />
-
-            {step === 'PROFILE_DISPLAY' && !isChatOpen && (
-              <button
-                onClick={() => openChat()}
-                className="fixed bottom-6 right-6 z-50 size-14 rounded-full bg-primary flex items-center justify-center text-white shadow-2xl hover:bg-primary-alt transition-all animate-bounce hover:animate-none"
-              >
-                <span className="material-symbols-outlined text-2xl">chat</span>
-              </button>
-            )}
-          </div>
-      </ErrorBoundary>
-    );
+  const openChat = (prompt?: string) => {
+    setInitialChatPrompt(prompt || null);
+    setIsChatOpen(true);
   };
 
-  // ✅ FIXED: Added default export
-  export default App;
+  if (!isInitialized) return null;
+
+  return (
+    <ErrorBoundary>
+      <div className="relative min-h-screen w-full flex flex-col items-center justify-start overflow-x-hidden font-display text-white selection:bg-primary selection:text-white">
+
+        <CosmicBackground />
+
+        <div className="relative z-10 w-full max-w-md h-screen flex flex-col">
+          {step === 'PROFILE_DISPLAY' ? (
+            <AstrologyProfiles
+              userData={userData}
+              insight={insightData}
+              transitData={transitData}
+              onBack={() => setStep('REVIEW')}
+              onOpenChat={openChat}
+              onReset={handleReset}
+            />
+          ) : (
+            <OnboardingSteps
+              step={step}
+              userData={userData}
+              setUserData={setUserData}
+              onNext={nextStep}
+              onPrev={prevStep}
+              onFinish={handleFinish}
+              loading={loading}
+            />
+          )}
+        </div>
+
+        <ChatBot
+          userData={userData}
+          isOpen={isChatOpen}
+          initialPrompt={initialChatPrompt}
+          onClose={() => {
+            setIsChatOpen(false);
+            setInitialChatPrompt(null);
+          }}
+        />
+
+        {step === 'PROFILE_DISPLAY' && !isChatOpen && (
+          <button
+            onClick={() => openChat()}
+            className="fixed bottom-6 right-6 z-50 size-14 rounded-full bg-primary flex items-center justify-center text-white shadow-2xl hover:bg-primary-alt transition-all animate-bounce hover:animate-none"
+          >
+            <span className="material-symbols-outlined text-2xl">chat</span>
+          </button>
+        )}
+      </div>
+    </ErrorBoundary>
+  );
+};
+
+export default App;
