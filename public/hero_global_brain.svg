@@ -1,0 +1,106 @@
+<svg width="600" height="600" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <radialGradient id="brain-glow" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+            <stop offset="0%" stop-color="#d946ef" stop-opacity="0.9"/> <!-- Magenta Core -->
+            <stop offset="70%" stop-color="#8b5cf6" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#210535" stop-opacity="0"/>
+        </radialGradient>
+        
+        <linearGradient id="globe-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.8"/>
+            <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.2"/>
+        </linearGradient>
+
+        <filter id="soft-glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="2" result="blur"/>
+            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+        </filter>
+
+        <style>
+             .astro-symbol { font-family: 'Arial Unicode MS', 'Segoe UI Symbol', sans-serif; font-size: 28px; fill: #e0e7ff; text-anchor: middle; dominant-baseline: middle; font-weight: bold; }
+        </style>
+    </defs>
+
+    <g transform="translate(300, 300)">
+        
+        <!-- CENTER: AI BRAIN (Stylized) -->
+        <g transform="scale(0.8)">
+            <circle r="45" fill="url(#brain-glow)">
+                <animate attributeName="r" values="42;48;42" dur="3s" repeatCount="indefinite" ease="ease-in-out"/>
+            </circle>
+            
+            <!-- Brain Nodes / Circuitry -->
+            <g stroke="#f5d5e0" stroke-width="2" stroke-linecap="round">
+                <!-- Left Hemisphere -->
+                <path d="M-15 -30 C-35 -30 -40 -10 -40 10 C-40 35 -20 40 -10 35" fill="none" opacity="0.8"/>
+                <!-- Right Hemisphere -->
+                <path d="M15 -30 C35 -30 40 -10 40 10 C40 35 20 40 10 35" fill="none" opacity="0.8"/>
+                <!-- Synapses -->
+                <circle cx="-25" cy="-10" r="3" fill="#fff" filter="url(#soft-glow)"/>
+                <circle cx="25" cy="-10" r="3" fill="#fff" filter="url(#soft-glow)"/>
+                <circle cx="0" cy="20" r="3" fill="#fff" filter="url(#soft-glow)"/>
+                <circle cx="-20" cy="25" r="2" fill="#d946ef"/>
+                <circle cx="20" cy="25" r="2" fill="#d946ef"/>
+                
+                <!-- Connection Lines -->
+                <path d="M-25 -10 L25 -10 M-25 -10 L0 20 M25 -10 L0 20" stroke-width="1" opacity="0.6"/>
+            </g>
+        </g>
+
+        <!-- MIDDLE: ROTATING GLOBE WIREFRAME -->
+        <g>
+            <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="20s" repeatCount="indefinite" ease="linear"/>
+            
+            <!-- Longitude Lines -->
+            <ellipse cx="0" cy="0" rx="100" ry="100" stroke="url(#globe-gradient)" stroke-width="1" fill="none" opacity="0.3"/>
+            <ellipse cx="0" cy="0" rx="50" ry="100" stroke="url(#globe-gradient)" stroke-width="1" fill="none" opacity="0.4"/>
+            <line x1="0" y1="-100" x2="0" y2="100" stroke="url(#globe-gradient)" stroke-width="1" opacity="0.5"/>
+            
+            <!-- Latitude Lines -->
+            <line x1="-100" y1="0" x2="100" y2="0" stroke="url(#globe-gradient)" stroke-width="1" opacity="0.5"/>
+            <line x1="-86.6" y1="-50" x2="86.6" y2="-50" stroke="url(#globe-gradient)" stroke-width="1" opacity="0.3"/>
+            <line x1="-86.6" y1="50" x2="86.6" y2="50" stroke="url(#globe-gradient)" stroke-width="1" opacity="0.3"/>
+            
+            <!-- Tech Accent Ring -->
+            <circle r="110" stroke="#22d3ee" stroke-width="2" stroke-dasharray="20 40" opacity="0.6" />
+        </g>
+
+        <!-- OUTER: ORBITING ASTROLOGY SYMBOLS -->
+        <g>
+            <animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="40s" repeatCount="indefinite" ease="linear"/>
+            
+            <!-- Orbit Path -->
+            <circle r="160" stroke="#8b5cf6" stroke-width="1" stroke-dasharray="4 4" opacity="0.3"/>
+
+            <!-- 1. Western (Jupiter) -->
+            <g transform="translate(0, -160)">
+                <circle r="20" fill="#210535" stroke="#d946ef" stroke-width="1"/>
+                <text class="astro-symbol" dy="1">♃</text>
+            </g>
+            
+             <!-- 2. Vedic (Om) -->
+            <g transform="rotate(72) translate(0, -160) rotate(-72)">
+                <circle r="20" fill="#210535" stroke="#d946ef" stroke-width="1"/>
+                <text class="astro-symbol" dy="1">ॐ</text>
+            </g>
+            
+             <!-- 3. Chinese (Yin Yang) -->
+            <g transform="rotate(144) translate(0, -160) rotate(-144)">
+                <circle r="20" fill="#210535" stroke="#d946ef" stroke-width="1"/>
+                <text class="astro-symbol" dy="1">☯</text>
+            </g>
+            
+             <!-- 4. Islamic (Crescent) -->
+            <g transform="rotate(216) translate(0, -160) rotate(-216)">
+                <circle r="20" fill="#210535" stroke="#d946ef" stroke-width="1"/>
+                <text class="astro-symbol" dy="1">☪</text>
+            </g>
+            
+             <!-- 5. Kabbalistic/Hellenistic (Star/Earth) -->
+            <g transform="rotate(288) translate(0, -160) rotate(-288)">
+                <circle r="20" fill="#210535" stroke="#d946ef" stroke-width="1"/>
+                <text class="astro-symbol" dy="1">✡</text>
+            </g>
+        </g>
+    </g>
+</svg>
