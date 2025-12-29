@@ -151,76 +151,7 @@ export function calculateVedicChartV2(dateString: string, timeString: string, la
     let sunLon = 0;
     let moonLon = 0;
 
-    // 1. Calculate Planets (Tropical -> Sidereal)
-    for (const p of planets) {
-        // Cast string to any to avoid TS error, runtime supports strings
-        // Use ofDate=true (4th arg) to get coordinates relative to Equinox of Date.
-        const eq = Astronomy.Equator(p as any, date, observer, true, true);
-        const ecliptic = Astronomy.Ecliptic(eq.vec);
-        const tropicalLon = ecliptic.elon;
-        const siderealLon = normalizeDegree(tropicalLon - ayanamsa);
-
-        if (p === "Sun") sunLon = siderealLon;
-        if (p === "Moon") moonLon = siderealLon;
-
-        results.push({
-            name: p,
-            degree: siderealLon,
-            sign: getSign(siderealLon),
-            nakshatra: getNakshatra(siderealLon),
-            nakshatraPadam: getNakshatraPadam(siderealLon)
-        });
-    }
-
-    // 2. Calculate Panchang
-
-    // Tithi
-    // Diff = Moon - Sun. If < 0 add 360.
-    // Each Tithi = 12 deg.
-    let diffLon = normalizeDegree(moonLon - sunLon);
-    const tithiIndex = Math.floor(diffLon / 12);
-    const tithi = TITHIS[tithiIndex % 30];
-    const tithiPaksha = tithiIndex < 15 ? "Shukla" : "Krishna";
-
-    // Yoga
-    // Sum = Moon + Sun. 
-    // Each Yoga = 13 deg 20 min = 13.3333 deg.
-    // 360 deg total.
-    let sumLon = normalizeDegree(moonLon + sunLon);
-    const yogaIndex = Math.floor(sumLon / 13.333333);
-    const yoga = YOGAS[yogaIndex % 27];
-
-    // Karana
-    const karanaNum = Math.floor(diffLon / 6) + 1;
-    let karana = "";
-    if (karanaNum === 1) karana = "Kimstughna";
-    else if (karanaNum >= 58 && karanaNum <= 60) {
-        if (karanaNum === 58) karana = "Shakuni";
-        if (karanaNum === 59) karana = "Chatushpada";
-        if (karanaNum === 60) karana = "Naga";
-    } else {
-        const rotIndex = (karanaNum - 2) % 7;
-        const movingKaranas = ["Bava", "Balava", "Kaulava", "Taitila", "Gara", "Vanija", "Vishti"];
-        karana = movingKaranas[rotIndex];
-    }
-
-    // 3. Calculate Ascendant (Lagnam)
-    const gst = Astronomy.SiderealTime(date); // Greenwich Sidereal Time (hours)
-    const lst = (gst + lonNum / 15.0) % 24; // Local Sidereal Time (hours)
-    const ramc = lst * 15.0; // in degrees
-
-    function getMeanObliquity(date: Date): number {
-        const jd = date.getTime() / 86400000 + 2440587.5;
-        const t = (jd - 2451545.0) / 36525.0;
-        const eps = 23.4392911 - (46.8150 * t + 0.00059 * t * t - 0.001813 * t * t * t) / 3600.0;
-        return eps;
-    }
-    const obliquity = getMeanObliquity(date);
-    const rad = (d: number) => d * Math.PI / 180;
-    const deg = (r: number) => r * 180 / Math.PI;
-    const eps = rad(obliquity);
-    const phi = rad(latNum);
-    const ramcRad = rad(ramc);
+    // ... inside calculateVedicChartV2 ...
 
     // Ascendant (Tropical)
     let ascRad = Math.atan2(
@@ -232,6 +163,41 @@ export function calculateVedicChartV2(dateString: string, timeString: string, la
     // Ascendant (Sidereal)
     const siderealAsc = normalizeDegree(ascDeg - ayanamsa);
     const ascSign = getSign(siderealAsc);
+
+    // --- Prepare Result Arrays ---
+    const vedicPlanets: VedicPlanet[] = [];
+    const westernPlanets: VedicPlanet[] = []; // Reuse interface for simplicity, or make new one
+
+    // 1. Calculate Planets
+    for (const p of planets) {
+        // Cast string to any to avoid TS error, runtime supports strings
+        // Use ofDate=true (4th arg) to get coordinates relative to Equinox of Date.
+        const eq = Astronomy.Equator(p as any, date, observer, true, true);
+        const ecliptic = Astronomy.Ecliptic(eq.vec);
+        const tropicalLon = ecliptic.elon;
+        const siderealLon = normalizeDegree(tropicalLon - ayanamsa);
+
+        if (p === "Sun") sunLon = siderealLon;
+        if (p === "Moon") moonLon = siderealLon;
+
+        vedicPlanets.push({
+            name: p,
+            degree: siderealLon,
+            sign: getSign(siderealLon),
+            nakshatra: getNakshatra(siderealLon),
+            nakshatraPadam: getNakshatraPadam(siderealLon)
+        });
+
+        westernPlanets.push({
+            name: p,
+            degree: tropicalLon,
+            sign: getSign(tropicalLon),
+            nakshatra: "", // Not used in Western
+            nakshatraPadam: 0
+        });
+    }
+
+    // ... (Panchang Calculation uses sunLon/moonLon which are Sidereal, correct) ...
 
     return {
         ascendant: {
@@ -250,16 +216,124 @@ export function calculateVedicChartV2(dateString: string, timeString: string, la
             nakshatra: getNakshatra(moonLon),
             nakshatraPadam: getNakshatraPadam(moonLon)
         },
-        planets: results,
+        planets: vedicPlanets,
+        western: {
+            ascendant: {
+                degree: ascDeg,
+                sign: getSign(ascDeg)
+            },
+            planets: westernPlanets
+        },
         debug: {
             calcDate: date.toISOString(),
             julianDay: (date.getTime() / 86400000) + 2440587.5,
             ayanamsa,
             sunLon,
             moonLon,
+            tropicalAsc: ascDeg,
             latNum,
             lonNum,
             offsetHours
         }
     };
+}
+
+// 2. Calculate Panchang
+
+// Tithi
+// Diff = Moon - Sun. If < 0 add 360.
+// Each Tithi = 12 deg.
+let diffLon = normalizeDegree(moonLon - sunLon);
+const tithiIndex = Math.floor(diffLon / 12);
+const tithi = TITHIS[tithiIndex % 30];
+const tithiPaksha = tithiIndex < 15 ? "Shukla" : "Krishna";
+
+// Yoga
+// Sum = Moon + Sun. 
+// Each Yoga = 13 deg 20 min = 13.3333 deg.
+// 360 deg total.
+let sumLon = normalizeDegree(moonLon + sunLon);
+const yogaIndex = Math.floor(sumLon / 13.333333);
+const yoga = YOGAS[yogaIndex % 27];
+
+// Karana
+const karanaNum = Math.floor(diffLon / 6) + 1;
+let karana = "";
+if (karanaNum === 1) karana = "Kimstughna";
+else if (karanaNum >= 58 && karanaNum <= 60) {
+    if (karanaNum === 58) karana = "Shakuni";
+    if (karanaNum === 59) karana = "Chatushpada";
+    if (karanaNum === 60) karana = "Naga";
+} else {
+    const rotIndex = (karanaNum - 2) % 7;
+    const movingKaranas = ["Bava", "Balava", "Kaulava", "Taitila", "Gara", "Vanija", "Vishti"];
+    karana = movingKaranas[rotIndex];
+}
+
+// 3. Calculate Ascendant (Lagnam)
+const gst = Astronomy.SiderealTime(date); // Greenwich Sidereal Time (hours)
+const lst = (gst + lonNum / 15.0) % 24; // Local Sidereal Time (hours)
+const ramc = lst * 15.0; // in degrees
+
+function getMeanObliquity(date: Date): number {
+    const jd = date.getTime() / 86400000 + 2440587.5;
+    const t = (jd - 2451545.0) / 36525.0;
+    const eps = 23.4392911 - (46.8150 * t + 0.00059 * t * t - 0.001813 * t * t * t) / 3600.0;
+    return eps;
+}
+const obliquity = getMeanObliquity(date);
+const rad = (d: number) => d * Math.PI / 180;
+const deg = (r: number) => r * 180 / Math.PI;
+const eps = rad(obliquity);
+const phi = rad(latNum);
+const ramcRad = rad(ramc);
+
+// Ascendant (Tropical)
+let ascRad = Math.atan2(
+    Math.cos(ramcRad),
+    -Math.sin(ramcRad) * Math.cos(eps) - Math.tan(phi) * Math.sin(eps)
+);
+let ascDeg = normalizeDegree(deg(ascRad));
+
+// Ascendant (Sidereal)
+const siderealAsc = normalizeDegree(ascDeg - ayanamsa);
+const ascSign = getSign(siderealAsc);
+
+return {
+    ascendant: {
+        degree: siderealAsc,
+        sign: ascSign,
+        nakshatra: getNakshatra(siderealAsc),
+        nakshatraPadam: getNakshatraPadam(siderealAsc)
+    },
+    panchang: {
+        tithi,
+        tithiPaksha,
+        dp_tithi: tithiIndex + 1,
+        yoga,
+        dp_yoga: yogaIndex + 1,
+        karana,
+        nakshatra: getNakshatra(moonLon),
+        nakshatraPadam: getNakshatraPadam(moonLon)
+    },
+    planets: vedicPlanets,
+    western: {
+        ascendant: {
+            degree: ascDeg,
+            sign: getSign(ascDeg)
+        },
+        planets: westernPlanets
+    },
+    debug: {
+        calcDate: date.toISOString(),
+        julianDay: (date.getTime() / 86400000) + 2440587.5,
+        ayanamsa,
+        sunLon,
+        moonLon,
+        tropicalAsc: ascDeg,
+        latNum,
+        lonNum,
+        offsetHours
+    }
+};
 }
