@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { calculateVedicChartV2 } from './vedic-engine';
+import { calculateVedicChartV2 } from './vedic-engine.js';
 
 // ... (keep structure)
 
