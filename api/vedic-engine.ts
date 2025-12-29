@@ -15,6 +15,20 @@ const NAKSHATRAS = [
     "Shatabhisha", "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"
 ];
 
+// YOGAS (27)
+const YOGAS = [
+    "Vishkumbha", "Priti", "Ayushman", "Saubhagya", "Shobhana", "Atiganda", "Sukarma",
+    "Dhriti", "Shula", "Ganda", "Vriddhi", "Dhruva", "Vyaghata", "Harshana",
+    "Vajra", "Siddhi", "Vyatipata", "Variyan", "Parigha", "Shiva", "Siddha",
+    "Sadhya", "Shubha", "Shukla", "Brahma", "Indra", "Vaidhriti"
+];
+
+// TITHIS (30)
+const TITHIS = [
+    "Prathama", "Dvitiya", "Tritiya", "Chaturthi", "Panchami", "Shasthi", "Saptami", "Ashtami", "Navami", "Dashami", "Ekadashi", "Dvadashi", "Trayodashi", "Chaturdashi", "Purnima", // Shukla Paksha
+    "Prathama", "Dvitiya", "Tritiya", "Chaturthi", "Panchami", "Shasthi", "Saptami", "Ashtami", "Navami", "Dashami", "Ekadashi", "Dvadashi", "Trayodashi", "Chaturdashi", "Amavasya"  // Krishna Paksha
+];
+
 // Calculate Lahiri Ayanamsa for a given J2000 date (tt)
 function getLahiriAyanamsa(date: Date): number {
     // Ayanamsa ~ 23deg 51min for 2000 AD.
@@ -47,11 +61,19 @@ function getNakshatra(deg: number): string {
     return NAKSHATRAS[Math.floor(normalizeDegree(deg) / 13.33333)];
 }
 
+function getNakshatraPadam(deg: number): number {
+    const oneStar = 13.333333;
+    const onePadam = 3.333333;
+    const remainder = normalizeDegree(deg) % oneStar;
+    return Math.floor(remainder / onePadam) + 1;
+}
+
 export interface VedicPlanet {
     name: string;
     degree: number;
     sign: string;
     nakshatra: string;
+    nakshatraPadam?: number;
     house?: number;
     isRetrograde?: boolean;
 }
@@ -122,6 +144,8 @@ export function calculateVedicChart(dateString: string, timeString: string, lat:
     ];
 
     const results: VedicPlanet[] = [];
+    let sunLon = 0;
+    let moonLon = 0;
 
     // 1. Calculate Planets (Tropical -> Sidereal)
     for (const p of planets) {
@@ -131,23 +155,53 @@ export function calculateVedicChart(dateString: string, timeString: string, lat:
         const tropicalLon = ecliptic.elon;
         const siderealLon = normalizeDegree(tropicalLon - ayanamsa);
 
+        if (p === "Sun") sunLon = siderealLon;
+        if (p === "Moon") moonLon = siderealLon;
+
         results.push({
             name: p,
             degree: siderealLon,
             sign: getSign(siderealLon),
-            nakshatra: getNakshatra(siderealLon)
+            nakshatra: getNakshatra(siderealLon),
+            nakshatraPadam: getNakshatraPadam(siderealLon)
         });
     }
 
-    // 2. Calculate Nodes (Rahu/Ketu) - Mean Node
-    // Astronomy engine 'MoonNode' usually gives North Node (Rahu)
-    // Note: Astronomy engine might not have explicit MeanNode, let's check. 
-    // It doesn't have a direct "Rahu" body string.
-    // We might skip Rahu/Ketu for this MVP or use a simplified calculation if needed 
-    // OR we can deduce it from Moon's orbit?
-    // Actually Astronomy Engine usually supports "MoonGen" for accurate moon?
-    // Use 'Node' implies Lunar Ascending Node?
-    // Let's skip precise Rahu for now to avoid breaking build, or assume getting it later.
+    // 2. Calculate Panchang
+
+    // Tithi
+    // Diff = Moon - Sun. If < 0 add 360.
+    // Each Tithi = 12 deg.
+    let diffLon = normalizeDegree(moonLon - sunLon);
+    const tithiIndex = Math.floor(diffLon / 12);
+    const tithi = TITHIS[tithiIndex % 30];
+    const tithiPaksha = tithiIndex < 15 ? "Shukla" : "Krishna";
+
+    // Yoga
+    // Sum = Moon + Sun. 
+    // Each Yoga = 13 deg 20 min = 13.3333 deg.
+    // 360 deg total.
+    let sumLon = normalizeDegree(moonLon + sunLon);
+    const yogaIndex = Math.floor(sumLon / 13.333333);
+    const yoga = YOGAS[yogaIndex % 27];
+
+    // Karana
+    // Half Tithi (6 deg).
+    // Karana Num = floor(DiffLon / 6) + 1.
+
+    const karanaNum = Math.floor(diffLon / 6) + 1;
+    let karana = "";
+    if (karanaNum === 1) karana = "Kimstughna";
+    else if (karanaNum >= 58 && karanaNum <= 60) {
+        if (karanaNum === 58) karana = "Shakuni";
+        if (karanaNum === 59) karana = "Chatushpada";
+        if (karanaNum === 60) karana = "Naga";
+    } else {
+        // Rotating 7: (KaranaNum - 2) % 7
+        const rotIndex = (karanaNum - 2) % 7;
+        const movingKaranas = ["Bava", "Balava", "Kaulava", "Taitila", "Gara", "Vanija", "Vishti"];
+        karana = movingKaranas[rotIndex];
+    }
 
     // 3. Calculate Ascendant (Lagnam)
     // Formula: tan(Asc) = cos(RAMC) / ( -sin(RAMC)*sin(Obliquity) - tan(Lat)*cos(Obliquity) )
@@ -158,13 +212,6 @@ export function calculateVedicChart(dateString: string, timeString: string, lat:
     const ramc = lst * 15.0; // in degrees
 
     // Obliquity of Ecliptic
-    // Astronomy engine's public API might not expose Obliquity directly.
-    // We calculate Mean Obliquity of Ecliptic (J2000).
-    // Formula: eps = 23.4392911 - 46.815 * T / 3600
-    // T = (TT - 2000.0) / 100.0
-    // We use a simplified version for ~1 arcmin accuracy or just standard J2000 value.
-    // Better: Use the date object to find years from 2000.
-
     function getMeanObliquity(date: Date): number {
         const jd = date.getTime() / 86400000 + 2440587.5; // Unix to Julian Day
         const t = (jd - 2451545.0) / 36525.0; // Julian Centuries from J2000
@@ -197,7 +244,16 @@ export function calculateVedicChart(dateString: string, timeString: string, lat:
         ascendant: {
             degree: siderealAsc,
             sign: ascSign,
-            nakshatra: getNakshatra(siderealAsc)
+            nakshatra: getNakshatra(siderealAsc),
+            nakshatraPadam: getNakshatraPadam(siderealAsc)
+        },
+        panchang: {
+            tithi,
+            tithiPaksha,
+            dp_tithi: tithiIndex + 1, // 1-30
+            yoga,
+            dp_yoga: yogaIndex + 1, // 1-27
+            karana
         },
         planets: results
     };
