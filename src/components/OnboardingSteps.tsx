@@ -159,19 +159,19 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
     return (
       <div className="flex-1 flex flex-col justify-between items-center px-6 py-8">
 
-        {/* Back to Home Button - Restyled */}
-        <div className="w-full flex justify-start mb-4 relative z-50">
+        {/* Back to Home Button - Top Left Absolute */}
+        <div className="absolute top-6 left-6 z-50">
           <a
             href="https://astromic.ai"
-            className="flex items-center gap-3 px-6 py-3 rounded-xl bg-white/10 border border-white/10 hover:bg-white/20 transition-all group backdrop-blur-md shadow-lg hover:shadow-primary/20"
+            className="flex items-center gap-3 px-5 py-2.5 rounded-xl bg-white/10 border border-white/10 hover:bg-white/20 transition-all group backdrop-blur-md shadow-lg hover:shadow-primary/20"
           >
             <span className="material-symbols-outlined text-lg group-hover:-translate-x-1 transition-transform">arrow_back</span>
-            <span className="text-sm font-bold tracking-widest uppercase">Back to Home</span>
+            <span className="text-xs font-bold tracking-widest uppercase">Back to Home</span>
           </a>
         </div>
 
-        <div className="flex-1 flex flex-col items-center justify-center w-full -mt-10">
-          <div className="w-full max-w-[540px] aspect-square relative mb-8 flex items-center justify-center">
+        <div className="flex-1 flex flex-col items-center justify-center w-full -mt-20"> {/* Increased negative margin to move up */}
+          <div className="w-full max-w-[540px] aspect-square relative mb-4 flex items-center justify-center"> {/* Reduced margin bottom */}
             {/* New Hero Image with Float Animation */}
             <div className="relative w-full h-full animate-float">
               <img
@@ -191,7 +191,7 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
 
         </div>
 
-        <div className="w-full flex flex-col items-center gap-6 mt-8">
+        <div className="w-full flex flex-col items-center gap-6 mt-4 mb-12"> {/* Added margin bottom for footer space */}
           <div className="w-full space-y-3">
             <button
               onClick={onNext}
@@ -204,14 +204,6 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
 
           {/* Waitlist Widget (Moved Below CTA) */}
           <div className="w-full max-w-[340px] bg-card-surface/50 backdrop-blur-md border border-white/5 p-5 rounded-2xl shadow-xl z-40">
-            {/* Powered By Header */}
-            <div className="flex items-center justify-center gap-2 mb-4 group cursor-pointer">
-              <div className="h-px w-6 bg-gradient-to-r from-transparent to-primary/40"></div>
-              <a href="https://aiworkx.com" target="_blank" rel="noopener noreferrer" className="text-[#c190cb] text-[10px] font-bold tracking-[0.2em] uppercase hover:text-white transition-colors">
-                Powered by AIworkX.com
-              </a>
-              <div className="h-px w-6 bg-gradient-to-l from-transparent to-primary/40"></div>
-            </div>
 
             <p className="text-sm text-white/90 leading-relaxed mb-3 font-medium text-center">
               ✨ We are enabling subscriptions soon.<br />
@@ -248,6 +240,15 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
           </div>
         </div>
 
+        {/* Footer - Powered By AIworkX */}
+        <div className="fixed bottom-4 left-0 w-full flex items-center justify-center gap-2 z-50 pointer-events-none">
+          <div className="pointer-events-auto bg-black/40 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/10 flex items-center gap-2">
+            <span className="text-white/60 text-[10px] font-medium tracking-wider uppercase">Powered by</span>
+            <a href="https://aiworkx.com" target="_blank" rel="noopener noreferrer" className="text-white text-[11px] font-bold tracking-widest uppercase hover:text-primary transition-colors">
+              AIworkX.com
+            </a>
+          </div>
+        </div>
 
       </div>
     );
