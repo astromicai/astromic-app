@@ -25,11 +25,11 @@ const SYSTEM_INFOS: Record<AstrologySystem, string> = {
 // Extracted component for location search to adhere to Rules of Hooks
 const LocationStep: React.FC<{
   userData: UserData;
-  updateField: (field: keyof UserData, value: any) => void;
+  setUserData: React.Dispatch<React.SetStateAction<UserData>>; // Passed directly for atomic updates
   onNext: () => void;
   onPrev: () => void;
   displayName: string;
-}> = ({ userData, updateField, onNext, onPrev, displayName }) => {
+}> = ({ userData, setUserData, onNext, onPrev, displayName }) => {
   const [searchTerm, setSearchTerm] = useState(userData.birthPlace || "");
   const [results, setResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -62,10 +62,14 @@ const LocationStep: React.FC<{
 
   const selectLocation = (loc: any) => {
     setSearchTerm(`${loc.name}, ${loc.country}`);
-    updateField('birthPlace', `${loc.name}, ${loc.country}`);
-    updateField('latitude', loc.latitude);
-    updateField('longitude', loc.longitude);
-    updateField('timezone', loc.timezone);
+    const updates = {
+      birthPlace: `${loc.name}, ${loc.country}`,
+      latitude: loc.latitude,
+      longitude: loc.longitude,
+      timezone: loc.timezone || "UTC"
+    };
+    // Atomic update
+    setUserData((prev: UserData) => ({ ...prev, ...updates }));
     setShowDropdown(false);
   };
 
@@ -453,7 +457,7 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
     return (
       <LocationStep
         userData={userData}
-        updateField={updateField}
+        setUserData={setUserData}
         onNext={onNext}
         onPrev={onPrev}
         displayName={displayName}
@@ -700,6 +704,7 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
               <div className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">calendar_month</span><span className="text-lg">{userData.birthDate}</span></div>
               <div className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">schedule</span><span className="text-lg">{userData.birthTime}</span></div>
               <div className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">location_on</span><span className="text-lg">{userData.birthPlace}</span></div>
+              <div className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">public</span><span className="text-xs text-white/50">{userData.latitude?.toFixed(4)}, {userData.longitude?.toFixed(4)} ({userData.timezone})</span></div>
             </div>
           </div>
         </div>
