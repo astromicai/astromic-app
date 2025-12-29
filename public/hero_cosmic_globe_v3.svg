@@ -1,0 +1,142 @@
+<svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <!-- Star Gradient -->
+        <radialGradient id="star-gold" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+            <stop offset="0%" stop-color="#fff" stop-opacity="1"/>
+            <stop offset="40%" stop-color="#fcd34d" stop-opacity="0.9"/> <!-- Amber/Gold -->
+            <stop offset="100%" stop-color="#d97706" stop-opacity="0"/>
+        </radialGradient>
+        
+        <!-- Globe Gradient -->
+        <linearGradient id="globe-neon" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#c084fc" stop-opacity="0.8"/> <!-- Purple -->
+            <stop offset="100%" stop-color="#22d3ee" stop-opacity="0.4"/> <!-- Cyan -->
+        </linearGradient>
+
+        <filter id="text-glow" x="-20%" y="-20%" width="140%" height="140%">
+             <feGaussianBlur stdDeviation="1" result="blur"/>
+             <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+        </filter>
+
+        <style>
+             .astro-symbol { 
+                 font-family: 'Arial Unicode MS', 'Segoe UI Symbol', sans-serif; 
+                 font-size: 36px; 
+                 fill: #e0e7ff; 
+                 text-anchor: middle; 
+                 dominant-baseline: middle; 
+                 font-weight: bold;
+                 filter: drop-shadow(0 0 5px rgba(192,132,252,0.6));
+             }
+             .star-text {
+                 font-family: 'Outfit', 'Inter', sans-serif;
+                 font-size: 14px;
+                 fill: #4a044e; /* Dark Purple Text */
+                 font-weight: 800;
+                 text-anchor: middle;
+                 dominant-baseline: middle;
+                 letter-spacing: 1px;
+             }
+        </style>
+    </defs>
+
+    <g transform="translate(400, 400)">
+        
+        <!-- 1. INSIDE: MYSTICAL STAR WITH TEXT -->
+        <g>
+            <animateTransform attributeName="transform" type="scale" values="0.95;1.05;0.95" dur="5s" repeatCount="indefinite" ease="ease-in-out"/>
+            
+            <!-- Radiating Rays -->
+            <circle r="60" fill="url(#star-gold)" opacity="0.3">
+                 <animate attributeName="opacity" values="0.3;0.6;0.3" dur="3s" repeatCount="indefinite"/>
+            </circle>
+
+            <!-- 12-Point Star shape -->
+            <path d="M0 -65 L15 -25 L55 -35 L30 0 L55 35 L15 25 L0 65 L-15 25 L-55 35 L-30 0 L-55 -35 L-15 -25 Z" fill="#fff" stroke="#fbbf24" stroke-width="2">
+                 <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="60s" repeatCount="indefinite" ease="linear"/>
+            </path>
+            
+            <!-- Central Disc for Text -->
+            <circle r="36" fill="#fff" stroke="#f59e0b" stroke-width="1"/>
+            
+            <!-- TEXT -->
+            <text x="0" y="-8" class="star-text">ASTROMIC</text>
+            <text x="0" y="8" class="star-text">AI</text>
+        </g>
+
+        <!-- 2. MIDDLE: 3D GLOBE WIREFRAME (Larger) -->
+        <g transform="rotate(-23.5)">
+            <g opacity="0.7">
+                 <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="40s" repeatCount="indefinite" ease="linear"/>
+                 
+                 <!-- Sphere Outline -->
+                 <circle r="160" stroke="url(#globe-neon)" stroke-width="1.5" fill="none" opacity="0.3"/>
+                 
+                 <!-- Longitude Lines -->
+                 <ellipse cx="0" cy="0" rx="50" ry="160" stroke="url(#globe-neon)" stroke-width="1" fill="none" opacity="0.5"/>
+                 <ellipse cx="0" cy="0" rx="100" ry="160" stroke="url(#globe-neon)" stroke-width="1" fill="none" opacity="0.5"/>
+                 <line x1="0" y1="-160" x2="0" y2="160" stroke="url(#globe-neon)" stroke-width="2"/>
+                 
+                 <!-- Latitude Lines -->
+                 <line x1="-160" y1="0" x2="160" y2="0" stroke="url(#globe-neon)" stroke-width="2"/>
+                 <ellipse cx="0" cy="0" rx="156" ry="50" stroke="url(#globe-neon)" stroke-width="1" fill="none" opacity="0.4" transform="rotate(90)"/> 
+                 <line x1="-140" y1="-80" x2="140" y2="-80" stroke="url(#globe-neon)" stroke-width="1" opacity="0.4"/>
+                 <line x1="-140" y1="80" x2="140" y2="80" stroke="url(#globe-neon)" stroke-width="1" opacity="0.4"/>
+            </g>
+        </g>
+
+        <!-- 3. OUTSIDE: ORBITING SYSTEMS (Wider Orbit) -->
+        <g>
+            <animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="60s" repeatCount="indefinite" ease="linear"/>
+            
+            <!-- Orbital Ring -->
+            <circle r="240" stroke="#d946ef" stroke-width="1" stroke-dasharray="4 8" opacity="0.3"/>
+            <circle r="260" stroke="#22d3ee" stroke-width="0.5" opacity="0.2"/>
+
+            <!-- Symbols placed around ring at r=240 -->
+            
+            <!-- Western -->
+            <g transform="translate(0, -240)">
+                <circle r="28" fill="#1a0b2e" stroke="#22d3ee" stroke-width="1.5"/>
+                <text class="astro-symbol" dy="1">♃</text>
+            </g>
+            
+            <!-- Vedic -->
+            <g transform="rotate(51.4) translate(0, -240) rotate(-51.4)">
+                <circle r="28" fill="#1a0b2e" stroke="#22d3ee" stroke-width="1.5"/>
+                <text class="astro-symbol" dy="1">ॐ</text>
+            </g>
+            
+            <!-- Chinese -->
+            <g transform="rotate(102.8) translate(0, -240) rotate(-102.8)">
+                <circle r="28" fill="#1a0b2e" stroke="#22d3ee" stroke-width="1.5"/>
+                <text class="astro-symbol" dy="1">☯</text>
+            </g>
+            
+            <!-- Tibetan -->
+            <g transform="rotate(154.2) translate(0, -240) rotate(-154.2)">
+                <circle r="28" fill="#1a0b2e" stroke="#22d3ee" stroke-width="1.5"/>
+                <text class="astro-symbol" dy="1">☸</text>
+            </g>
+            
+            <!-- Hellenistic -->
+            <g transform="rotate(205.6) translate(0, -240) rotate(-205.6)">
+                <circle r="28" fill="#1a0b2e" stroke="#22d3ee" stroke-width="1.5"/>
+                <text class="astro-symbol" dy="1">⊕</text>
+            </g>
+            
+            <!-- Islamic -->
+            <g transform="rotate(257) translate(0, -240) rotate(-257)">
+                <circle r="28" fill="#1a0b2e" stroke="#22d3ee" stroke-width="1.5"/>
+                <text class="astro-symbol" dy="1">☪</text>
+            </g>
+            
+            <!-- Kabbalistic -->
+            <g transform="rotate(308.4) translate(0, -240) rotate(-308.4)">
+                <circle r="28" fill="#1a0b2e" stroke="#22d3ee" stroke-width="1.5"/>
+                <text class="astro-symbol" dy="1">✡</text>
+            </g>
+            
+        </g>
+    </g>
+</svg>
