@@ -168,18 +168,14 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
         </div>
 
         <div className="flex-1 flex flex-col items-center justify-center w-full -mt-10">
-          <div className="w-full max-w-[340px] aspect-square relative mb-12 flex items-center justify-center animate-float">
-            {/* Glow Effects */}
-            <div className="absolute inset-[-10px] rounded-full bg-primary/20 blur-[40px] animate-pulse"></div>
-            <div className="absolute inset-0 rounded-full border border-primary/30 animate-pulse-slow"></div>
-
-            {/* The Image Container */}
-            <div className="relative w-[95%] h-[95%] rounded-full overflow-hidden shadow-[0_0_100px_rgba(242,13,185,0.5)] border-2 border-white/20 z-10 bg-black">
-              <div
-                className="absolute inset-0 bg-cover bg-center opacity-90"
-                style={{ backgroundImage: "url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=800&auto=format&fit=crop')" }}
+          <div className="w-full max-w-[360px] aspect-square relative mb-8 flex items-center justify-center">
+            {/* New Hero Image with Float Animation */}
+            <div className="relative w-full h-full animate-float">
+              <img
+                src="/hero_digital_astrolabe_v6.svg"
+                alt="Cosmic Digital Astrolabe"
+                className="w-full h-full object-contain drop-shadow-[0_0_50px_rgba(217,70,239,0.5)]"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-background-dark/60 via-transparent to-primary/20"></div>
             </div>
           </div>
 
