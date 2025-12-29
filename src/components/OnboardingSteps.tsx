@@ -308,6 +308,40 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
   }
 
   if (step === 'BIRTH_DATE') {
+    // Helper to parse date
+    const parseDate = (dateStr: string) => {
+      if (!dateStr) return { day: '1', month: '0', year: '2000' };
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return { day: '1', month: '0', year: '2000' };
+      return {
+        day: d.getDate().toString(),
+        month: d.getMonth().toString(), // 0-11
+        year: d.getFullYear().toString()
+      };
+    };
+
+    const { day, month, year } = parseDate(userData.birthDate);
+
+    const updateDate = (d: string, m: string, y: string) => {
+      // Construct YYYY-MM-DD
+      // month is 0-indexed in JS Date, but we need 01-12 string?
+      // Actually new Date(y, m, d) is reliable.
+      // But userData expects string usually.
+      // Let's format manually: YYYY-MM-DD
+      const monthNum = parseInt(m) + 1;
+      const monthStr = monthNum.toString().padStart(2, '0');
+      const dayStr = d.padStart(2, '0');
+      updateField('birthDate', `${y}-${monthStr}-${dayStr}`);
+    };
+
+    const days = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
+    const months = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+    const currentYear = new Date().getFullYear();
+    const years = Array.from({ length: 120 }, (_, i) => (currentYear - i).toString());
+
     return (
       <div className="flex-1 flex flex-col px-6 pt-10 pb-8 relative z-[20]">
         <header className="flex items-center justify-between mb-8">
@@ -327,16 +361,51 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
           </h1>
           <p className="text-white/60 text-base">Your birth date is the root of your cosmic tree.</p>
         </div>
-        <div className="w-full glass-panel rounded-2xl p-6 mb-6 flex flex-col items-center justify-center border border-white/10 shadow-lg relative overflow-hidden">
-          <label className="text-white/50 text-xs font-bold mb-2 uppercase tracking-widest">Select Date</label>
-          <input
-            type="date"
-            className="bg-transparent border-none text-white text-3xl font-bold tracking-widest focus:ring-0 w-full text-center cursor-pointer appearance-none"
-            style={{ colorScheme: 'dark' }}
-            value={userData.birthDate}
-            onChange={(e) => updateField('birthDate', e.target.value)}
-          />
+
+        <div className="w-full flex gap-2 mb-6">
+          {/* Month */}
+          <div className="flex-[2] relative">
+            <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block pl-2">Month</label>
+            <select
+              value={month}
+              onChange={(e) => updateDate(day, e.target.value, year)}
+              className="w-full h-14 bg-white/10 border border-white/10 rounded-xl px-3 text-lg font-bold text-white appearance-none focus:border-primary outline-none"
+            >
+              {months.map((mName, i) => (
+                <option key={i} value={i} className="text-black">{mName}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Day */}
+          <div className="flex-1 relative">
+            <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block pl-2">Day</label>
+            <select
+              value={day}
+              onChange={(e) => updateDate(e.target.value, month, year)}
+              className="w-full h-14 bg-white/10 border border-white/10 rounded-xl px-3 text-lg font-bold text-white appearance-none focus:border-primary outline-none text-center"
+            >
+              {days.map(dVal => (
+                <option key={dVal} value={dVal} className="text-black">{dVal}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Year */}
+          <div className="flex-[1.5] relative">
+            <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block pl-2">Year</label>
+            <select
+              value={year}
+              onChange={(e) => updateDate(day, month, e.target.value)}
+              className="w-full h-14 bg-white/10 border border-white/10 rounded-xl px-3 text-lg font-bold text-white appearance-none focus:border-primary outline-none text-center"
+            >
+              {years.map(yVal => (
+                <option key={yVal} value={yVal} className="text-black">{yVal}</option>
+              ))}
+            </select>
+          </div>
         </div>
+
         <div className="mt-auto">
           <button onClick={onNext} className="w-full h-14 bg-primary text-white font-bold text-lg rounded-xl shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 group">
             Continue
