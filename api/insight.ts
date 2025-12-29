@@ -304,19 +304,36 @@ export default async function handler(req: Request) {
     };
 
     if (type === 'transit') {
+      let transitSystemInstruction = "";
+      if (userData.system === 'Indian Vedic') {
+        transitSystemInstruction = "Strictly use Vedic Gochar (Transit) principles. Analyze transits relative to the User's Moon Sign (Janma Rashi). Mention terms like 'Sade Sati', 'Ashtama Shani', 'Guru Bala' if applicable. Do NOT use Western aspects like 'Square' or 'Trine'.";
+      } else if (userData.system === 'Chinese') {
+        transitSystemInstruction = "Strictly use Chinese BaZi Daily compatibility. Analyze the interaction between the Current Day's Pillar (Stem/Branch) and the User's Year/Day Pillar. Mention 'Clash' (Chong), 'Combination' (He), 'Penalty'. Focus on 5 Element flows.";
+      } else if (userData.system === 'Hellenistic' || userData.system === 'Western') {
+        transitSystemInstruction = "Use Western/Hellenistic transit methodology. Focus on exact PTolemaic aspects (Conjunction, Sextile, Square, Trine, Opposition) from current planets to natal planets. Mention House activations.";
+      } else {
+        transitSystemInstruction = `Use ${userData.system} specific transit methodology.`;
+      }
+
       const prompt = `
-        Generates daily transit data for:
-        User: ${userData.name}, ${userData.birthDate}, ${userData.birthTime}, ${userData.birthPlace}.
-        System: ${userData.system}.
-        Date: ${new Date().toISOString()}.
-        Language: ${userData.language}.
+        Generates daily transit data/horoscope.
+        
+        Profile:
+        User: ${userData.name}
+        Birth: ${userData.birthDate} ${userData.birthTime} in ${userData.birthPlace}
+        Selected System: ${userData.system} (CRITICAL: ADHERE TO THIS SYSTEM)
+        Current Date: ${new Date().toISOString()}
+        Language: ${userData.language}
+        
+        METHODOLOGY INSTRUCTIONS:
+        ${transitSystemInstruction}
         
         MANDATORY INSTRUCTIONS:
         1. OUTPUT MUST BE IN ${userData.language} LANGUAGE (except JSON keys).
         2. KEEP ALL JSON KEYS IN ENGLISH (e.g. "dailyHeadline", "transits").
         3. TRANSLATE ALL VALUES to ${userData.language}.
         4. "dailyAdvice" MUST contain at least 3 distinct strings.
-        5. "transits" MUST contain at least 4 distinct planetary transits.
+        5. "transits" MUST contain at least 4 distinct planetary transits/events relevant to the system.
         6. NO empty strings. NO null values.
         
         Return JSON structure matching TransitData interface:
@@ -328,7 +345,7 @@ export default async function handler(req: Request) {
           "luckyColor": "Translated Color",
           "dailyAdvice": ["Translated Advice 1", "Translated Advice 2", "Translated Advice 3"],
           "transits": [
-            { "planet": "Planet Name", "sign": "Translated Sign", "aspect": "Translated Aspect", "description": "Translated description", "intensity": "High", "icon": "bolt" }
+            { "planet": "Planet/Element", "sign": "Sign/Animal", "aspect": "Aspect/Interaction", "description": "Translated description", "intensity": "High", "icon": "bolt" }
           ],
           "progressions": [
             { "title": "Translated Title", "insight": "Translated insight..." }
