@@ -127,71 +127,77 @@ const App: React.FC = () => {
     setStep('HERO');
   }, []);
 
-  const openChat = (prompt?: string) => {
-    setInitialChatPrompt(prompt || null);
-    setIsChatOpen(true);
+  import CosmicBackground from './components/layout/CosmicBackground';
+
+  // ... (other imports)
+
+  const App: React.FC = () => {
+    // ... (state)
+
+    const handleReset = useCallback(() => {
+      // ... (reset logic)
+    }, []);
+
+    const openChat = (prompt?: string) => {
+      setInitialChatPrompt(prompt || null);
+      setIsChatOpen(true);
+    };
+
+    if (!isInitialized) return null;
+
+    return (
+      <ErrorBoundary>
+        <div className="relative min-h-screen w-full flex flex-col items-center justify-start overflow-x-hidden font-display text-white selection:bg-primary selection:text-white">
+
+          <CosmicBackground />
+
+          <div className="relative z-10 w-full max-w-md h-screen flex flex-col">
+            {/* ... rest of the app */}
+            <div className="relative z-10 w-full max-w-md h-screen flex flex-col">
+              {step === 'PROFILE_DISPLAY' ? (
+                <AstrologyProfiles
+                  userData={userData}
+                  insight={insightData}
+                  transitData={transitData}
+                  onBack={() => setStep('REVIEW')}
+                  onOpenChat={openChat}
+                  onReset={handleReset}
+                />
+              ) : (
+                <OnboardingSteps
+                  step={step}
+                  userData={userData}
+                  setUserData={setUserData}
+                  onNext={nextStep}
+                  onPrev={prevStep}
+                  onFinish={handleFinish}
+                  loading={loading}
+                />
+              )}
+            </div>
+
+            <ChatBot
+              userData={userData}
+              isOpen={isChatOpen}
+              initialPrompt={initialChatPrompt}
+              onClose={() => {
+                setIsChatOpen(false);
+                setInitialChatPrompt(null);
+              }}
+            />
+
+            {step === 'PROFILE_DISPLAY' && !isChatOpen && (
+              <button
+                onClick={() => openChat()}
+                className="fixed bottom-6 right-6 z-50 size-14 rounded-full bg-primary flex items-center justify-center text-white shadow-2xl hover:bg-primary-alt transition-all animate-bounce hover:animate-none"
+              >
+                <span className="material-symbols-outlined text-2xl">chat</span>
+              </button>
+            )}
+          </div>
+      </ErrorBoundary>
+    );
   };
 
-  const Background = () => (
-    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-background-dark">
-      <div className="absolute top-[-10%] left-[-20%] w-[120%] h-[50%] rounded-full bg-primary/10 blur-[120px]" />
-      <div className="absolute bottom-[-10%] right-[-20%] w-[100%] h-[40%] rounded-full bg-blue-600/10 blur-[100px]" />
-      <div className="absolute top-[30%] right-[-10%] w-[40%] h-[40%] rounded-full bg-fuchsia-600/5 blur-[100px]" />
-    </div>
-  );
-
-  if (!isInitialized) return null;
-
-  return (
-    <ErrorBoundary>
-      <div className="relative min-h-screen w-full flex flex-col items-center justify-start overflow-x-hidden font-display text-white selection:bg-primary selection:text-white">
-
-        <Background />
-        <div className="relative z-10 w-full max-w-md h-screen flex flex-col">
-          {step === 'PROFILE_DISPLAY' ? (
-            <AstrologyProfiles
-              userData={userData}
-              insight={insightData}
-              transitData={transitData}
-              onBack={() => setStep('REVIEW')}
-              onOpenChat={openChat}
-              onReset={handleReset}
-            />
-          ) : (
-            <OnboardingSteps
-              step={step}
-              userData={userData}
-              setUserData={setUserData}
-              onNext={nextStep}
-              onPrev={prevStep}
-              onFinish={handleFinish}
-              loading={loading}
-            />
-          )}
-        </div>
-
-        <ChatBot
-          userData={userData}
-          isOpen={isChatOpen}
-          initialPrompt={initialChatPrompt}
-          onClose={() => {
-            setIsChatOpen(false);
-            setInitialChatPrompt(null);
-          }}
-        />
-
-        {step === 'PROFILE_DISPLAY' && !isChatOpen && (
-          <button
-            onClick={() => openChat()}
-            className="fixed bottom-6 right-6 z-50 size-14 rounded-full bg-primary flex items-center justify-center text-white shadow-2xl hover:bg-primary-alt transition-all animate-bounce hover:animate-none"
-          >
-            <span className="material-symbols-outlined text-2xl">chat</span>
-          </button>
-        )}
-      </div>
-    </ErrorBoundary>
-  );
-};
-
-// ✅ FIXED: Added default export
-export default App;
+  // ✅ FIXED: Added default export
+  export default App;
