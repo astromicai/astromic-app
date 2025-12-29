@@ -402,7 +402,47 @@ export default async function handler(req: Request) {
              { "label": "Month Animal", "value": "Animal Name", "icon": "calendar_month" },
              { "label": "Element", "value": "Wood/Fire/Earth/Metal/Water", "icon": "local_fire_department" },
              { "label": "Yin/Yang", "value": "Yin or Yang", "icon": "contrast" },
-             { "label": "Trine", "value": "Trine Name", "icon": "hub" }
+             { "label": "Solar Term", "value": "Term Name", "icon": "sunny" }
+           ]
+        `;
+      } else if (sys === 'Tibetan') {
+        technicalDetailsSchema = `
+           [
+             { "label": "Mewa", "value": "Number/Color", "icon": "palette" },
+             { "label": "Parkha", "value": "Trigram Name", "icon": "grid_view" },
+             { "label": "Element", "value": "Element Name", "icon": "local_fire_department" },
+             { "label": "Animal", "value": "Animal Name", "icon": "pets" },
+             { "label": "Log Men", "value": "Vitality Force", "icon": "favorite" }
+           ]
+        `;
+      } else if (sys === 'Hellenistic') {
+        technicalDetailsSchema = `
+           [
+             { "label": "Rising Sign", "value": "Sign Name", "icon": "star" },
+             { "label": "Sect", "value": "Day or Night", "icon": "light_mode" },
+             { "label": "Chart Ruler", "value": "Planet Name", "icon": "crown" },
+             { "label": "Lot of Fortune", "value": "Sign Name", "icon": "paid" },
+             { "label": "Moon Phase", "value": "Phase Name", "icon": "bedtime" }
+           ]
+        `;
+      } else if (sys === 'Islamic') {
+        technicalDetailsSchema = `
+           [
+             { "label": "Moon Manzil", "value": "Manzil Name", "icon": "bedtime" },
+             { "label": "Rising Sign", "value": "Sign Name", "icon": "star" },
+             { "label": "Face (Wajh)", "value": "Decan Ruler", "icon": "face" },
+             { "label": "Lot of Fortune", "value": "Sign Name", "icon": "paid" },
+             { "label": "Day Ruler", "value": "Planet Name", "icon": "crown" }
+           ]
+        `;
+      } else if (sys === 'Kabbalistic') {
+        technicalDetailsSchema = `
+           [
+             { "label": "Soul Root", "value": "Root Name", "icon": "psychology" },
+             { "label": "Ruling Sefira", "value": "Sefira Name", "icon": "account_tree" },
+             { "label": "Hebrew Letter", "value": "Letter", "icon": "alphabet" },
+             { "label": "Mazal (Sign)", "value": "Sign Name", "icon": "star" },
+             { "label": "Element", "value": "Fire/Air/Water/Earth", "icon": "local_fire_department" }
            ]
         `;
       } else {
@@ -429,7 +469,7 @@ export default async function handler(req: Request) {
          System: ${userData.system}
          Language: ${userData.language}
          
-         ${isVedic && calculatedChartFormatted !== "No calculation available." ? `
+         ${(sys === 'Indian Vedic') && calculatedChartFormatted !== "No calculation available." ? `
          CRITICAL: USE THESE PRE-CALCULATED PLANETARY POSITIONS (DO NOT HALLUCINATE POSITIONS):
          ${calculatedChartFormatted}
          ` : `
