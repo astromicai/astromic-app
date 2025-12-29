@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { calculateVedicChart } from './vedic-engine.js';
 
 // --- ENGINE LOGIC START (PURE MATH, NO DEPENDENCIES) ---
 const ZODIAC = [
@@ -370,9 +371,10 @@ export default async function handler(req: Request) {
             Karana: ${chart.panchang.karana}
             Nakshatra: ${chart.panchang.nakshatra}
             `;
-        } catch (e) {
+        } catch (e: any) {
           console.error("Vedic Engine Calculation Failed:", e);
-          calculatedChartFormatted = "Calculation Error. Proceed with estimation.";
+          const errorMsg = e instanceof Error ? e.message : String(e);
+          calculatedChartFormatted = `CALCULATION FAILED CRITICALLY. ERROR: ${errorMsg}. DO NOT HALLUCINATE. STATE THIS ERROR IN SUMMARY.`;
         }
       }
 
