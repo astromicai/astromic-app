@@ -209,7 +209,7 @@ const AstrologyProfiles: React.FC<ProfileProps> = ({ userData, insight, transitD
   const renderProfile = () => {
     switch (userData.system) {
       case AstrologySystem.KABBALISTIC: return <KabbalisticProfile userData={userData} insight={insight} onOpenChat={onOpenChat} />;
-      case AstrologySystem.VEDIC: return <VedicProfile userData={userData} insight={insight} onOpenChat={onOpenChat} />;
+      case AstrologySystem.VEDIC: return <VedicProfile userData={userData} data={insight} onOpenChat={onOpenChat} />;
       case AstrologySystem.HELLENISTIC: return <HellenisticProfile userData={userData} insight={insight} onOpenChat={onOpenChat} />;
       case AstrologySystem.ISLAMIC: return <IslamicProfile userData={userData} insight={insight} onOpenChat={onOpenChat} />;
       default: return <StandardProfile userData={userData} insight={insight} onOpenChat={onOpenChat} />;
