@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { calculateVedicChart } from './vedic-engine.js';
+import { calculateVedicChart } from './vedic-engine';
 
 // --- ENGINE LOGIC START (PURE MATH, NO DEPENDENCIES) ---
 const ZODIAC = [
