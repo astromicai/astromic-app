@@ -75,6 +75,10 @@ export interface InsightData {
     planets: ChartPlanet[];
   };
   navamsaInsight?: string;
+  rawChart?: {
+    ascendant: { degree: number; sign: string; nakshatra: string };
+    planets: Array<{ name: string; degree: number; sign: string; nakshatra: string }>;
+  };
   activeSefirotOrNodes?: SefirotNode[];
   sigilUrl?: string;
 }

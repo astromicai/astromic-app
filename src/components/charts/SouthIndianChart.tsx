@@ -18,17 +18,32 @@ const SouthIndianChart: React.FC<ChartProps> = ({ data }) => {
         const points = [];
 
         // Check Ascendant
-        const ascSign = data.technicalDetails?.find(d => d.label.includes('Ascendant') || d.label.includes('Lagnam'))?.value;
-        if (ascSign?.includes(signName)) points.push("Asc");
+        const ascSignRaw = data.rawChart?.ascendant?.sign;
+        if (ascSignRaw && ascSignRaw.includes(signName)) points.push("Asc");
 
-        // Check Planets
-        data.chartData?.planets.forEach(p => {
-            if (p.sign.includes(signName)) {
-                // Shorten names: Sun->Su, Moon->Mo, Mars->Ma, Mercury->Me, Jupiter->Ju, Venus->Ve, Saturn->Sa, Rahu->Ra, Ketu->Ke
-                const short = p.name.substring(0, 2);
-                points.push(short);
-            }
-        });
+        // Fallback if raw chart missing (unlikely now)
+        if (!ascSignRaw) {
+            const ascSign = data.technicalDetails?.find(d => d.label.includes('Ascendant') || d.label.includes('Lagnam'))?.value;
+            if (ascSign?.includes(signName)) points.push("Asc");
+        }
+
+        // Check Planets (Raw Preference)
+        if (data.rawChart?.planets) {
+            data.rawChart.planets.forEach(p => {
+                if (p.sign === signName) { // Strict match possible now
+                    const short = p.name.substring(0, 2);
+                    points.push(short);
+                }
+            });
+        } else {
+            // Fallback to AI data
+            data.chartData?.planets.forEach(p => {
+                if (p.sign.includes(signName)) {
+                    const short = p.name.substring(0, 2);
+                    points.push(short);
+                }
+            });
+        }
 
         return points;
     };

@@ -11,7 +11,7 @@ const NorthIndianChart: React.FC<ChartProps> = ({ data }) => {
     // House order is Anti-Clockwise.
 
     // 1. Determine Ascendant Sign Name
-    const ascSignName = data.technicalDetails?.find(d => d.label.includes('Ascendant') || d.label.includes('Lagnam'))?.value || "Aries";
+    const ascSignName = data.rawChart?.ascendant?.sign || data.technicalDetails?.find(d => d.label.includes('Ascendant') || d.label.includes('Lagnam'))?.value || "Aries";
 
     const ZODIAC = [
         "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
@@ -40,12 +40,21 @@ const NorthIndianChart: React.FC<ChartProps> = ({ data }) => {
         // House 1 IS Ascendant. Point 'Asc' is implicitly House 1.
         if (houseNum === 1) points.push("Asc");
 
-        data.chartData?.planets.forEach(p => {
-            if (p.sign.includes(signName)) {
-                const short = p.name.substring(0, 2);
-                points.push(short);
-            }
-        });
+        if (data.rawChart?.planets) {
+            data.rawChart.planets.forEach(p => {
+                if (p.sign === signName) {
+                    const short = p.name.substring(0, 2);
+                    points.push(short);
+                }
+            });
+        } else {
+            data.chartData?.planets.forEach(p => {
+                if (p.sign.includes(signName)) {
+                    const short = p.name.substring(0, 2);
+                    points.push(short);
+                }
+            });
+        }
         return { points, signIndex: (ascIndex + (houseNum - 1)) % 12 + 1 }; // 1-12 for display
     };
 
