@@ -15,14 +15,37 @@
 */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&family=Noto+Sans+Arabic:wght@400;700&family=Noto+Sans+Bengali:wght@400;700&family=Noto+Sans+Devanagari:wght@400;700&family=Noto+Sans+Gujarati:wght@400;700&family=Noto+Sans+JP:wght@400;700&family=Noto+Sans+KR:wght@400;700&family=Noto+Sans+Kannada:wght@400;700&family=Noto+Sans+Malayalam:wght@400;700&family=Noto+Sans+SC:wght@400;700&family=Noto+Sans+Tamil:wght@400;700&family=Noto+Sans+Telugu:wght@400;700&family=Noto+Sans+Thai:wght@400;700&display=swap');
 
+:root {
+  /* Cosmic Nebula Palette - Darker & Deeper */
+  --nebula-core: #ffccf0;
+  --nebula-glow: #bd33ce;
+  --nebula-deep: #4a125e;
+  --space-void: #010108;
+
+  --bg-dark: var(--space-void);
+  --bg-darker: var(--space-void);
+
+  --primary: #d946ef;
+  --primary-dim: rgba(217, 70, 239, 0.2);
+  --secondary: #22d3ee;
+  --accent-purple: #a855f7;
+
+  --text-main: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.9);
+
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --neon-glow: 0 0 20px rgba(217, 70, 239, 0.4);
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* Apply the "Universal Font Stack" */
 body, button, input, textarea, select {
-  background-color: #0f0c29;
-  color: white;
+  background-color: transparent; /* Let the cosmic canvas shine through */
+  color: var(--text-main);
   font-family: 'Noto Sans', 
                'Noto Sans Arabic', 
                'Noto Sans Devanagari', 
@@ -37,4 +60,25 @@ body, button, input, textarea, select {
                'Noto Sans JP', 
                'Noto Sans KR', 
                sans-serif !important;
+}
+
+html {
+  background-color: var(--space-void); /* Fallback */
+  scroll-behavior: smooth;
+}
+
+.stars-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #30083e 0%, #1a052b 40%, #000000 100%);
+    z-index: -3;
+    animation: nebula-shift 30s ease-in-out infinite alternate;
+}
+
+@keyframes nebula-shift {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
 }
