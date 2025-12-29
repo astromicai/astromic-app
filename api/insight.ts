@@ -125,8 +125,8 @@ function calculateVedicChart(dateWrapper: string, timeString: string, lat: numbe
 // --- ENGINE LOGIC END ---
 
 export const config = {
-  runtime: 'nodejs',
-  maxDuration: 60, // Allow up to 60 seconds for execution
+  runtime: 'edge', // Switch to Edge for better IO handling on Hobby tier
+  // maxDuration is not supported/needed for Edge in the same way, reliable up to 30s-60s wall time
 };
 
 export default async function handler(req: Request) {
@@ -251,7 +251,8 @@ export default async function handler(req: Request) {
          2. KEEP ALL JSON KEYS IN ENGLISH.
          3. TRANSLATE ALL VALUES.
          4. If "Lagnam" is provided above, YOU MUST USE IT.
-         5. NO empty strings.
+         5. KEEP RESPONSES CONCISE (Max 2 sentences per summary). SPEED IS CRITICAL.
+         6. NO empty strings.
          
          Return JSON:
          {
