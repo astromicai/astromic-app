@@ -78,7 +78,7 @@ export interface VedicPlanet {
     isRetrograde?: boolean;
 }
 
-export function calculateVedicChart(dateString: string, timeString: string, lat: number, lon: number, timezone: string = "UTC") {
+export function calculateVedicChartV2(dateString: string, timeString: string, lat: number, lon: number, timezone: string = "UTC") {
     // Parse Date Time
     // Incoming format: dateString "YYYY-MM-DD", timeString "HH:mm" (24h) or "HH:mm PM"
 
