@@ -440,6 +440,11 @@ export default async function handler(req: Request) {
       // Inject Raw Chart
       if (typeof chart !== 'undefined') {
         (finalJson as any).rawChart = chart;
+        (finalJson as any).debug = {
+          inputs: { birthDate, birthTime, latitude, longitude, timezone },
+          chartAscendant: chart.ascendant,
+          panchang: chart.panchang
+        };
       }
 
       return new Response(JSON.stringify(finalJson), { status: 200, headers: { 'Content-Type': 'application/json' } });
