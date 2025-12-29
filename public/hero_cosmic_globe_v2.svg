@@ -1,0 +1,123 @@
+<svg width="600" height="600" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <!-- Inner Star Glow -->
+        <radialGradient id="star-core" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
+            <stop offset="40%" stop-color="#f0abfc" stop-opacity="0.8"/>
+            <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0"/>
+        </radialGradient>
+        
+        <!-- Globe Gradient -->
+        <linearGradient id="globe-wire" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#a855f7" stop-opacity="0.8"/>
+            <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.3"/>
+        </linearGradient>
+
+        <filter id="shine" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+        </filter>
+
+        <style>
+             .astro-symbol { 
+                 font-family: 'Arial Unicode MS', 'Segoe UI Symbol', sans-serif; 
+                 font-size: 32px; 
+                 fill: #e0e7ff; 
+                 text-anchor: middle; 
+                 dominant-baseline: middle; 
+                 font-weight: bold;
+                 filter: drop-shadow(0 0 4px rgba(217,70,239,0.5));
+             }
+        </style>
+    </defs>
+
+    <g transform="translate(300, 300)">
+        
+        <!-- 1. INSIDE: RADIANT STAR -->
+        <g>
+            <animateTransform attributeName="transform" type="scale" values="0.9;1.1;0.9" dur="4s" repeatCount="indefinite" ease="ease-in-out"/>
+            <circle r="25" fill="url(#star-core)" />
+            <!-- 8-Point Star Shape -->
+            <path d="M0 -40 L10 -10 L40 0 L10 10 L0 40 L-10 10 L-40 0 L-10 -10 Z" fill="#fff" filter="url(#shine)">
+                 <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="20s" repeatCount="indefinite" ease="linear"/>
+            </path>
+        </g>
+
+        <!-- 2. MIDDLE: 3D GLOBE WIREFRAME -->
+        <!-- Tilted 23.5 degrees -->
+        <g transform="rotate(-23.5)">
+            <g opacity="0.8">
+                 <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="30s" repeatCount="indefinite" ease="linear"/>
+                 
+                 <!-- Sphere Outline -->
+                 <circle r="120" stroke="url(#globe-wire)" stroke-width="1.5" fill="none" opacity="0.4"/>
+                 
+                 <!-- Longitude Lines -->
+                 <ellipse cx="0" cy="0" rx="40" ry="120" stroke="url(#globe-wire)" stroke-width="1" fill="none" opacity="0.6"/>
+                 <ellipse cx="0" cy="0" rx="80" ry="120" stroke="url(#globe-wire)" stroke-width="1" fill="none" opacity="0.6"/>
+                 <line x1="0" y1="-120" x2="0" y2="120" stroke="url(#globe-wire)" stroke-width="1.5"/>
+                 
+                 <!-- Latitude Lines -->
+                 <line x1="-120" y1="0" x2="120" y2="0" stroke="url(#globe-wire)" stroke-width="1.5"/>
+                 <ellipse cx="0" cy="0" rx="116" ry="40" stroke="url(#globe-wire)" stroke-width="1" fill="none" opacity="0.5" transform="rotate(90)"/> 
+                 <!-- (Simulated latitudes via rotated ellipses or simple lines for stylized look) -->
+                 <line x1="-104" y1="-60" x2="104" y2="-60" stroke="url(#globe-wire)" stroke-width="1" opacity="0.5"/>
+                 <line x1="-104" y1="60" x2="104" y2="60" stroke="url(#globe-wire)" stroke-width="1" opacity="0.5"/>
+            </g>
+        </g>
+
+        <!-- 3. OUTSIDE: ORBITING SYSTEMS -->
+        <g>
+            <animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="50s" repeatCount="indefinite" ease="linear"/>
+            
+            <!-- Orbital Ring -->
+            <circle r="180" stroke="#d946ef" stroke-width="1" stroke-dasharray="2 4" opacity="0.4"/>
+            <circle r="195" stroke="#8b5cf6" stroke-width="0.5" opacity="0.2"/>
+
+            <!-- Symbols placed around ring at r=180 -->
+            
+            <!-- Western -->
+            <g transform="translate(0, -180)">
+                <circle r="24" fill="#1a0b2e" stroke="#d946ef" stroke-width="1.5"/>
+                <text class="astro-symbol" dy="1">♃</text>
+            </g>
+            
+            <!-- Vedic -->
+            <g transform="rotate(51.4) translate(0, -180) rotate(-51.4)">
+                <circle r="24" fill="#1a0b2e" stroke="#d946ef" stroke-width="1.5"/>
+                <text class="astro-symbol" dy="1">ॐ</text>
+            </g>
+            
+            <!-- Chinese -->
+            <g transform="rotate(102.8) translate(0, -180) rotate(-102.8)">
+                <circle r="24" fill="#1a0b2e" stroke="#d946ef" stroke-width="1.5"/>
+                <text class="astro-symbol" dy="1">☯</text>
+            </g>
+            
+            <!-- Tibetan -->
+            <g transform="rotate(154.2) translate(0, -180) rotate(-154.2)">
+                <circle r="24" fill="#1a0b2e" stroke="#d946ef" stroke-width="1.5"/>
+                <text class="astro-symbol" dy="1">☸</text>
+            </g>
+            
+            <!-- Hellenistic -->
+            <g transform="rotate(205.6) translate(0, -180) rotate(-205.6)">
+                <circle r="24" fill="#1a0b2e" stroke="#d946ef" stroke-width="1.5"/>
+                <text class="astro-symbol" dy="1">⊕</text>
+            </g>
+            
+            <!-- Islamic -->
+            <g transform="rotate(257) translate(0, -180) rotate(-257)">
+                <circle r="24" fill="#1a0b2e" stroke="#d946ef" stroke-width="1.5"/>
+                <text class="astro-symbol" dy="1">☪</text>
+            </g>
+            
+            <!-- Kabbalistic -->
+            <g transform="rotate(308.4) translate(0, -180) rotate(-308.4)">
+                <circle r="24" fill="#1a0b2e" stroke="#d946ef" stroke-width="1.5"/>
+                <text class="astro-symbol" dy="1">✡</text>
+            </g>
+
+        </g>
+    </g>
+</svg>

@@ -172,9 +172,9 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
             {/* New Hero Image with Float Animation */}
             <div className="relative w-full h-full animate-float">
               <img
-                src="/hero_quantum_processor.svg"
-                alt="AI Quantum Processor"
-                className="w-full h-full object-contain drop-shadow-[0_0_50px_rgba(34,211,238,0.6)]"
+                src="/hero_cosmic_globe_v2.svg"
+                alt="Cosmic Star Globe"
+                className="w-full h-full object-contain drop-shadow-[0_0_50px_rgba(217,70,239,0.5)]"
               />
             </div>
           </div>
