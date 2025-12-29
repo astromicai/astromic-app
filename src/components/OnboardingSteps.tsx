@@ -168,13 +168,13 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
         </div>
 
         <div className="flex-1 flex flex-col items-center justify-center w-full -mt-10">
-          <div className="w-full max-w-[420px] aspect-square relative mb-8 flex items-center justify-center">
+          <div className="w-full max-w-[450px] aspect-square relative mb-8 flex items-center justify-center">
             {/* New Hero Image with Float Animation */}
             <div className="relative w-full h-full animate-float">
               <img
                 src="/hero_cosmic_globe_v3.svg"
-                alt="Astromic AI Global Star"
-                className="w-full h-full object-contain drop-shadow-[0_0_60px_rgba(217,70,239,0.5)]"
+                alt="Cosmic Star Globe"
+                className="w-full h-full object-contain drop-shadow-[0_0_50px_rgba(217,70,239,0.5)]"
               />
             </div>
           </div>
