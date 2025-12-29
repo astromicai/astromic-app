@@ -136,7 +136,11 @@ export function calculateVedicChart(dateString: string, timeString: string, lat:
     // Subtract offsetHours from the date (which is currently "Local Time as UTC")
     date.setTime(date.getTime() - (offsetHours * 60 * 60 * 1000));
 
-    const observer = new Astronomy.Observer(lat, lon, 0);
+    // Force numeric conversion for safety
+    const latNum = parseFloat(String(lat));
+    const lonNum = parseFloat(String(lon));
+
+    const observer = new Astronomy.Observer(latNum, lonNum, 0);
     const ayanamsa = getLahiriAyanamsa(date);
 
     const planets = [
@@ -150,7 +154,7 @@ export function calculateVedicChart(dateString: string, timeString: string, lat:
     // 1. Calculate Planets (Tropical -> Sidereal)
     for (const p of planets) {
         // Cast string to any to avoid TS error, runtime supports strings
-        // Use ofDate=true (4th arg) to get coordinates relative to Equinox of Date, so subtracting Ayanamsa(Date) works correctly.
+        // Use ofDate=true (4th arg) to get coordinates relative to Equinox of Date.
         const eq = Astronomy.Equator(p as any, date, observer, true, true);
         const ecliptic = Astronomy.Ecliptic(eq.vec);
         const tropicalLon = ecliptic.elon;
@@ -187,9 +191,6 @@ export function calculateVedicChart(dateString: string, timeString: string, lat:
     const yoga = YOGAS[yogaIndex % 27];
 
     // Karana
-    // Half Tithi (6 deg).
-    // Karana Num = floor(DiffLon / 6) + 1.
-
     const karanaNum = Math.floor(diffLon / 6) + 1;
     let karana = "";
     if (karanaNum === 1) karana = "Kimstughna";
@@ -198,46 +199,37 @@ export function calculateVedicChart(dateString: string, timeString: string, lat:
         if (karanaNum === 59) karana = "Chatushpada";
         if (karanaNum === 60) karana = "Naga";
     } else {
-        // Rotating 7: (KaranaNum - 2) % 7
         const rotIndex = (karanaNum - 2) % 7;
         const movingKaranas = ["Bava", "Balava", "Kaulava", "Taitila", "Gara", "Vanija", "Vishti"];
         karana = movingKaranas[rotIndex];
     }
 
     // 3. Calculate Ascendant (Lagnam)
-    // Formula: tan(Asc) = cos(RAMC) / ( -sin(RAMC)*sin(Obliquity) - tan(Lat)*cos(Obliquity) )
-    // We need RAMC (Right Ascension of Meridian / Sidereal Time).
-
     const gst = Astronomy.SiderealTime(date); // Greenwich Sidereal Time (hours)
-    const lst = (gst + lon / 15.0) % 24; // Local Sidereal Time (hours)
+    const lst = (gst + lonNum / 15.0) % 24; // Local Sidereal Time (hours)
     const ramc = lst * 15.0; // in degrees
 
-    // Obliquity of Ecliptic
     function getMeanObliquity(date: Date): number {
-        const jd = date.getTime() / 86400000 + 2440587.5; // Unix to Julian Day
-        const t = (jd - 2451545.0) / 36525.0; // Julian Centuries from J2000
+        const jd = date.getTime() / 86400000 + 2440587.5;
+        const t = (jd - 2451545.0) / 36525.0;
         const eps = 23.4392911 - (46.8150 * t + 0.00059 * t * t - 0.001813 * t * t * t) / 3600.0;
         return eps;
     }
-
     const obliquity = getMeanObliquity(date);
-
-    // Convert to Rad
     const rad = (d: number) => d * Math.PI / 180;
     const deg = (r: number) => r * 180 / Math.PI;
-
     const eps = rad(obliquity);
-    const phi = rad(lat);
+    const phi = rad(latNum);
     const ramcRad = rad(ramc);
 
-    // Ascendant Calculation (Tropical)
+    // Ascendant (Tropical)
     let ascRad = Math.atan2(
         Math.cos(ramcRad),
         -Math.sin(ramcRad) * Math.cos(eps) - Math.tan(phi) * Math.sin(eps)
     );
     let ascDeg = normalizeDegree(deg(ascRad));
 
-    // Convert to Sidereal Ascendant
+    // Ascendant (Sidereal)
     const siderealAsc = normalizeDegree(ascDeg - ayanamsa);
     const ascSign = getSign(siderealAsc);
 
@@ -254,8 +246,20 @@ export function calculateVedicChart(dateString: string, timeString: string, lat:
             dp_tithi: tithiIndex + 1, // 1-30
             yoga,
             dp_yoga: yogaIndex + 1, // 1-27
-            karana
+            karana,
+            nakshatra: getNakshatra(moonLon),
+            nakshatraPadam: getNakshatraPadam(moonLon)
         },
-        planets: results
+        planets: results,
+        debug: {
+            calcDate: date.toISOString(),
+            julianDay: (date.getTime() / 86400000) + 2440587.5,
+            ayanamsa,
+            sunLon,
+            moonLon,
+            latNum,
+            lonNum,
+            offsetHours
+        }
     };
 }
