@@ -188,9 +188,54 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
           <p className="text-white/80 text-xl font-normal leading-relaxed px-4 text-center max-w-[360px] font-display">
             Unveil your cosmic blueprint. Personalized <span className="text-primary font-bold">AI Astrology</span> for the modern seeker.
           </p>
+
+          {/* Waitlist Widget (Inline) */}
+          <div className="w-full max-w-[340px] mt-8 mx-auto bg-card-surface/90 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow-2xl z-40">
+            {/* Powered By Header */}
+            <div className="flex items-center justify-center gap-2 mb-4 group cursor-pointer">
+              <div className="h-px w-6 bg-gradient-to-r from-transparent to-primary/40"></div>
+              <a href="https://aiworkx.com" target="_blank" rel="noopener noreferrer" className="text-[#c190cb] text-[10px] font-bold tracking-[0.2em] uppercase hover:text-white transition-colors">
+                Powered by AIworkX.com
+              </a>
+              <div className="h-px w-6 bg-gradient-to-l from-transparent to-primary/40"></div>
+            </div>
+
+            <p className="text-sm text-white/90 leading-relaxed mb-3 font-medium text-center">
+              ✨ We are enabling subscriptions soon.<br />
+              Join the waitlist for your <strong className="text-primary font-bold">First Year Free</strong>:
+            </p>
+            <form
+              className="flex flex-col gap-2"
+              action="https://script.google.com/macros/s/AKfycbzcO29ERwEyDRUZf95TBzIfSA4X5XdPSFvrjloE5q34sNKIFSgjRL1tmR6UC0hDrlr5/exec"
+              method="POST"
+              target="_blank"
+            >
+              <input type="hidden" name="ip" className="field-ip" />
+              <input type="hidden" name="city" className="field-city" />
+              <input type="hidden" name="country" className="field-country" />
+              <input type="hidden" name="platform" value="App Hero" />
+
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Enter your email..."
+                  required
+                  className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-primary outline-none transition-all placeholder:text-white/30"
+                />
+                <button
+                  type="submit"
+                  className="bg-primary hover:bg-primary-alt text-white text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-lg transition-colors whitespace-nowrap shadow-lg"
+                >
+                  Join
+                </button>
+              </div>
+            </form>
+            <p className="text-[10px] text-white/40 mt-2 text-center">Secure your free early-bird account now.</p>
+          </div>
         </div>
 
-        <div className="w-full flex flex-col items-center gap-6">
+        <div className="w-full flex flex-col items-center gap-6 mt-8">
           <div className="w-full space-y-3">
             <button
               onClick={onNext}
@@ -202,50 +247,7 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
           </div>
         </div>
 
-        {/* Waitlist Widget (Fixed Bottom Left) */}
-        <div className="fixed bottom-6 left-6 hidden md:block max-w-[320px] bg-card-surface/90 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow-2xl animate-in slide-in-from-left-10 fade-in duration-700 delay-500 z-50">
-          {/* Powered By Header */}
-          <div className="flex items-center justify-center gap-2 mb-4 group cursor-pointer">
-            <div className="h-px w-6 bg-gradient-to-r from-transparent to-primary/40"></div>
-            <a href="https://aiworkx.com" target="_blank" rel="noopener noreferrer" className="text-[#c190cb] text-[10px] font-bold tracking-[0.2em] uppercase hover:text-white transition-colors">
-              Powered by AIworkX.com
-            </a>
-            <div className="h-px w-6 bg-gradient-to-l from-transparent to-primary/40"></div>
-          </div>
 
-          <p className="text-sm text-white/90 leading-relaxed mb-3 font-medium">
-            ✨ We are enabling subscriptions soon.<br />
-            Join the waitlist for your <strong className="text-primary font-bold">First Year Free</strong>:
-          </p>
-          <form
-            className="flex flex-col gap-2"
-            action="https://script.google.com/macros/s/AKfycbzcO29ERwEyDRUZf95TBzIfSA4X5XdPSFvrjloE5q34sNKIFSgjRL1tmR6UC0hDrlr5/exec"
-            method="POST"
-            target="_blank"
-          >
-            <input type="hidden" name="ip" className="field-ip" />
-            <input type="hidden" name="city" className="field-city" />
-            <input type="hidden" name="country" className="field-country" />
-            <input type="hidden" name="platform" value="App Hero" />
-
-            <div className="flex gap-2">
-              <input
-                type="email"
-                name="email"
-                placeholder="Enter your email..."
-                required
-                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-primary outline-none transition-all placeholder:text-white/30"
-              />
-              <button
-                type="submit"
-                className="bg-primary hover:bg-primary-alt text-white text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-lg transition-colors whitespace-nowrap shadow-lg"
-              >
-                Join
-              </button>
-            </div>
-          </form>
-          <p className="text-[10px] text-white/40 mt-2 text-center">Secure your free early-bird account now.</p>
-        </div>
       </div>
     );
   }
