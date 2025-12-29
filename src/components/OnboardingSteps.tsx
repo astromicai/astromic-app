@@ -168,7 +168,7 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
         </div>
 
         <div className="flex-1 flex flex-col items-center justify-center w-full -mt-10">
-          <div className="w-full max-w-[450px] aspect-square relative mb-8 flex items-center justify-center">
+          <div className="w-full max-w-[540px] aspect-square relative mb-8 flex items-center justify-center">
             {/* New Hero Image with Float Animation */}
             <div className="relative w-full h-full animate-float">
               <img
