@@ -45,7 +45,7 @@ const VedicProfile: React.FC<VedicProfileProps> = ({ userData, data, onOpenChat 
 
                 <div className="flex justify-center mb-4">
                     {chartType === 'south' ? (
-                        <SouthIndianChart data={data} />
+                        <SouthIndianChart data={data} language={userData.language} />
                     ) : (
                         <NorthIndianChart data={data} />
                     )}
@@ -56,7 +56,6 @@ const VedicProfile: React.FC<VedicProfileProps> = ({ userData, data, onOpenChat 
             </div>
 
             <div className="flex flex-col items-center text-center">
-                <h1 className="text-3xl font-bold text-white mb-2">{userData.name}'s Janma Kundali</h1>
                 {data.sigilUrl && (
                     <div className="relative size-48 my-8 group">
                         <div className="absolute inset-0 rounded-full bg-primary/20 blur-[30px] animate-pulse" />
