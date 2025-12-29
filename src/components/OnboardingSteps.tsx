@@ -160,7 +160,7 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
       <div className="flex-1 flex flex-col justify-between items-center px-6 py-8">
 
         {/* Back to Home Button */}
-        <div className="w-full flex justify-start mb-4">
+        <div className="w-full flex justify-start mb-4 relative z-50">
           <a href="https://astromic.ai" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors group">
             <span className="material-symbols-outlined text-lg group-hover:-translate-x-1 transition-transform">arrow_back</span>
             <span className="text-sm font-bold tracking-widest uppercase">Back to Home</span>
@@ -172,9 +172,9 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
             {/* New Hero Image with Float Animation */}
             <div className="relative w-full h-full animate-float">
               <img
-                src="/hero_astrolabe_v2.png"
+                src="https://images.unsplash.com/photo-1542256840-2b6201e47321?q=80&w=800&auto=format&fit=crop"
                 alt="Cosmic Astrolabe"
-                className="w-full h-full object-contain drop-shadow-[0_0_50px_rgba(217,70,239,0.5)]"
+                className="w-full h-full object-contain drop-shadow-[0_0_50px_rgba(217,70,239,0.5)] rounded-full mix-blend-lighten opacity-90"
               />
             </div>
           </div>

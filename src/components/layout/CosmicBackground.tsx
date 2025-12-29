@@ -172,8 +172,14 @@ const CosmicBackground: React.FC = () => {
             initParticles();
         };
 
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+        const mouse = { x: -9999, y: -9999 };
+
+        const handleMouseMove = (e: MouseEvent) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        };
+
+        window.addEventListener('mousemove', handleMouseMove);
 
         // --- ANIMATION ---
 
@@ -190,6 +196,20 @@ const CosmicBackground: React.FC = () => {
             for (const s of stars) {
                 s.update();
                 s.draw(ctx);
+
+                // Mouse Interaction: Constellation Effect
+                const dx = s.x - mouse.x;
+                const dy = s.y - mouse.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < 150) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = `rgba(217, 70, 239, ${1 - distance / 150})`; // primary color fade
+                    ctx.lineWidth = 0.5;
+                    ctx.moveTo(s.x, s.y);
+                    ctx.lineTo(mouse.x, mouse.y);
+                    ctx.stroke();
+                }
             }
 
             animationFrameId = requestAnimationFrame(animate);
@@ -199,6 +219,7 @@ const CosmicBackground: React.FC = () => {
 
         return () => {
             window.removeEventListener('resize', resizeCanvas);
+            window.removeEventListener('mousemove', handleMouseMove);
             cancelAnimationFrame(animationFrameId);
         };
     }, []);
