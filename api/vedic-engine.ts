@@ -279,4 +279,3 @@ export function calculateVedicChartV2(dateString: string, timeString: string, la
         }
     };
 }
-```
