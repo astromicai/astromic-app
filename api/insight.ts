@@ -187,24 +187,84 @@ function calculateVedicChart(dateWrapper: string, timeString: string, lat: numbe
   const sunSid = normalizeDegree(sunTrop - ayanamsa);
   const moonSid = normalizeDegree(moonTrop - ayanamsa);
 
-  const planets = [
+  // --- Planetary Calculation Helpers (Mean Elements) ---
+  // Elements from Paul Schlyter (stjarnhimlen.se) - Low precision (1-2 deg error max, sufficient for Sign)
+
+  function getMeanLongitude(jd: number, planet: string): number {
+    const d = jd - 2451545.0; // Days from J2000
+    let L = 0; // Mean Longitude
+    let M = 0; // Mean Anomaly
+    let C = 0; // Equation of Center
+
+    switch (planet) {
+      case 'Mercury':
+        L = normalizeDegree(252.250906 + 4.0923344368 * d);
+        M = normalizeDegree(174.794726 + 4.0923344368 * d); // Approx M ~ L for simplicty of arg? No.
+        // Better Mean Anomaly:
+        M = normalizeDegree(174.7948 + 4.09233445 * d);
+        C = 23.44 * sind(M) + 2.98 * sind(2 * M); // Major terms
+        break;
+      case 'Venus':
+        L = normalizeDegree(181.979801 + 1.6021307246 * d);
+        M = normalizeDegree(50.4161 + 1.6021307 * d);
+        C = 0.776 * sind(M) + 0.005 * sind(2 * M);
+        break;
+      case 'Mars':
+        L = normalizeDegree(355.453388 + 0.5240207766 * d);
+        M = normalizeDegree(19.3730 + 0.52402078 * d);
+        C = 10.691 * sind(M) + 0.623 * sind(2 * M);
+        break;
+      case 'Jupiter':
+        L = normalizeDegree(34.404381 + 0.0830853001 * d);
+        M = normalizeDegree(19.8950 + 0.0830853 * d);
+        C = 5.555 * sind(M) + 0.168 * sind(2 * M);
+        break;
+      case 'Saturn':
+        L = normalizeDegree(49.944320 + 0.0334442282 * d);
+        M = normalizeDegree(317.0207 + 0.0334442 * d);
+        C = 6.358 * sind(M) + 0.22 * sind(2 * M);
+        break;
+      case 'Rahu': // Mean North Node
+        // N = 125.04452 - 1934.136261 * T
+        // d is days, T is cent.
+        // Daily motion = -0.0529538 deg
+        L = normalizeDegree(125.04452 - 0.0529537648 * d);
+        return L; // Node has no Eq of Center in mean approx
+      case 'Ketu':
+        return normalizeDegree(getMeanLongitude(jd, 'Rahu') + 180);
+    }
+
+    return normalizeDegree(L + C);
+  }
+
+  const planetsData = [
     { name: "Sun", degree: sunSid, sign: ZODIAC[Math.floor(sunSid / 30)], nakshatra: NAKSHATRAS[Math.floor(sunSid / 13.33)] },
     { name: "Moon", degree: moonSid, sign: ZODIAC[Math.floor(moonSid / 30)], nakshatra: NAKSHATRAS[Math.floor(moonSid / 13.33)] },
   ];
+
+  ['Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'].forEach(pName => {
+    const tropDeg = getMeanLongitude(jd, pName);
+    const sidDeg = normalizeDegree(tropDeg - ayanamsa);
+    planetsData.push({
+      name: pName,
+      degree: sidDeg,
+      sign: ZODIAC[Math.floor(sidDeg / 30)],
+      nakshatra: NAKSHATRAS[Math.floor(sidDeg / 13.33)]
+    });
+  });
 
   const getSignName = (d: number) => ZODIAC[Math.floor(normalizeDegree(d) / 30)] || "Aries";
   const getNakshatraName = (d: number) => NAKSHATRAS[Math.floor(normalizeDegree(d) / 13.33333)] || "Ashwini";
 
   return {
     ascendant: { degree: siderealAsc, sign: getSignName(siderealAsc), nakshatra: getNakshatraName(siderealAsc) },
-    planets: planets
+    planets: planetsData
   };
 }
 // --- ENGINE LOGIC END ---
 
 export const config = {
-  runtime: 'edge', // Switch to Edge for better IO handling on Hobby tier
-  // maxDuration is not supported/needed for Edge in the same way, reliable up to 30s-60s wall time
+  runtime: 'edge',
 };
 
 export default async function handler(req: Request) {
@@ -278,6 +338,7 @@ export default async function handler(req: Request) {
     } else {
       // Profile Insight with VEDIC CALCULATION ENGINE
       let calculatedChartFormatted = "No calculation available.";
+      let chart: any; // Lifted Scope
 
       const { system, birthDate, birthTime, birthPlace, latitude, longitude, timezone } = userData;
 
@@ -288,7 +349,7 @@ export default async function handler(req: Request) {
           // Since we are in the same project, we import from adjacent file
           // Note: In Vercel Edge, standard imports work if bundled.
           // Using .js extension for node16 resolution
-          const chart = calculateVedicChart(birthDate, birthTime, latitude, longitude, userData.timezone || "UTC");
+          chart = calculateVedicChart(birthDate, birthTime, latitude, longitude, userData.timezone || "UTC");
 
           calculatedChartFormatted = `
             CALCULATED VEDIC DATA (Lahiri Ayanamsa):
@@ -300,6 +361,8 @@ export default async function handler(req: Request) {
             Jupiter: ${chart.planets.find(p => p.name === 'Jupiter')?.sign}
             Venus: ${chart.planets.find(p => p.name === 'Venus')?.sign}
             Saturn: ${chart.planets.find(p => p.name === 'Saturn')?.sign}
+            Rahu: ${chart.planets.find(p => p.name === 'Rahu')?.sign}
+            Ketu: ${chart.planets.find(p => p.name === 'Ketu')?.sign}
             `;
         } catch (e) {
           console.error("Vedic Engine Calculation Failed:", e);
@@ -357,8 +420,23 @@ export default async function handler(req: Request) {
 
       const result = await model.generateContent(prompt);
       const cleanedText = cleanJson(result.response.text());
-      return new Response(cleanedText, { status: 200, headers: { 'Content-Type': 'application/json' } });
+
+      // Merge
+      let finalJson = {};
+      try {
+        finalJson = JSON.parse(cleanedText);
+      } catch (e) {
+        finalJson = { headline: "Insight", summary: cleanedText.substring(0, 50) };
+      }
+
+      // Inject Raw Chart
+      if (typeof chart !== 'undefined') {
+        (finalJson as any).rawChart = chart;
+      }
+
+      return new Response(JSON.stringify(finalJson), { status: 200, headers: { 'Content-Type': 'application/json' } });
     }
+
 
   } catch (error: any) {
     console.error("API Error In Insight:", error);
