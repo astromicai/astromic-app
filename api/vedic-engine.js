@@ -1,12 +1,15 @@
-
-import Astronomy from 'astronomy-engine';
-
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.calculateVedicChart = calculateVedicChart;
+const astronomy_engine_1 = __importDefault(require("astronomy-engine"));
 // ZODIAC SIGNS (0 = Aries, 1 = Taurus, ... 11 = Pisces)
 const ZODIAC = [
     "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
     "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"
 ];
-
 const NAKSHATRAS = [
     "Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra",
     "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni",
@@ -14,123 +17,88 @@ const NAKSHATRAS = [
     "Mula", "Purva Ashadha", "Uttara Ashadha", "Shravana", "Dhanishta",
     "Shatabhisha", "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"
 ];
-
 // Calculate Lahiri Ayanamsa for a given J2000 date (tt)
-function getLahiriAyanamsa(date: Date): number {
+function getLahiriAyanamsa(date) {
     // Ayanamsa ~ 23deg 51min for 2000 AD.
     // Precise formula based on N.C. Lahiri:
     // Ayanamsa = 23.85 + 0.0137 * (Year - 2000)
     // Actually let's use a standard calculation:
     // J2000 epoch is 2451545.0
     // Mean sidereal ayanamsa formula (Swiss Eph compatible approx).
-
     // For simplicity and solid accuracy, we use the standard linear approximation which is sufficient for basic charts (error < 1 arcmin):
     // Ayanamsa(2000) = 23.86 deg
     // Precession rate = 50.29 arcsec/year
-
     const year = date.getUTCFullYear() + (date.getUTCMonth() / 12) + (date.getUTCDate() / 365);
     const ayanamsa = 23.8616 + 0.01396 * (year - 2000);
     return ayanamsa;
 }
-
-function normalizeDegree(deg: number): number {
+function normalizeDegree(deg) {
     let d = deg % 360;
-    if (d < 0) d += 360;
+    if (d < 0)
+        d += 360;
     return d;
 }
-
-function getSign(deg: number): string {
+function getSign(deg) {
     return ZODIAC[Math.floor(normalizeDegree(deg) / 30)];
 }
-
-function getNakshatra(deg: number): string {
+function getNakshatra(deg) {
     return NAKSHATRAS[Math.floor(normalizeDegree(deg) / 13.33333)];
 }
-
-export interface VedicPlanet {
-    name: string;
-    degree: number;
-    sign: string;
-    nakshatra: string;
-    house?: number;
-    isRetrograde?: boolean;
-}
-
-export function calculateVedicChart(dateString: string, timeString: string, lat: number, lon: number, timezone: string = "UTC") {
+function calculateVedicChart(dateString, timeString, lat, lon) {
     // Parse Date Time
     // Incoming format: dateString "YYYY-MM-DD", timeString "HH:mm" (24h) or "HH:mm PM"
-
+    // We assume the inputs are correctly formatted or we construct a safe date string
+    // IMPORTANT: The user selects date in LOCAL time, so we need timezone.
+    // Assuming the user's date/time is LOCAL. We need to convert to UTC.
+    // Since we don't have the exact TZ offset in minutes easily from just the string, 
+    // we will rely on the `timezone` field we captured (e.g. "Asia/Kolkata").
+    // Construct a Date object in the specific timezone?
+    // JS Date parsing is tricky.
+    // Let's create a UTC date and subtract the offset?
+    // For now, let's treat the inputs as ISO if possible.
     // Handle 12-hour format "08:30 PM" to 24-hour "20:30"
     let [hours, minutes] = timeString.split(':').map(part => part.trim());
     let isPM = false;
     let isAM = false;
-
     if (timeString.toUpperCase().includes('PM')) {
         isPM = true;
         minutes = minutes.replace(/PM/i, '').trim();
-    } else if (timeString.toUpperCase().includes('AM')) {
+    }
+    else if (timeString.toUpperCase().includes('AM')) {
         isAM = true;
         minutes = minutes.replace(/AM/i, '').trim();
     }
-
     let hourInt = parseInt(hours, 10);
     const minuteInt = parseInt(minutes, 10);
-
-    if (isPM && hourInt < 12) hourInt += 12;
-    if (isAM && hourInt === 12) hourInt = 0;
-
+    if (isPM && hourInt < 12)
+        hourInt += 12;
+    if (isAM && hourInt === 12)
+        hourInt = 0;
     const paddedHour = hourInt.toString().padStart(2, '0');
     const paddedMinute = minuteInt.toString().padStart(2, '0');
-
-    // Create ISO string in UTC first (Interpretation: This Time AT UTC)
-    // Then we subtact offset to get the actual UTC moment of that Local Time.
-    const isoString = `${dateString}T${paddedHour}:${paddedMinute}:00.000Z`;
-    let date = new Date(isoString);
-
+    const dateTimeStr = `${dateString}T${paddedHour}:${paddedMinute}:00`;
+    const date = new Date(dateTimeStr);
     if (isNaN(date.getTime())) {
-        throw new Error(`Invalid Date for input: ${isoString}`);
+        throw new Error(`Invalid Date for input: ${dateTimeStr}`);
     }
-
-    // Adjust for Timezone manually since we are in a serverless env without large libraries.
-    // We need to SUBTRACT the offset to get true UTC.
-    // Example: 20:30 IST is 15:00 UTC. 
-    // If we created 20:30 UTC (date above), we must SUBTRACT 5.5 hours.
-
-    let offsetHours = 0;
-    const tz = timezone.toLowerCase();
-
-    if (tz.includes('kolkata') || tz.includes('calcutta') || tz.includes('ist') || tz.includes('india')) {
-        offsetHours = 5.5;
-    } else if (tz === 'utc' || tz === 'gmt') {
-        offsetHours = 0;
-    } else {
-        // Fallback: Try to guess or default to UTC if unknown.
-        // Ideally passing the numeric offset from frontend would be better.
-        // For now, assume UTC if not Indian, to avoid wild errors, or maybe 0 check.
-        // But we assume the standard user is testing for India per conversation.
-        offsetHours = 0;
-    }
-
-    // Subtract offsetHours from the date (which is currently "Local Time as UTC")
-    date.setTime(date.getTime() - (offsetHours * 60 * 60 * 1000));
-
-    const observer = new Astronomy.Observer(lat, lon, 0);
+    // In Edge function, 'new Date()' might be UTC.
+    // We strictly need the Observer's UT.
+    // For robustness, we will assume the Date passed in is already correct UTC or we use the 'timezone' string to adjust.
+    // Given the constraints, let's use the Astronomy engine's MakeTime helper if we can.
+    // Let's just use the JS Date, assuming the client sent a valid ISO string or we can construct one.
+    const observer = new astronomy_engine_1.default.Observer(lat, lon, 0);
     const ayanamsa = getLahiriAyanamsa(date);
-
     const planets = [
         "Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"
     ];
-
-    const results: VedicPlanet[] = [];
-
+    const results = [];
     // 1. Calculate Planets (Tropical -> Sidereal)
     for (const p of planets) {
         // Cast string to any to avoid TS error, runtime supports strings
-        const eq = Astronomy.Equator(p as any, date, observer, false, true);
-        const ecliptic = Astronomy.Ecliptic(eq.vec);
+        const eq = astronomy_engine_1.default.Equator(p, date, observer, false, true);
+        const ecliptic = astronomy_engine_1.default.Ecliptic(eq.vec);
         const tropicalLon = ecliptic.elon;
         const siderealLon = normalizeDegree(tropicalLon - ayanamsa);
-
         results.push({
             name: p,
             degree: siderealLon,
@@ -138,7 +106,6 @@ export function calculateVedicChart(dateString: string, timeString: string, lat:
             nakshatra: getNakshatra(siderealLon)
         });
     }
-
     // 2. Calculate Nodes (Rahu/Ketu) - Mean Node
     // Astronomy engine 'MoonNode' usually gives North Node (Rahu)
     // Note: Astronomy engine might not have explicit MeanNode, let's check. 
@@ -148,15 +115,12 @@ export function calculateVedicChart(dateString: string, timeString: string, lat:
     // Actually Astronomy Engine usually supports "MoonGen" for accurate moon?
     // Use 'Node' implies Lunar Ascending Node?
     // Let's skip precise Rahu for now to avoid breaking build, or assume getting it later.
-
     // 3. Calculate Ascendant (Lagnam)
     // Formula: tan(Asc) = cos(RAMC) / ( -sin(RAMC)*sin(Obliquity) - tan(Lat)*cos(Obliquity) )
     // We need RAMC (Right Ascension of Meridian / Sidereal Time).
-
-    const gst = Astronomy.SiderealTime(date); // Greenwich Sidereal Time (hours)
+    const gst = astronomy_engine_1.default.SiderealTime(date); // Greenwich Sidereal Time (hours)
     const lst = (gst + lon / 15.0) % 24; // Local Sidereal Time (hours)
     const ramc = lst * 15.0; // in degrees
-
     // Obliquity of Ecliptic
     // Astronomy engine's public API might not expose Obliquity directly.
     // We calculate Mean Obliquity of Ecliptic (J2000).
@@ -164,35 +128,25 @@ export function calculateVedicChart(dateString: string, timeString: string, lat:
     // T = (TT - 2000.0) / 100.0
     // We use a simplified version for ~1 arcmin accuracy or just standard J2000 value.
     // Better: Use the date object to find years from 2000.
-
-    function getMeanObliquity(date: Date): number {
+    function getMeanObliquity(date) {
         const jd = date.getTime() / 86400000 + 2440587.5; // Unix to Julian Day
         const t = (jd - 2451545.0) / 36525.0; // Julian Centuries from J2000
         const eps = 23.4392911 - (46.8150 * t + 0.00059 * t * t - 0.001813 * t * t * t) / 3600.0;
         return eps;
     }
-
     const obliquity = getMeanObliquity(date);
-
     // Convert to Rad
-    const rad = (d: number) => d * Math.PI / 180;
-    const deg = (r: number) => r * 180 / Math.PI;
-
+    const rad = (d) => d * Math.PI / 180;
+    const deg = (r) => r * 180 / Math.PI;
     const eps = rad(obliquity);
     const phi = rad(lat);
     const ramcRad = rad(ramc);
-
     // Ascendant Calculation (Tropical)
-    let ascRad = Math.atan2(
-        Math.cos(ramcRad),
-        -Math.sin(ramcRad) * Math.cos(eps) - Math.tan(phi) * Math.sin(eps)
-    );
+    let ascRad = Math.atan2(Math.cos(ramcRad), -Math.sin(ramcRad) * Math.cos(eps) - Math.tan(phi) * Math.sin(eps));
     let ascDeg = normalizeDegree(deg(ascRad));
-
     // Convert to Sidereal Ascendant
     const siderealAsc = normalizeDegree(ascDeg - ayanamsa);
     const ascSign = getSign(siderealAsc);
-
     return {
         ascendant: {
             degree: siderealAsc,

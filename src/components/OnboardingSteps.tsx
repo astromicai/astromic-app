@@ -308,6 +308,8 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
   }
 
   if (step === 'BIRTH_DATE') {
+    const [isManual, setIsManual] = useState(false);
+
     // Helper to parse date
     const parseDate = (dateStr: string) => {
       if (!dateStr) return { day: '1', month: '0', year: '2000' };
@@ -362,49 +364,72 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
           <p className="text-white/60 text-base">Your birth date is the root of your cosmic tree.</p>
         </div>
 
-        <div className="w-full flex gap-2 mb-6">
-          {/* Month */}
-          <div className="flex-[2] relative">
-            <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block pl-2">Month</label>
-            <select
-              value={month}
-              onChange={(e) => updateDate(day, e.target.value, year)}
-              className="w-full h-14 bg-white/10 border border-white/10 rounded-xl px-3 text-lg font-bold text-white appearance-none focus:border-primary outline-none"
-            >
-              {months.map((mName, i) => (
-                <option key={i} value={i} className="text-black">{mName}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Day */}
-          <div className="flex-1 relative">
-            <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block pl-2">Day</label>
-            <select
-              value={day}
-              onChange={(e) => updateDate(e.target.value, month, year)}
-              className="w-full h-14 bg-white/10 border border-white/10 rounded-xl px-3 text-lg font-bold text-white appearance-none focus:border-primary outline-none text-center"
-            >
-              {days.map(dVal => (
-                <option key={dVal} value={dVal} className="text-black">{dVal}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Year */}
-          <div className="flex-[1.5] relative">
-            <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block pl-2">Year</label>
-            <select
-              value={year}
-              onChange={(e) => updateDate(day, month, e.target.value)}
-              className="w-full h-14 bg-white/10 border border-white/10 rounded-xl px-3 text-lg font-bold text-white appearance-none focus:border-primary outline-none text-center"
-            >
-              {years.map(yVal => (
-                <option key={yVal} value={yVal} className="text-black">{yVal}</option>
-              ))}
-            </select>
-          </div>
+        <div className="flex justify-center mb-6">
+          <button
+            onClick={() => setIsManual(!isManual)}
+            className="text-xs font-bold uppercase tracking-widest text-primary hover:text-white transition-colors flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-sm">swap_horiz</span>
+            {isManual ? "Switch to Selection" : "Type Date Manually"}
+          </button>
         </div>
+
+        {isManual ? (
+          <div className="w-full glass-panel rounded-2xl p-6 mb-6 flex flex-col items-center justify-center border border-white/10 shadow-lg relative overflow-hidden animate-in fade-in zoom-in-95">
+            <label className="text-white/50 text-xs font-bold mb-2 uppercase tracking-widest">Type Date</label>
+            <input
+              type="date"
+              className="bg-transparent border-none text-white text-3xl font-bold tracking-widest focus:ring-0 w-full text-center cursor-pointer appearance-none"
+              style={{ colorScheme: 'dark' }}
+              value={userData.birthDate}
+              onChange={(e) => updateField('birthDate', e.target.value)}
+            />
+          </div>
+        ) : (
+          <div className="w-full flex gap-2 mb-6 animate-in fade-in zoom-in-95">
+            {/* Month */}
+            <div className="flex-[2] relative">
+              <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block pl-2">Month</label>
+              <select
+                value={month}
+                onChange={(e) => updateDate(day, e.target.value, year)}
+                className="w-full h-14 bg-white/10 border border-white/10 rounded-xl px-3 text-lg font-bold text-white appearance-none focus:border-primary outline-none"
+              >
+                {months.map((mName, i) => (
+                  <option key={i} value={i} className="text-black">{mName}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Day */}
+            <div className="flex-1 relative">
+              <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block pl-2">Day</label>
+              <select
+                value={day}
+                onChange={(e) => updateDate(e.target.value, month, year)}
+                className="w-full h-14 bg-white/10 border border-white/10 rounded-xl px-3 text-lg font-bold text-white appearance-none focus:border-primary outline-none text-center"
+              >
+                {days.map(dVal => (
+                  <option key={dVal} value={dVal} className="text-black">{dVal}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Year */}
+            <div className="flex-[1.5] relative">
+              <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block pl-2">Year</label>
+              <select
+                value={year}
+                onChange={(e) => updateDate(day, month, e.target.value)}
+                className="w-full h-14 bg-white/10 border border-white/10 rounded-xl px-3 text-lg font-bold text-white appearance-none focus:border-primary outline-none text-center"
+              >
+                {years.map(yVal => (
+                  <option key={yVal} value={yVal} className="text-black">{yVal}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
 
         <div className="mt-auto">
           <button onClick={onNext} className="w-full h-14 bg-primary text-white font-bold text-lg rounded-xl shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 group">
