@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { calculateVedicChart } from './vedic-engine';
+// Deployment trigger: fixed Panchnang and Timezone logic
 
 // --- ENGINE LOGIC START (PURE MATH, NO DEPENDENCIES) ---
 const ZODIAC = [
