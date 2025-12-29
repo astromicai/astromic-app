@@ -157,27 +157,25 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
 
   if (step === 'HERO') {
     return (
-      <div className="flex-1 flex flex-col justify-between items-center px-6 py-12">
-        <div className="flex-1 flex flex-col items-center justify-center w-full">
-          <div className="w-full max-w-[340px] aspect-square relative mb-12 flex items-center justify-center group">
-            <div className="absolute inset-[-10px] rounded-full bg-primary/20 blur-[40px] animate-pulse"></div>
-            <div className="absolute inset-0 rounded-full border border-primary/30 animate-pulse-slow"></div>
-            <div className="absolute inset-[-30px] rounded-full border border-primary/10 animate-spin-slow"></div>
-            <div className="absolute inset-[-60px] rounded-full border border-white/5 animate-spin-slow" style={{ animationDirection: 'reverse', animationDuration: '30s' }}></div>
+      <div className="flex-1 flex flex-col justify-between items-center px-6 py-8">
 
-            <div className="relative w-[95%] h-[95%] rounded-full overflow-hidden shadow-[0_0_100px_rgba(242,13,185,0.5)] border-2 border-white/20 z-10 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110"
-              style={{ backgroundImage: "url('https://images.unsplash.com/photo-1635107510862-538861928272?auto=format&fit=crop&q=80&w=800&h=800')" }}>
-              <div className="absolute inset-0 bg-gradient-to-t from-background-dark/60 via-transparent to-primary/20"></div>
-              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-40 mix-blend-overlay"></div>
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(242,13,185,0.3)_0%,transparent_70%)]"></div>
-            </div>
+        {/* Back to Home Button */}
+        <div className="w-full flex justify-start mb-4">
+          <a href="https://astromic.ai" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors group">
+            <span className="material-symbols-outlined text-lg group-hover:-translate-x-1 transition-transform">arrow_back</span>
+            <span className="text-sm font-bold tracking-widest uppercase">Back to Home</span>
+          </a>
+        </div>
 
-            <div className="absolute top-0 right-2 z-20 bg-primary border border-white/30 p-4 rounded-full shadow-[0_0_30px_rgba(242,13,185,0.8)] transform rotate-12 animate-bounce">
-              <span className="material-symbols-outlined text-white text-3xl">psychology</span>
-            </div>
-
-            <div className="absolute bottom-4 left-0 z-20 bg-background-dark/90 backdrop-blur-xl border border-white/10 p-3 rounded-2xl shadow-2xl transform -rotate-12">
-              <span className="material-symbols-outlined text-primary-alt text-2xl">star</span>
+        <div className="flex-1 flex flex-col items-center justify-center w-full -mt-10">
+          <div className="w-full max-w-[320px] aspect-square relative mb-8 flex items-center justify-center">
+            {/* New Hero Image with Float Animation */}
+            <div className="relative w-full h-full animate-float">
+              <img
+                src="/hero_astrolabe_v2.png"
+                alt="Cosmic Astrolabe"
+                className="w-full h-full object-contain drop-shadow-[0_0_50px_rgba(217,70,239,0.5)]"
+              />
             </div>
           </div>
 
