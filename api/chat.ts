@@ -2,7 +2,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export const config = {
-    runtime: 'nodejs',
+    runtime: 'edge',
 };
 
 export default async function handler(req: Request) {

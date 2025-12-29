@@ -80,12 +80,19 @@ export const chatWithAstrologer = async (
       body: JSON.stringify({ message, history, userData })
     });
 
-    if (!response.ok) {
-      const err = await response.json();
-      throw new Error(err.error || response.statusText);
+    const text = await response.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error("Non-JSON Chat Response:", text);
+      return `System Error: API returned invalid format. (${text.substring(0, 50)}...)`;
     }
 
-    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || response.statusText);
+    }
+
     return data.response;
   } catch (error: any) {
     console.error("Chat service error:", error);
