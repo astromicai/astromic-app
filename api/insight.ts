@@ -4,27 +4,7 @@ import { calculateVedicChartV2 } from './vedic-engine';
 // ... (keep structure)
 
 // Using .js extension for node16 resolution
-chart = calculateVedicChartV2(birthDate, birthTime, latitude, longitude, userData.timezone || "UTC");
 
-calculatedChartFormatted = `
-            CALCULATED VEDIC DATA (Lahiri Ayanamsa):
-            Ascendant (Lagnam): ${chart.ascendant?.sign} (${chart.ascendant?.nakshatra} - Padam ${chart.ascendant?.nakshatraPadam})
-            Sun: ${chart.planets?.find(p => p.name === 'Sun')?.sign}
-            Moon: ${chart.planets?.find(p => p.name === 'Moon')?.sign} (${chart.planets?.find(p => p.name === 'Moon')?.nakshatra} - Padam ${chart.planets?.find(p => p.name === 'Moon')?.nakshatraPadam})
-            Mars: ${chart.planets?.find(p => p.name === 'Mars')?.sign}
-            Mercury: ${chart.planets?.find(p => p.name === 'Mercury')?.sign}
-            Jupiter: ${chart.planets?.find(p => p.name === 'Jupiter')?.sign}
-            Venus: ${chart.planets?.find(p => p.name === 'Venus')?.sign}
-            Saturn: ${chart.planets?.find(p => p.name === 'Saturn')?.sign}
-            Rahu: ${chart.planets?.find(p => p.name === 'Rahu')?.sign}
-            Ketu: ${chart.planets?.find(p => p.name === 'Ketu')?.sign}
-            
-            PANCHANG DETAILS (MUST USE):
-            Tithi: ${chart.panchang?.tithi || 'Unknown'} (${chart.panchang?.tithiPaksha})
-            Yoga: ${chart.panchang?.yoga || 'Unknown'}
-            Karana: ${chart.panchang?.karana || 'Unknown'}
-            Nakshatra: ${chart.panchang?.nakshatra || 'Unknown'}
-            `;
 const ZODIAC = [
   "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
   "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"

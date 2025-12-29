@@ -1,5 +1,5 @@
 
-import Astronomy from 'astronomy-engine';
+import * as Astronomy from 'astronomy-engine';
 
 // ZODIAC SIGNS (0 = Aries, 1 = Taurus, ... 11 = Pisces)
 const ZODIAC = [
