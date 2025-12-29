@@ -381,9 +381,30 @@ export default async function handler(req: Request) {
         }
       }
 
+      const isVedic = userData.system === 'Indian Vedic';
+      const technicalDetailsSchema = isVedic ? `
+           [
+             { "label": "Lagnam (Ascendant)", "value": "Sign", "icon": "star" },
+             { "label": "Rashi (Moon Sign)", "value": "Sign", "icon": "bedtime" },
+             { "label": "Nakshatra", "value": "Star Name", "icon": "auto_awesome" },
+             { "label": "Thithi", "value": "Lunar Day", "icon": "dark_mode" },
+             { "label": "Yogam", "value": "Yoga Name", "icon": "join_inner" },
+             { "label": "Karanam", "value": "Karana Name", "icon": "timeline" }
+           ]
+      ` : `
+           [
+             { "label": "Sun Sign", "value": "Sign Name", "icon": "sunny" },
+             { "label": "Moon Sign", "value": "Sign Name", "icon": "bedtime" },
+             { "label": "Rising Sign", "value": "Sign Name", "icon": "star" },
+             { "label": "Mercury", "value": "Sign Name", "icon": "science" },
+             { "label": "Venus", "value": "Sign Name", "icon": "favorite" },
+             { "label": "Mars", "value": "Sign Name", "icon": "local_fire_department" }
+           ]
+      `;
+
       const prompt = `
          PERFORM ASTROLOGICAL INTERPRETATION.
-         Role: Expert Vedic Astrologer.
+         Role: Expert Astrologer (${userData.system} System).
          
          Input Data:
          Name: ${userData.name}
@@ -391,19 +412,19 @@ export default async function handler(req: Request) {
          System: ${userData.system}
          Language: ${userData.language}
          
-         ${calculatedChartFormatted !== "No calculation available." ? `
+         ${isVedic && calculatedChartFormatted !== "No calculation available." ? `
          CRITICAL: USE THESE PRE-CALCULATED PLANETARY POSITIONS (DO NOT HALLUCINATE POSITIONS):
          ${calculatedChartFormatted}
          ` : `
-         CRITICAL: Calculate planetary positions accurately for the date.
+         CRITICAL: Calculate planetary positions accurately for the date using ${userData.system} methodology.
          `}
          
          MANDATORY INSTRUCTIONS:
          1. OUTPUT MUST BE IN ${userData.language} LANGUAGE (except JSON keys).
          2. KEEP ALL JSON KEYS IN ENGLISH.
          3. TRANSLATE ALL VALUES.
-         4. If "Lagnam" is provided above, YOU MUST USE IT.
-         5. KEEP RESPONSES CONCISE (Max 2 sentences per summary). SPEED IS CRITICAL.
+         4. ADHERE STRICTLY TO THE ${userData.system.toUpperCase()} SYSTEM.
+         5. IF WESTERN, DO NOT USE VEDIC TERMS LIKE "Rashi", "Nakshatra", "Tithi". Use "Sun Sign", "Moon Sign".
          6. NO empty strings.
          
          Return JSON:
@@ -411,14 +432,7 @@ export default async function handler(req: Request) {
            "headline": "Translated Title",
            "archetype": "Translated Archetype",
            "summary": "Translated summary...",
-           "technicalDetails": [
-             { "label": "Lagnam (Ascendant)", "value": "Sign", "icon": "star" },
-             { "label": "Rashi (Moon Sign)", "value": "Sign", "icon": "bedtime" },
-             { "label": "Nakshatra", "value": "Star Name", "icon": "auto_awesome" },
-             { "label": "Thithi", "value": "Lunar Day", "icon": "dark_mode" },
-             { "label": "Yogam", "value": "Yoga Name", "icon": "join_inner" },
-             { "label": "Karanam", "value": "Karana Name", "icon": "timeline" }
-           ],
+           "technicalDetails": ${technicalDetailsSchema},
            "chartData": {
              "planets": [
                { "name": "Sun", "degree": 45, "sign": "Translated Sign", "house": 10 }
