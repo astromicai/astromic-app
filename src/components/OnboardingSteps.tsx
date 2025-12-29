@@ -189,576 +189,575 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
             Unveil your cosmic blueprint. Personalized <span className="text-primary font-bold">AI Astrology</span> for the modern seeker.
           </p>
 
-          {/* Waitlist Widget (Inline) */}
-          <div className="w-full max-w-[340px] mt-8 mx-auto bg-card-surface/90 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow-2xl z-40">
-            {/* Powered By Header */}
-            <div className="flex items-center justify-center gap-2 mb-4 group cursor-pointer">
-              <div className="h-px w-6 bg-gradient-to-r from-transparent to-primary/40"></div>
-              <a href="https://aiworkx.com" target="_blank" rel="noopener noreferrer" className="text-[#c190cb] text-[10px] font-bold tracking-[0.2em] uppercase hover:text-white transition-colors">
-                Powered by AIworkX.com
-              </a>
-              <div className="h-px w-6 bg-gradient-to-l from-transparent to-primary/40"></div>
+          <div className="w-full flex flex-col items-center gap-6 mt-8">
+            <div className="w-full space-y-3">
+              <button
+                onClick={onNext}
+                className="flex w-full cursor-pointer items-center justify-center rounded-2xl h-16 px-8 bg-gradient-to-r from-primary to-primary-alt text-white text-[18px] font-bold tracking-widest uppercase shadow-[0_10px_40px_rgba(242,13,185,0.5)] transition-all active:scale-95 hover:scale-[1.02] hover:shadow-[0_0_50px_rgba(242,13,185,0.7)]"
+              >
+                <span>Begin Your Journey</span>
+                <span className="material-symbols-outlined ml-3 text-[24px]">auto_awesome</span>
+              </button>
             </div>
 
-            <p className="text-sm text-white/90 leading-relaxed mb-3 font-medium text-center">
-              ✨ We are enabling subscriptions soon.<br />
-              Join the waitlist for your <strong className="text-primary font-bold">First Year Free</strong>:
-            </p>
-            <form
-              className="flex flex-col gap-2"
-              action="https://script.google.com/macros/s/AKfycbzcO29ERwEyDRUZf95TBzIfSA4X5XdPSFvrjloE5q34sNKIFSgjRL1tmR6UC0hDrlr5/exec"
-              method="POST"
-              target="_blank"
-            >
-              <input type="hidden" name="ip" className="field-ip" />
-              <input type="hidden" name="city" className="field-city" />
-              <input type="hidden" name="country" className="field-country" />
-              <input type="hidden" name="platform" value="App Hero" />
-
-              <div className="flex gap-2">
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Enter your email..."
-                  required
-                  className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-primary outline-none transition-all placeholder:text-white/30"
-                />
-                <button
-                  type="submit"
-                  className="bg-primary hover:bg-primary-alt text-white text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-lg transition-colors whitespace-nowrap shadow-lg"
-                >
-                  Join
-                </button>
+            {/* Waitlist Widget (Moved Below CTA) */}
+            <div className="w-full max-w-[340px] bg-card-surface/50 backdrop-blur-md border border-white/5 p-5 rounded-2xl shadow-xl z-40">
+              {/* Powered By Header */}
+              <div className="flex items-center justify-center gap-2 mb-4 group cursor-pointer">
+                <div className="h-px w-6 bg-gradient-to-r from-transparent to-primary/40"></div>
+                <a href="https://aiworkx.com" target="_blank" rel="noopener noreferrer" className="text-[#c190cb] text-[10px] font-bold tracking-[0.2em] uppercase hover:text-white transition-colors">
+                  Powered by AIworkX.com
+                </a>
+                <div className="h-px w-6 bg-gradient-to-l from-transparent to-primary/40"></div>
               </div>
-            </form>
-            <p className="text-[10px] text-white/40 mt-2 text-center">Secure your free early-bird account now.</p>
+
+              <p className="text-sm text-white/90 leading-relaxed mb-3 font-medium text-center">
+                ✨ We are enabling subscriptions soon.<br />
+                Join the waitlist for your <strong className="text-primary font-bold">First Year Free</strong>:
+              </p>
+              <form
+                className="flex flex-col gap-2"
+                action="https://script.google.com/macros/s/AKfycbzcO29ERwEyDRUZf95TBzIfSA4X5XdPSFvrjloE5q34sNKIFSgjRL1tmR6UC0hDrlr5/exec"
+                method="POST"
+                target="_blank"
+              >
+                <input type="hidden" name="ip" className="field-ip" />
+                <input type="hidden" name="city" className="field-city" />
+                <input type="hidden" name="country" className="field-country" />
+                <input type="hidden" name="platform" value="App Hero" />
+
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Enter your email..."
+                    required
+                    className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-primary outline-none transition-all placeholder:text-white/30"
+                  />
+                  <button
+                    type="submit"
+                    className="bg-primary hover:bg-primary-alt text-white text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-lg transition-colors whitespace-nowrap shadow-lg"
+                  >
+                    Join
+                  </button>
+                </div>
+              </form>
+              <p className="text-[10px] text-white/40 mt-2 text-center">Secure your free early-bird account now.</p>
+            </div>
           </div>
+
+
         </div>
-
-        <div className="w-full flex flex-col items-center gap-6 mt-8">
-          <div className="w-full space-y-3">
-            <button
-              onClick={onNext}
-              className="flex w-full cursor-pointer items-center justify-center rounded-2xl h-16 px-8 bg-gradient-to-r from-primary to-primary-alt text-white text-[18px] font-bold tracking-widest uppercase shadow-[0_10px_40px_rgba(242,13,185,0.5)] transition-all active:scale-95 hover:scale-[1.02] hover:shadow-[0_0_50px_rgba(242,13,185,0.7)]"
-            >
-              <span>Begin Your Journey</span>
-              <span className="material-symbols-outlined ml-3 text-[24px]">auto_awesome</span>
-            </button>
-          </div>
-        </div>
-
-
-      </div>
-    );
+        );
   }
 
-  if (step === 'NAME_INPUT') {
+        if (step === 'NAME_INPUT') {
     return (
-      <div className="flex-1 flex flex-col px-6 pt-10 pb-8 relative z-[20]">
-        <header className="flex items-center justify-between mb-8">
-          <button onClick={onPrev} className="text-white flex size-12 items-center justify-center rounded-full active:bg-white/10">
-            <span className="material-symbols-outlined text-[28px]">arrow_back_ios_new</span>
-          </button>
-          <div className="flex gap-2">
-            <div className="h-1.5 w-8 rounded-full bg-primary" />
-            <div className="h-1.5 w-1.5 rounded-full bg-white/20" />
-            <div className="h-1.5 w-1.5 rounded-full bg-white/20" />
-          </div>
-          <div className="w-12" /> {/* Spacer instead of link */}
-        </header>
-        <div className="mb-10">
-          <h1 className="text-white text-[36px] font-bold leading-tight tracking-tight mb-4">
-            First, what is<br />your name?
-          </h1>
-          <p className="text-white/60 text-base">The stars know you, but we'd love to greet you properly.</p>
-        </div>
-        <div className="relative w-full">
-          <input
-            type="text"
-            className="w-full bg-white/5 border-b-2 border-primary/40 focus:border-primary text-white text-3xl font-bold py-4 px-2 shadow-none focus:ring-0 outline-none transition-all placeholder:text-white/5"
-            placeholder="Enter your name"
-            value={userData.name}
-            onChange={(e) => updateField('name', e.target.value)}
-            autoComplete="off"
-            autoFocus
-          />
-        </div>
-        <div className="mt-auto">
-          <button
-            disabled={!userData.name.trim()}
-            onClick={onNext}
-            className="w-full h-14 bg-primary text-white font-bold text-lg rounded-xl shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            Continue
-            <span className="material-symbols-outlined">arrow_forward</span>
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (step === 'LANGUAGE_SELECT') {
-    const languages = [
-      "English", "Spanish", "French", "German", "Chinese", "Japanese",
-      "Hindi", "Arabic", "Portuguese", "Russian", "Tamil", "Telugu",
-      "Bengali", "Indonesian", "Italian", "Turkish", "Korean", "Vietnamese"
-    ];
-    return (
-      <div className="flex-1 flex flex-col px-6 pt-10 pb-8 relative z-[20]">
-        <header className="flex items-center justify-between mb-8">
-          <button onClick={onPrev} className="text-white flex size-12 items-center justify-center rounded-full active:bg-white/10">
-            <span className="material-symbols-outlined text-[28px]">arrow_back_ios_new</span>
-          </button>
-          <div className="flex gap-2">
-            <div className="h-1.5 w-1.5 rounded-full bg-primary/30" />
-            <div className="h-1.5 w-8 rounded-full bg-primary" />
-            <div className="h-1.5 w-1.5 rounded-full bg-white/20" />
-          </div>
-          <div className="w-12" />
-        </header>
-        <div className="mb-8">
-          <h1 className="text-white text-[32px] font-bold leading-tight tracking-tight mb-4">
-            Choose your<br />language
-          </h1>
-          <p className="text-white/60 text-base">For your daily predictions and insights.</p>
-        </div>
-        <div className="grid grid-cols-2 gap-3 mb-6 overflow-y-auto no-scrollbar max-h-[400px]">
-          {languages.map(lang => (
-            <button
-              key={lang}
-              onClick={() => updateField('language', lang)}
-              className={`py-4 rounded-2xl font-bold transition-all border ${userData.language === lang ? 'bg-primary border-primary shadow-lg scale-[1.02]' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
-            >
-              {lang}
+        <div className="flex-1 flex flex-col px-6 pt-10 pb-8 relative z-[20]">
+          <header className="flex items-center justify-between mb-8">
+            <button onClick={onPrev} className="text-white flex size-12 items-center justify-center rounded-full active:bg-white/10">
+              <span className="material-symbols-outlined text-[28px]">arrow_back_ios_new</span>
             </button>
-          ))}
-          <div className="col-span-2 mt-2">
+            <div className="flex gap-2">
+              <div className="h-1.5 w-8 rounded-full bg-primary" />
+              <div className="h-1.5 w-1.5 rounded-full bg-white/20" />
+              <div className="h-1.5 w-1.5 rounded-full bg-white/20" />
+            </div>
+            <div className="w-12" /> {/* Spacer instead of link */}
+          </header>
+          <div className="mb-10">
+            <h1 className="text-white text-[36px] font-bold leading-tight tracking-tight mb-4">
+              First, what is<br />your name?
+            </h1>
+            <p className="text-white/60 text-base">The stars know you, but we'd love to greet you properly.</p>
+          </div>
+          <div className="relative w-full">
             <input
               type="text"
-              placeholder="Other language..."
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-4 text-white focus:border-primary outline-none transition-all"
-              value={!languages.includes(userData.language) ? userData.language : ''}
-              onChange={(e) => updateField('language', e.target.value)}
+              className="w-full bg-white/5 border-b-2 border-primary/40 focus:border-primary text-white text-3xl font-bold py-4 px-2 shadow-none focus:ring-0 outline-none transition-all placeholder:text-white/5"
+              placeholder="Enter your name"
+              value={userData.name}
+              onChange={(e) => updateField('name', e.target.value)}
+              autoComplete="off"
+              autoFocus
             />
           </div>
+          <div className="mt-auto">
+            <button
+              disabled={!userData.name.trim()}
+              onClick={onNext}
+              className="w-full h-14 bg-primary text-white font-bold text-lg rounded-xl shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              Continue
+              <span className="material-symbols-outlined">arrow_forward</span>
+            </button>
+          </div>
         </div>
-        <div className="mt-auto">
-          <button onClick={onNext} className="w-full h-14 bg-primary text-white font-bold text-lg rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 group">
-            Continue
-            <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
-          </button>
-        </div>
-      </div>
-    );
+        );
   }
 
-  if (step === 'BIRTH_DATE') {
+        if (step === 'LANGUAGE_SELECT') {
+    const languages = [
+        "English", "Spanish", "French", "German", "Chinese", "Japanese",
+        "Hindi", "Arabic", "Portuguese", "Russian", "Tamil", "Telugu",
+        "Bengali", "Indonesian", "Italian", "Turkish", "Korean", "Vietnamese"
+        ];
+        return (
+        <div className="flex-1 flex flex-col px-6 pt-10 pb-8 relative z-[20]">
+          <header className="flex items-center justify-between mb-8">
+            <button onClick={onPrev} className="text-white flex size-12 items-center justify-center rounded-full active:bg-white/10">
+              <span className="material-symbols-outlined text-[28px]">arrow_back_ios_new</span>
+            </button>
+            <div className="flex gap-2">
+              <div className="h-1.5 w-1.5 rounded-full bg-primary/30" />
+              <div className="h-1.5 w-8 rounded-full bg-primary" />
+              <div className="h-1.5 w-1.5 rounded-full bg-white/20" />
+            </div>
+            <div className="w-12" />
+          </header>
+          <div className="mb-8">
+            <h1 className="text-white text-[32px] font-bold leading-tight tracking-tight mb-4">
+              Choose your<br />language
+            </h1>
+            <p className="text-white/60 text-base">For your daily predictions and insights.</p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 mb-6 overflow-y-auto no-scrollbar max-h-[400px]">
+            {languages.map(lang => (
+              <button
+                key={lang}
+                onClick={() => updateField('language', lang)}
+                className={`py-4 rounded-2xl font-bold transition-all border ${userData.language === lang ? 'bg-primary border-primary shadow-lg scale-[1.02]' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+              >
+                {lang}
+              </button>
+            ))}
+            <div className="col-span-2 mt-2">
+              <input
+                type="text"
+                placeholder="Other language..."
+                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-4 text-white focus:border-primary outline-none transition-all"
+                value={!languages.includes(userData.language) ? userData.language : ''}
+                onChange={(e) => updateField('language', e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="mt-auto">
+            <button onClick={onNext} className="w-full h-14 bg-primary text-white font-bold text-lg rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 group">
+              Continue
+              <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+        );
+  }
+
+        if (step === 'BIRTH_DATE') {
 
 
     // Helper to parse date manually to avoid Timezone off-by-one errors
     const parseDate = (dateStr: string) => {
-      if (!dateStr) return { day: '1', month: '0', year: '2000' };
+      if (!dateStr) return {day: '1', month: '0', year: '2000' };
 
-      // Try parsing YYYY-MM-DD directly
-      const parts = dateStr.split('-');
-      if (parts.length === 3) {
+        // Try parsing YYYY-MM-DD directly
+        const parts = dateStr.split('-');
+        if (parts.length === 3) {
         const y = parts[0];
         const m = (parseInt(parts[1], 10) - 1).toString(); // 0-indexed for state
         const d = parseInt(parts[2], 10).toString();
-        return { year: y, month: m, day: d };
+        return {year: y, month: m, day: d };
       }
 
-      // Fallback to Date object if format is weird, but try to use UTC
-      const d = new Date(dateStr);
-      if (isNaN(d.getTime())) return { day: '1', month: '0', year: '2000' };
-      return {
-        day: d.getUTCDate().toString(),
+        // Fallback to Date object if format is weird, but try to use UTC
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return {day: '1', month: '0', year: '2000' };
+        return {
+          day: d.getUTCDate().toString(),
         month: d.getUTCMonth().toString(),
         year: d.getUTCFullYear().toString()
       };
     };
 
-    const { day, month, year } = parseDate(userData.birthDate);
+        const {day, month, year} = parseDate(userData.birthDate);
 
     const updateDate = (d: string, m: string, y: string) => {
       // Construct YYYY-MM-DD
       const monthNum = parseInt(m) + 1;
-      const monthStr = monthNum.toString().padStart(2, '0');
-      const dayStr = d.padStart(2, '0');
-      updateField('birthDate', `${y}-${monthStr}-${dayStr}`);
+        const monthStr = monthNum.toString().padStart(2, '0');
+        const dayStr = d.padStart(2, '0');
+        updateField('birthDate', `${y}-${monthStr}-${dayStr}`);
     };
 
-    const days = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
-    const months = [
-      "January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December"
-    ];
-    const currentYear = new Date().getFullYear();
-    const years = Array.from({ length: 120 }, (_, i) => (currentYear - i).toString());
+        const days = Array.from({length: 31 }, (_, i) => (i + 1).toString());
+        const months = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+        ];
+        const currentYear = new Date().getFullYear();
+        const years = Array.from({length: 120 }, (_, i) => (currentYear - i).toString());
 
-    return (
-      <div className="flex-1 flex flex-col px-6 pt-10 pb-8 relative z-[20]">
-        <header className="flex items-center justify-between mb-8">
-          <button onClick={onPrev} className="text-white flex size-12 items-center justify-center rounded-full active:bg-white/10">
-            <span className="material-symbols-outlined text-[28px]">arrow_back_ios_new</span>
-          </button>
-          <div className="flex gap-2">
-            <div className="h-1.5 w-1.5 rounded-full bg-primary/30" />
-            <div className="h-1.5 w-1.5 rounded-full bg-primary/30" />
-            <div className="h-1.5 w-8 rounded-full bg-primary" />
-          </div>
-          <div className="w-12" />
-        </header>
-        <div className="mb-10">
-          <h1 className="text-white text-[32px] font-bold leading-tight tracking-tight mb-4">
-            Greetings, {displayName}.<br />When were you born?
-          </h1>
-          <p className="text-white/60 text-base">Your birth date is the root of your cosmic tree.</p>
-        </div>
-
-        <div className="flex justify-center mb-6">
-          <button
-            onClick={() => setIsManual(!isManual)}
-            className="text-xs font-bold uppercase tracking-widest text-primary hover:text-white transition-colors flex items-center gap-2"
-          >
-            <span className="material-symbols-outlined text-sm">swap_horiz</span>
-            {isManual ? "Switch to Selection" : "Type Date Manually"}
-          </button>
-        </div>
-
-        {isManual ? (
-          <div className="w-full glass-panel rounded-2xl p-6 mb-6 flex flex-col items-center justify-center border border-white/10 shadow-lg relative overflow-hidden animate-in fade-in zoom-in-95">
-            <label className="text-white/50 text-xs font-bold mb-2 uppercase tracking-widest">Type Date</label>
-            <input
-              type="date"
-              className="bg-transparent border-none text-white text-3xl font-bold tracking-widest focus:ring-0 w-full text-center cursor-pointer appearance-none"
-              style={{ colorScheme: 'dark' }}
-              value={userData.birthDate}
-              onChange={(e) => updateField('birthDate', e.target.value)}
-            />
-          </div>
-        ) : (
-          <div className="w-full flex gap-2 mb-6 animate-in fade-in zoom-in-95">
-            {/* Month */}
-            <div className="flex-[2] relative">
-              <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block pl-2">Month</label>
-              <select
-                value={month}
-                onChange={(e) => updateDate(day, e.target.value, year)}
-                className="w-full h-14 bg-white/10 border border-white/10 rounded-xl px-3 text-lg font-bold text-white appearance-none focus:border-primary outline-none"
-              >
-                {months.map((mName, i) => (
-                  <option key={i} value={i} className="text-black">{mName}</option>
-                ))}
-              </select>
+        return (
+        <div className="flex-1 flex flex-col px-6 pt-10 pb-8 relative z-[20]">
+          <header className="flex items-center justify-between mb-8">
+            <button onClick={onPrev} className="text-white flex size-12 items-center justify-center rounded-full active:bg-white/10">
+              <span className="material-symbols-outlined text-[28px]">arrow_back_ios_new</span>
+            </button>
+            <div className="flex gap-2">
+              <div className="h-1.5 w-1.5 rounded-full bg-primary/30" />
+              <div className="h-1.5 w-1.5 rounded-full bg-primary/30" />
+              <div className="h-1.5 w-8 rounded-full bg-primary" />
             </div>
-
-            {/* Day */}
-            <div className="flex-1 relative">
-              <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block pl-2">Day</label>
-              <select
-                value={day}
-                onChange={(e) => updateDate(e.target.value, month, year)}
-                className="w-full h-14 bg-white/10 border border-white/10 rounded-xl px-3 text-lg font-bold text-white appearance-none focus:border-primary outline-none text-center"
-              >
-                {days.map(dVal => (
-                  <option key={dVal} value={dVal} className="text-black">{dVal}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Year */}
-            <div className="flex-[1.5] relative">
-              <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block pl-2">Year</label>
-              <select
-                value={year}
-                onChange={(e) => updateDate(day, month, e.target.value)}
-                className="w-full h-14 bg-white/10 border border-white/10 rounded-xl px-3 text-lg font-bold text-white appearance-none focus:border-primary outline-none text-center"
-              >
-                {years.map(yVal => (
-                  <option key={yVal} value={yVal} className="text-black">{yVal}</option>
-                ))}
-              </select>
-            </div>
+            <div className="w-12" />
+          </header>
+          <div className="mb-10">
+            <h1 className="text-white text-[32px] font-bold leading-tight tracking-tight mb-4">
+              Greetings, {displayName}.<br />When were you born?
+            </h1>
+            <p className="text-white/60 text-base">Your birth date is the root of your cosmic tree.</p>
           </div>
-        )}
 
-        <div className="mt-auto">
-          <button onClick={onNext} className="w-full h-14 bg-primary text-white font-bold text-lg rounded-xl shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 group">
-            Continue
-            <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
-          </button>
+          <div className="flex justify-center mb-6">
+            <button
+              onClick={() => setIsManual(!isManual)}
+              className="text-xs font-bold uppercase tracking-widest text-primary hover:text-white transition-colors flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-sm">swap_horiz</span>
+              {isManual ? "Switch to Selection" : "Type Date Manually"}
+            </button>
+          </div>
+
+          {isManual ? (
+            <div className="w-full glass-panel rounded-2xl p-6 mb-6 flex flex-col items-center justify-center border border-white/10 shadow-lg relative overflow-hidden animate-in fade-in zoom-in-95">
+              <label className="text-white/50 text-xs font-bold mb-2 uppercase tracking-widest">Type Date</label>
+              <input
+                type="date"
+                className="bg-transparent border-none text-white text-3xl font-bold tracking-widest focus:ring-0 w-full text-center cursor-pointer appearance-none"
+                style={{ colorScheme: 'dark' }}
+                value={userData.birthDate}
+                onChange={(e) => updateField('birthDate', e.target.value)}
+              />
+            </div>
+          ) : (
+            <div className="w-full flex gap-2 mb-6 animate-in fade-in zoom-in-95">
+              {/* Month */}
+              <div className="flex-[2] relative">
+                <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block pl-2">Month</label>
+                <select
+                  value={month}
+                  onChange={(e) => updateDate(day, e.target.value, year)}
+                  className="w-full h-14 bg-white/10 border border-white/10 rounded-xl px-3 text-lg font-bold text-white appearance-none focus:border-primary outline-none"
+                >
+                  {months.map((mName, i) => (
+                    <option key={i} value={i} className="text-black">{mName}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Day */}
+              <div className="flex-1 relative">
+                <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block pl-2">Day</label>
+                <select
+                  value={day}
+                  onChange={(e) => updateDate(e.target.value, month, year)}
+                  className="w-full h-14 bg-white/10 border border-white/10 rounded-xl px-3 text-lg font-bold text-white appearance-none focus:border-primary outline-none text-center"
+                >
+                  {days.map(dVal => (
+                    <option key={dVal} value={dVal} className="text-black">{dVal}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Year */}
+              <div className="flex-[1.5] relative">
+                <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block pl-2">Year</label>
+                <select
+                  value={year}
+                  onChange={(e) => updateDate(day, month, e.target.value)}
+                  className="w-full h-14 bg-white/10 border border-white/10 rounded-xl px-3 text-lg font-bold text-white appearance-none focus:border-primary outline-none text-center"
+                >
+                  {years.map(yVal => (
+                    <option key={yVal} value={yVal} className="text-black">{yVal}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-auto">
+            <button onClick={onNext} className="w-full h-14 bg-primary text-white font-bold text-lg rounded-xl shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 group">
+              Continue
+              <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </button>
+          </div>
         </div>
-      </div>
-    );
+        );
   }
 
-  if (step === 'BIRTH_PLACE') {
+        if (step === 'BIRTH_PLACE') {
     return (
-      <LocationStep
-        userData={userData}
-        setUserData={setUserData}
-        onNext={onNext}
-        onPrev={onPrev}
-        displayName={displayName}
-      />
-    );
+        <LocationStep
+          userData={userData}
+          setUserData={setUserData}
+          onNext={onNext}
+          onPrev={onPrev}
+          displayName={displayName}
+        />
+        );
   }
 
-  if (step === 'BIRTH_TIME') {
+        if (step === 'BIRTH_TIME') {
     // Parse existing time or default
     const parseTime = (str: string) => {
-      if (!str) return { h: '12', m: '00', p: 'PM' };
-      const parts = str.match(/(\d+):(\d+)\s?(AM|PM)/i);
-      if (parts) return { h: parts[1], m: parts[2], p: parts[3].toUpperCase() };
-      return { h: '12', m: '00', p: 'PM' };
+      if (!str) return {h: '12', m: '00', p: 'PM' };
+        const parts = str.match(/(\d+):(\d+)\s?(AM|PM)/i);
+        if (parts) return {h: parts[1], m: parts[2], p: parts[3].toUpperCase() };
+        return {h: '12', m: '00', p: 'PM' };
     };
 
-    const { h, m, p } = parseTime(userData.birthTime);
+        const {h, m, p} = parseTime(userData.birthTime);
 
     const updateTime = (newH: string, newM: string, newP: string) => {
-      updateField('birthTime', `${newH}:${newM} ${newP}`);
+          updateField('birthTime', `${newH}:${newM} ${newP}`);
     };
 
-    const hours = Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0'));
-    const minutes = Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, '0')); // 5 min steps
-    // Or full 60? 5 min is usually better for mobile UX unless precise birth time is critical (it is for astrology)
-    // Let's do full 60 or simplified? User said "select the drop down".
-    // 00-59 is a lot for a dropdown. Let's do 00-59.
-    const allMinutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'));
+        const hours = Array.from({length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0'));
+        const minutes = Array.from({length: 12 }, (_, i) => (i * 5).toString().padStart(2, '0')); // 5 min steps
+        // Or full 60? 5 min is usually better for mobile UX unless precise birth time is critical (it is for astrology)
+        // Let's do full 60 or simplified? User said "select the drop down".
+        // 00-59 is a lot for a dropdown. Let's do 00-59.
+        const allMinutes = Array.from({length: 60 }, (_, i) => i.toString().padStart(2, '0'));
 
-    return (
-      <div className="flex-1 flex flex-col px-6 pt-10 pb-8 relative z-[20]">
-        <header className="flex items-center justify-between mb-8">
-          <button onClick={onPrev} className="text-white flex size-12 items-center justify-center rounded-full active:bg-white/10">
-            <span className="material-symbols-outlined text-[28px]">arrow_back_ios_new</span>
-          </button>
-          <div className="flex gap-2">
-            <div className="h-1.5 w-2 rounded-full bg-primary/30" />
-            <div className="h-1.5 w-2 rounded-full bg-primary/30" />
-            <div className="h-1.5 w-8 rounded-full bg-primary" />
-          </div>
-          <div className="w-12" />
-        </header>
-        <div className="mb-10">
-          <h1 className="text-white tracking-tight text-[36px] font-bold leading-tight mb-4">What was the time <br />of birth?</h1>
-          <p className="text-white/60 text-base">Crucial for your Rising Sign, {displayName}.</p>
-        </div>
-
-        <div className="relative w-full mb-10 flex gap-2">
-          <div className="flex-1 relative">
-            <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block pl-2">Hour</label>
-            <select
-              value={h}
-              onChange={(e) => updateTime(e.target.value, m, p)}
-              className="w-full h-16 bg-white/10 border border-white/10 rounded-2xl px-4 text-2xl font-bold text-white appearance-none focus:border-primary outline-none text-center"
-            >
-              {hours.map(hour => <option key={hour} value={hour} className="text-black">{hour}</option>)}
-            </select>
+        return (
+        <div className="flex-1 flex flex-col px-6 pt-10 pb-8 relative z-[20]">
+          <header className="flex items-center justify-between mb-8">
+            <button onClick={onPrev} className="text-white flex size-12 items-center justify-center rounded-full active:bg-white/10">
+              <span className="material-symbols-outlined text-[28px]">arrow_back_ios_new</span>
+            </button>
+            <div className="flex gap-2">
+              <div className="h-1.5 w-2 rounded-full bg-primary/30" />
+              <div className="h-1.5 w-2 rounded-full bg-primary/30" />
+              <div className="h-1.5 w-8 rounded-full bg-primary" />
+            </div>
+            <div className="w-12" />
+          </header>
+          <div className="mb-10">
+            <h1 className="text-white tracking-tight text-[36px] font-bold leading-tight mb-4">What was the time <br />of birth?</h1>
+            <p className="text-white/60 text-base">Crucial for your Rising Sign, {displayName}.</p>
           </div>
 
-          <div className="flex items-end pb-5 text-2xl font-bold">:</div>
-
-          <div className="flex-1 relative">
-            <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block pl-2">Minute</label>
-            <select
-              value={m}
-              onChange={(e) => updateTime(h, e.target.value, p)}
-              className="w-full h-16 bg-white/10 border border-white/10 rounded-2xl px-4 text-2xl font-bold text-white appearance-none focus:border-primary outline-none text-center"
-            >
-              {allMinutes.map(min => <option key={min} value={min} className="text-black">{min}</option>)}
-            </select>
-          </div>
-
-          <div className="flex-1 relative">
-            <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block pl-2">AM/PM</label>
-            <select
-              value={p}
-              onChange={(e) => updateTime(h, m, e.target.value)}
-              className="w-full h-16 bg-white/10 border border-white/10 rounded-2xl px-4 text-2xl font-bold text-white appearance-none focus:border-primary outline-none text-center"
-            >
-              <option value="AM" className="text-black">AM</option>
-              <option value="PM" className="text-black">PM</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="flex justify-center mb-8">
-          <div className="bg-white/5 px-6 py-3 rounded-xl border border-white/5 text-center">
-            <span className="block text-xs text-white/40 uppercase tracking-widest mb-1">Preview</span>
-            <span className="text-xl font-bold text-primary">{userData.birthTime}</span>
-          </div>
-        </div>
-
-        <div className="mt-auto">
-          <button
-            disabled={!userData.birthTime.trim()}
-            onClick={onNext}
-            className="w-full bg-primary text-white font-bold text-lg h-14 rounded-xl shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            Continue
-            <span className="material-symbols-outlined">arrow_forward</span>
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (step === 'FOCUS_AREAS') {
-    const areas = [
-      { id: 'Love', icon: 'favorite' },
-      { id: 'Career', icon: 'work' },
-      { id: 'Money', icon: 'paid' },
-      { id: 'Health', icon: 'spa' },
-      { id: 'Family', icon: 'home' },
-      { id: 'Studies', icon: 'school' },
-      { id: 'Travel', icon: 'flight' },
-      { id: 'Spirituality', icon: 'auto_awesome' },
-    ];
-    return (
-      <div className="flex-1 flex flex-col px-6 pt-10 pb-24 relative z-[20]">
-        <nav className="flex items-center justify-between mb-8">
-          <button onClick={onPrev} className="text-white/80"><span className="material-symbols-outlined">arrow_back</span></button>
-          <div className="flex gap-4 items-center">
-            <button onClick={onNext} className="text-[#ad90cb] font-bold uppercase text-sm">Skip</button>
-          </div>
-        </nav>
-        <header className="mb-8">
-          <h1 className="text-white tracking-tight text-[40px] font-bold leading-tight mb-4">
-            Focus Your <br /><span className="text-primary/80">Energy</span>
-          </h1>
-          <p className="text-white/70 text-lg">Select the areas where you seek the most clarity, {displayName}.</p>
-        </header>
-        <div className="flex flex-wrap gap-3">
-          {areas.map(area => {
-            const isSelected = userData.focusAreas.includes(area.id);
-            return (
-              <button
-                key={area.id}
-                onClick={() => toggleFocusArea(area.id)}
-                className={`flex items-center gap-x-2 rounded-full border py-3 pl-4 pr-6 transition-all ${isSelected ? 'border-primary bg-primary text-white' : 'border-transparent bg-surface-dark text-white/80 hover:bg-surface-dark/80'}`}
+          <div className="relative w-full mb-10 flex gap-2">
+            <div className="flex-1 relative">
+              <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block pl-2">Hour</label>
+              <select
+                value={h}
+                onChange={(e) => updateTime(e.target.value, m, p)}
+                className="w-full h-16 bg-white/10 border border-white/10 rounded-2xl px-4 text-2xl font-bold text-white appearance-none focus:border-primary outline-none text-center"
               >
-                <span className="material-symbols-outlined text-[20px]">{area.icon}</span>
-                <p className="text-base font-medium">{area.id}</p>
-              </button>
-            );
-          })}
-        </div>
-        <div className="fixed bottom-0 left-0 w-full p-6 bg-gradient-to-t from-background-dark via-background-dark/95 to-transparent">
-          <button onClick={onNext} className="w-full flex items-center justify-center rounded-full h-14 bg-primary text-white text-lg font-bold shadow-lg">
-            Reveal My Path
-            <span className="material-symbols-outlined ml-2 text-[20px]">arrow_forward</span>
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (step === 'SYSTEM_SELECT') {
-    const systems = [
-      { id: AstrologySystem.WESTERN, icon: 'wb_sunny' },
-      { id: AstrologySystem.VEDIC, icon: 'auto_awesome' },
-      { id: AstrologySystem.CHINESE, icon: 'cruelty_free' },
-      { id: AstrologySystem.TIBETAN, icon: 'self_improvement' },
-      { id: AstrologySystem.HELLENISTIC, icon: 'account_balance' },
-      { id: AstrologySystem.ISLAMIC, icon: 'nightlight' },
-      { id: AstrologySystem.KABBALISTIC, icon: 'flare' },
-    ];
-
-    return (
-      <div className="flex-1 flex flex-col px-6 pt-10 pb-24 relative z-[20]">
-        <header className="flex items-center justify-between mb-8">
-          <button onClick={onPrev} className="text-white"><span className="material-symbols-outlined">arrow_back</span></button>
-          <div className="w-8" />
-        </header>
-        <h1 className="text-3xl font-bold text-center mb-3">Astrology System</h1>
-        <p className="text-white/60 text-center mb-8">Which ancient wisdom calls to you, {displayName}?</p>
-
-        <div className="grid grid-cols-2 gap-3 mb-8">
-          {systems.map(sys => {
-            const isSelected = userData.system === sys.id;
-            return (
-              <div key={sys.id} className="relative">
-                <button
-                  onClick={() => updateField('system', sys.id)}
-                  className={`relative flex w-full h-14 items-center justify-center gap-2 rounded-full transition-all active:scale-95 ${isSelected ? 'bg-primary border border-primary shadow-lg' : 'bg-surface-dark/50 border border-white/10 hover:border-primary/50'}`}
-                >
-                  <span className={`material-symbols-outlined text-[22px] ${isSelected ? 'text-white' : 'text-white/50'}`}>{sys.icon}</span>
-                  <span className={`text-sm font-medium ${isSelected ? 'text-white' : 'text-white/80'}`}>{sys.id}</span>
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setActiveTooltip(activeTooltip === sys.id ? null : sys.id);
-                  }}
-                  className={`absolute -top-1 -right-1 size-6 rounded-full border flex items-center justify-center transition-all ${activeTooltip === sys.id ? 'bg-primary border-white/50 shadow-lg' : 'bg-white/10 border-white/20 text-white/40'}`}
-                >
-                  <span className="material-symbols-outlined text-[14px]">info</span>
-                </button>
-                {activeTooltip === sys.id && (
-                  <div className="absolute top-full left-0 right-0 z-50 mt-2 p-3 bg-card-surface border border-primary/30 rounded-2xl shadow-2xl animate-in fade-in slide-in-from-top-2">
-                    <p className="text-[11px] text-white/90 leading-relaxed font-medium">
-                      {SYSTEM_INFOS[sys.id]}
-                    </p>
-                    <button
-                      onClick={() => setActiveTooltip(null)}
-                      className="mt-2 text-[9px] uppercase font-bold text-primary"
-                    >
-                      Got it
-                    </button>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="fixed bottom-0 left-0 w-full p-4 pb-8 bg-gradient-to-t from-background-dark via-background-dark/95 to-transparent">
-          <button onClick={onNext} className="w-full flex items-center justify-center rounded-full h-14 bg-primary text-white font-bold text-lg shadow-lg">
-            Start Journey
-            <span className="material-symbols-outlined ml-2">arrow_forward</span>
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (step === 'REVIEW') {
-    return (
-      <div className="flex-1 flex flex-col px-4 pt-4 pb-32 relative z-[20]">
-        <header className="sticky top-0 z-50 flex items-center bg-background-dark/90 backdrop-blur-md p-4 mb-4 justify-between">
-          <button onClick={onPrev} className="text-white flex size-12 items-center justify-center rounded-full"><span className="material-symbols-outlined">arrow_back_ios_new</span></button>
-          <h2 className="text-white text-lg font-bold flex-1 text-center pr-12">Confirm Details</h2>
-        </header>
-        <div className="mb-6 px-4"><h3 className="text-white text-[28px] font-bold">Ready, {displayName}?</h3></div>
-        <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl group border border-white/5 bg-surface-dark mx-auto max-w-[90%]">
-          <div className="p-6 flex flex-col gap-6">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-primary text-xs font-bold uppercase mb-1">Birth Profile</p>
-                <p className="text-white text-3xl font-bold break-words">{displayName}</p>
-              </div>
+                {hours.map(hour => <option key={hour} value={hour} className="text-black">{hour}</option>)}
+              </select>
             </div>
-            <div className="space-y-4">
-              <div className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">language</span><span className="text-lg">{userData.language}</span></div>
-              <div className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">calendar_month</span><span className="text-lg">{userData.birthDate}</span></div>
-              <div className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">schedule</span><span className="text-lg">{userData.birthTime}</span></div>
-              <div className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">location_on</span><span className="text-lg">{userData.birthPlace}</span></div>
-              <div className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">public</span><span className="text-xs text-white/50">{userData.latitude?.toFixed(4)}, {userData.longitude?.toFixed(4)} ({userData.timezone})</span></div>
+
+            <div className="flex items-end pb-5 text-2xl font-bold">:</div>
+
+            <div className="flex-1 relative">
+              <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block pl-2">Minute</label>
+              <select
+                value={m}
+                onChange={(e) => updateTime(h, e.target.value, p)}
+                className="w-full h-16 bg-white/10 border border-white/10 rounded-2xl px-4 text-2xl font-bold text-white appearance-none focus:border-primary outline-none text-center"
+              >
+                {allMinutes.map(min => <option key={min} value={min} className="text-black">{min}</option>)}
+              </select>
+            </div>
+
+            <div className="flex-1 relative">
+              <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block pl-2">AM/PM</label>
+              <select
+                value={p}
+                onChange={(e) => updateTime(h, m, e.target.value)}
+                className="w-full h-16 bg-white/10 border border-white/10 rounded-2xl px-4 text-2xl font-bold text-white appearance-none focus:border-primary outline-none text-center"
+              >
+                <option value="AM" className="text-black">AM</option>
+                <option value="PM" className="text-black">PM</option>
+              </select>
             </div>
           </div>
+
+          <div className="flex justify-center mb-8">
+            <div className="bg-white/5 px-6 py-3 rounded-xl border border-white/5 text-center">
+              <span className="block text-xs text-white/40 uppercase tracking-widest mb-1">Preview</span>
+              <span className="text-xl font-bold text-primary">{userData.birthTime}</span>
+            </div>
+          </div>
+
+          <div className="mt-auto">
+            <button
+              disabled={!userData.birthTime.trim()}
+              onClick={onNext}
+              className="w-full bg-primary text-white font-bold text-lg h-14 rounded-xl shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              Continue
+              <span className="material-symbols-outlined">arrow_forward</span>
+            </button>
+          </div>
         </div>
-        <div className="fixed bottom-0 left-0 right-0 z-50 p-4 pt-6 bg-gradient-to-t from-background-dark via-background-dark to-transparent">
-          <button disabled={loading} onClick={onFinish} className="w-full max-w-md mx-auto bg-primary text-white font-bold text-lg h-14 rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95">
-            {loading ? 'Consulting the stars...' : 'Generate My Chart'}
-            {!loading && <span className="material-symbols-outlined">auto_awesome</span>}
-          </button>
-        </div>
-      </div>
-    );
+        );
   }
 
-  return null;
+        if (step === 'FOCUS_AREAS') {
+    const areas = [
+        {id: 'Love', icon: 'favorite' },
+        {id: 'Career', icon: 'work' },
+        {id: 'Money', icon: 'paid' },
+        {id: 'Health', icon: 'spa' },
+        {id: 'Family', icon: 'home' },
+        {id: 'Studies', icon: 'school' },
+        {id: 'Travel', icon: 'flight' },
+        {id: 'Spirituality', icon: 'auto_awesome' },
+        ];
+        return (
+        <div className="flex-1 flex flex-col px-6 pt-10 pb-24 relative z-[20]">
+          <nav className="flex items-center justify-between mb-8">
+            <button onClick={onPrev} className="text-white/80"><span className="material-symbols-outlined">arrow_back</span></button>
+            <div className="flex gap-4 items-center">
+              <button onClick={onNext} className="text-[#ad90cb] font-bold uppercase text-sm">Skip</button>
+            </div>
+          </nav>
+          <header className="mb-8">
+            <h1 className="text-white tracking-tight text-[40px] font-bold leading-tight mb-4">
+              Focus Your <br /><span className="text-primary/80">Energy</span>
+            </h1>
+            <p className="text-white/70 text-lg">Select the areas where you seek the most clarity, {displayName}.</p>
+          </header>
+          <div className="flex flex-wrap gap-3">
+            {areas.map(area => {
+              const isSelected = userData.focusAreas.includes(area.id);
+              return (
+                <button
+                  key={area.id}
+                  onClick={() => toggleFocusArea(area.id)}
+                  className={`flex items-center gap-x-2 rounded-full border py-3 pl-4 pr-6 transition-all ${isSelected ? 'border-primary bg-primary text-white' : 'border-transparent bg-surface-dark text-white/80 hover:bg-surface-dark/80'}`}
+                >
+                  <span className="material-symbols-outlined text-[20px]">{area.icon}</span>
+                  <p className="text-base font-medium">{area.id}</p>
+                </button>
+              );
+            })}
+          </div>
+          <div className="fixed bottom-0 left-0 w-full p-6 bg-gradient-to-t from-background-dark via-background-dark/95 to-transparent">
+            <button onClick={onNext} className="w-full flex items-center justify-center rounded-full h-14 bg-primary text-white text-lg font-bold shadow-lg">
+              Reveal My Path
+              <span className="material-symbols-outlined ml-2 text-[20px]">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+        );
+  }
+
+        if (step === 'SYSTEM_SELECT') {
+    const systems = [
+        {id: AstrologySystem.WESTERN, icon: 'wb_sunny' },
+        {id: AstrologySystem.VEDIC, icon: 'auto_awesome' },
+        {id: AstrologySystem.CHINESE, icon: 'cruelty_free' },
+        {id: AstrologySystem.TIBETAN, icon: 'self_improvement' },
+        {id: AstrologySystem.HELLENISTIC, icon: 'account_balance' },
+        {id: AstrologySystem.ISLAMIC, icon: 'nightlight' },
+        {id: AstrologySystem.KABBALISTIC, icon: 'flare' },
+        ];
+
+        return (
+        <div className="flex-1 flex flex-col px-6 pt-10 pb-24 relative z-[20]">
+          <header className="flex items-center justify-between mb-8">
+            <button onClick={onPrev} className="text-white"><span className="material-symbols-outlined">arrow_back</span></button>
+            <div className="w-8" />
+          </header>
+          <h1 className="text-3xl font-bold text-center mb-3">Astrology System</h1>
+          <p className="text-white/60 text-center mb-8">Which ancient wisdom calls to you, {displayName}?</p>
+
+          <div className="grid grid-cols-2 gap-3 mb-8">
+            {systems.map(sys => {
+              const isSelected = userData.system === sys.id;
+              return (
+                <div key={sys.id} className="relative">
+                  <button
+                    onClick={() => updateField('system', sys.id)}
+                    className={`relative flex w-full h-14 items-center justify-center gap-2 rounded-full transition-all active:scale-95 ${isSelected ? 'bg-primary border border-primary shadow-lg' : 'bg-surface-dark/50 border border-white/10 hover:border-primary/50'}`}
+                  >
+                    <span className={`material-symbols-outlined text-[22px] ${isSelected ? 'text-white' : 'text-white/50'}`}>{sys.icon}</span>
+                    <span className={`text-sm font-medium ${isSelected ? 'text-white' : 'text-white/80'}`}>{sys.id}</span>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveTooltip(activeTooltip === sys.id ? null : sys.id);
+                    }}
+                    className={`absolute -top-1 -right-1 size-6 rounded-full border flex items-center justify-center transition-all ${activeTooltip === sys.id ? 'bg-primary border-white/50 shadow-lg' : 'bg-white/10 border-white/20 text-white/40'}`}
+                  >
+                    <span className="material-symbols-outlined text-[14px]">info</span>
+                  </button>
+                  {activeTooltip === sys.id && (
+                    <div className="absolute top-full left-0 right-0 z-50 mt-2 p-3 bg-card-surface border border-primary/30 rounded-2xl shadow-2xl animate-in fade-in slide-in-from-top-2">
+                      <p className="text-[11px] text-white/90 leading-relaxed font-medium">
+                        {SYSTEM_INFOS[sys.id]}
+                      </p>
+                      <button
+                        onClick={() => setActiveTooltip(null)}
+                        className="mt-2 text-[9px] uppercase font-bold text-primary"
+                      >
+                        Got it
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="fixed bottom-0 left-0 w-full p-4 pb-8 bg-gradient-to-t from-background-dark via-background-dark/95 to-transparent">
+            <button onClick={onNext} className="w-full flex items-center justify-center rounded-full h-14 bg-primary text-white font-bold text-lg shadow-lg">
+              Start Journey
+              <span className="material-symbols-outlined ml-2">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+        );
+  }
+
+        if (step === 'REVIEW') {
+    return (
+        <div className="flex-1 flex flex-col px-4 pt-4 pb-32 relative z-[20]">
+          <header className="sticky top-0 z-50 flex items-center bg-background-dark/90 backdrop-blur-md p-4 mb-4 justify-between">
+            <button onClick={onPrev} className="text-white flex size-12 items-center justify-center rounded-full"><span className="material-symbols-outlined">arrow_back_ios_new</span></button>
+            <h2 className="text-white text-lg font-bold flex-1 text-center pr-12">Confirm Details</h2>
+          </header>
+          <div className="mb-6 px-4"><h3 className="text-white text-[28px] font-bold">Ready, {displayName}?</h3></div>
+          <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl group border border-white/5 bg-surface-dark mx-auto max-w-[90%]">
+            <div className="p-6 flex flex-col gap-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-primary text-xs font-bold uppercase mb-1">Birth Profile</p>
+                  <p className="text-white text-3xl font-bold break-words">{displayName}</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">language</span><span className="text-lg">{userData.language}</span></div>
+                <div className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">calendar_month</span><span className="text-lg">{userData.birthDate}</span></div>
+                <div className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">schedule</span><span className="text-lg">{userData.birthTime}</span></div>
+                <div className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">location_on</span><span className="text-lg">{userData.birthPlace}</span></div>
+                <div className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">public</span><span className="text-xs text-white/50">{userData.latitude?.toFixed(4)}, {userData.longitude?.toFixed(4)} ({userData.timezone})</span></div>
+              </div>
+            </div>
+          </div>
+          <div className="fixed bottom-0 left-0 right-0 z-50 p-4 pt-6 bg-gradient-to-t from-background-dark via-background-dark to-transparent">
+            <button disabled={loading} onClick={onFinish} className="w-full max-w-md mx-auto bg-primary text-white font-bold text-lg h-14 rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95">
+              {loading ? 'Consulting the stars...' : 'Generate My Chart'}
+              {!loading && <span className="material-symbols-outlined">auto_awesome</span>}
+            </button>
+          </div>
+        </div>
+        );
+  }
+
+        return null;
 };
 
-export default OnboardingSteps;
+        export default OnboardingSteps;
