@@ -47,7 +47,7 @@ const VedicProfile: React.FC<VedicProfileProps> = ({ userData, data, onOpenChat 
                     {chartType === 'south' ? (
                         <SouthIndianChart data={data} language={userData.language} />
                     ) : (
-                        <NorthIndianChart data={data} />
+                        <NorthIndianChart data={data} language={userData.language} />
                     )}
                 </div>
                 <p className="text-center text-xs text-white/30 italic">
