@@ -1,0 +1,157 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <!-- Deep Space Gradients -->
+    <radialGradient id="spaceGrad" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#1e1b4b" /> <!-- Indigo-950 -->
+      <stop offset="60%" stop-color="#0f172a" /> <!-- Slate-900 -->
+      <stop offset="100%" stop-color="#000000" />
+    </radialGradient>
+    
+    <!-- Neon Glows -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+      <feMerge>
+        <feMergeNode in="coloredBlur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    
+    <filter id="strongGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur" />
+      <feMerge>
+        <feMergeNode in="coloredBlur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    
+    <!-- Gold Gradient -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FCD34D" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Layer -->
+  <rect width="800" height="800" fill="url(#spaceGrad)" />
+  
+  <!-- Subtle Neural Network / Circuit Lines Background -->
+  <g opacity="0.2" stroke="#22d3ee" stroke-width="1" fill="none">
+    <path d="M100 100 L200 200 L150 300" />
+    <path d="M700 100 L600 200 L650 300" />
+    <path d="M100 700 L200 600 L150 500" />
+    <path d="M700 700 L600 600 L650 500" />
+    <path d="M400 100 L400 200" />
+    <path d="M400 700 L400 600" />
+    <circle cx="200" cy="200" r="2" fill="#22d3ee">
+       <animate attributeName="opacity" values="0.2;1;0.2" dur="4s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="600" cy="200" r="2" fill="#22d3ee">
+       <animate attributeName="opacity" values="0.2;1;0.2" dur="5s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="200" cy="600" r="2" fill="#22d3ee">
+       <animate attributeName="opacity" values="0.2;1;0.2" dur="3s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="600" cy="600" r="2" fill="#22d3ee">
+       <animate attributeName="opacity" values="0.2;1;0.2" dur="6s" repeatCount="indefinite" />
+    </circle>
+  </g>
+
+  <!-- Main Content Group - Centered -->
+  <g transform="translate(400, 400)">
+  
+    <!-- Zodiac Wheel (Rotating) -->
+    <g>
+      <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="120s" repeatCount="indefinite" />
+      
+      <!-- Outer Ring -->
+      <circle r="300" fill="none" stroke="#22d3ee" stroke-width="1" stroke-opacity="0.3" stroke-dasharray="10 5" />
+      
+      <!-- Inner Ring -->
+      <circle r="280" fill="none" stroke="#d946ef" stroke-width="1" stroke-opacity="0.3" stroke-dasharray="2 10" />
+      
+      <!-- Zodiac Glyphs (Abstract Representations) -->
+      <g stroke="#FCD34D" stroke-width="2" fill="none" opacity="0.6">
+        <!-- 12 positions -->
+        <circle cx="0" cy="-290" r="4" />
+        <circle cx="145" cy="-251" r="4" />
+        <circle cx="251" cy="-145" r="4" />
+        <circle cx="290" cy="0" r="4" />
+        <circle cx="251" cy="145" r="4" />
+        <circle cx="145" cy="251" r="4" />
+        <circle cx="0" cy="290" r="4" />
+        <circle cx="-145" cy="251" r="4" />
+        <circle cx="-251" cy="145" r="4" />
+        <circle cx="-290" cy="0" r="4" />
+        <circle cx="-251" cy="-145" r="4" />
+        <circle cx="-145" cy="-251" r="4" />
+      </g>
+    </g>
+    
+    <!-- Counter-Rotating Orbitals -->
+    <g>
+      <animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="80s" repeatCount="indefinite" />
+      
+       <!-- Orbit Path -->
+       <circle r="220" fill="none" stroke="#ffffff" stroke-opacity="0.1" />
+       
+       <!-- Planet 1 -->
+       <circle cx="220" cy="0" r="6" fill="#22d3ee" filter="url(#glow)" />
+       
+       <!-- Planet 2 -->
+       <circle cx="-110" cy="190" r="4" fill="#d946ef" filter="url(#glow)" />
+       
+       <!-- Planet 3 -->
+       <circle cx="-110" cy="-190" r="5" fill="#FCD34D" filter="url(#glow)" />
+    </g>
+
+    <!-- Neural Connections (Radiating Lines) -->
+    <g opacity="0.4">
+       <line x1="0" y1="0" x2="0" y2="-180" stroke="url(#goldGrad)" stroke-width="1" stroke-dasharray="100">
+          <animate attributeName="stroke-dashoffset" from="100" to="0" dur="3s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0;1;0" dur="3s" repeatCount="indefinite" />
+       </line>
+       <line x1="0" y1="0" x2="155" y2="90" stroke="#22d3ee" stroke-width="1">
+          <animate attributeName="opacity" values="0;0.8;0" dur="4s" repeatCount="indefinite" />
+       </line>
+       <line x1="0" y1="0" x2="-155" y2="90" stroke="#d946ef" stroke-width="1">
+           <animate attributeName="opacity" values="0;0.8;0" dur="5s" repeatCount="indefinite" />
+       </line>
+    </g>
+
+    <!-- AI Robot Silhouette -->
+    <!-- Sleek, minimal, made of stardust/lines -->
+    <g filter="url(#strongGlow)">
+      <!-- Head -->
+      <path d="M -30,-40 L 30,-40 L 35,10 L 0,25 L -35,10 Z" fill="#0f172a" stroke="#22d3ee" stroke-width="2" />
+      
+      <!-- Visor / Eyes -->
+      <path d="M -20,-15 L 20,-15 L 20,-5 L -20,-5 Z" fill="#22d3ee" opacity="0.8">
+         <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite" />
+      </path>
+      
+      <!-- Neck -->
+      <rect x="-10" y="25" width="20" height="10" fill="#1e293b" />
+      
+      <!-- Shoulders / Chest -->
+      <path d="M -50,35 L 50,35 L 60,60 L 40,110 L -40,110 L -60,60 Z" fill="#0f172a" stroke="#d946ef" stroke-width="1.5" />
+      
+      <!-- Core Crystal -->
+      <circle cx="0" cy="70" r="8" fill="#FCD34D">
+         <animate attributeName="r" values="8;10;8" dur="4s" repeatCount="indefinite" />
+         <animate attributeName="opacity" values="0.8;1;0.8" dur="4s" repeatCount="indefinite" />
+      </circle>
+      
+      <!-- Circuit Lines on Body -->
+      <path d="M 0,78 L 0,110" stroke="#FCD34D" stroke-width="1" />
+      <path d="M -8,70 L -30,60" stroke="#22d3ee" stroke-width="1" />
+      <path d="M 8,70 L 30,60" stroke="#22d3ee" stroke-width="1" />
+      
+      <!-- Floating Stardust Particles (Robot Composition) -->
+      <circle cx="-35" cy="-50" r="1" fill="#fff" opacity="0.5"><animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" /></circle>
+      <circle cx="35" cy="-50" r="1" fill="#fff" opacity="0.5"><animate attributeName="opacity" values="0;1;0" dur="3s" repeatCount="indefinite" /></circle>
+      <circle cx="55" cy="40" r="1" fill="#fff" opacity="0.5"><animate attributeName="opacity" values="0;1;0" dur="2.5s" repeatCount="indefinite" /></circle>
+      <circle cx="-55" cy="40" r="1" fill="#fff" opacity="0.5"><animate attributeName="opacity" values="0;1;0" dur="3.5s" repeatCount="indefinite" /></circle>
+    </g>
+
+  </g>
+</svg>
