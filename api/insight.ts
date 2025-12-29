@@ -353,9 +353,9 @@ export default async function handler(req: Request) {
 
           calculatedChartFormatted = `
             CALCULATED VEDIC DATA (Lahiri Ayanamsa):
-            Ascendant (Lagnam): ${chart.ascendant.sign} (${chart.ascendant.nakshatra})
+            Ascendant (Lagnam): ${chart.ascendant.sign} (${chart.ascendant.nakshatra} - Padam ${chart.ascendant.nakshatraPadam})
             Sun: ${chart.planets.find(p => p.name === 'Sun')?.sign}
-            Moon: ${chart.planets.find(p => p.name === 'Moon')?.sign} (${chart.planets.find(p => p.name === 'Moon')?.nakshatra})
+            Moon: ${chart.planets.find(p => p.name === 'Moon')?.sign} (${chart.planets.find(p => p.name === 'Moon')?.nakshatra} - Padam ${chart.planets.find(p => p.name === 'Moon')?.nakshatraPadam})
             Mars: ${chart.planets.find(p => p.name === 'Mars')?.sign}
             Mercury: ${chart.planets.find(p => p.name === 'Mercury')?.sign}
             Jupiter: ${chart.planets.find(p => p.name === 'Jupiter')?.sign}
@@ -363,6 +363,12 @@ export default async function handler(req: Request) {
             Saturn: ${chart.planets.find(p => p.name === 'Saturn')?.sign}
             Rahu: ${chart.planets.find(p => p.name === 'Rahu')?.sign}
             Ketu: ${chart.planets.find(p => p.name === 'Ketu')?.sign}
+            
+            PANCHANG DETAILS (MUST USE):
+            Tithi: ${chart.panchang.tithi} (${chart.panchang.tithiPaksha})
+            Yoga: ${chart.panchang.yoga}
+            Karana: ${chart.panchang.karana}
+            Nakshatra: ${chart.panchang.nakshatra}
             `;
         } catch (e) {
           console.error("Vedic Engine Calculation Failed:", e);
