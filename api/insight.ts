@@ -381,8 +381,11 @@ export default async function handler(req: Request) {
         }
       }
 
-      const isVedic = userData.system === 'Indian Vedic';
-      const technicalDetailsSchema = isVedic ? `
+      let technicalDetailsSchema = "";
+      const sys = userData.system;
+
+      if (sys === 'Indian Vedic') {
+        technicalDetailsSchema = `
            [
              { "label": "Lagnam (Ascendant)", "value": "Sign", "icon": "star" },
              { "label": "Rashi (Moon Sign)", "value": "Sign", "icon": "bedtime" },
@@ -391,7 +394,20 @@ export default async function handler(req: Request) {
              { "label": "Yogam", "value": "Yoga Name", "icon": "join_inner" },
              { "label": "Karanam", "value": "Karana Name", "icon": "timeline" }
            ]
-      ` : `
+        `;
+      } else if (sys === 'Chinese') {
+        technicalDetailsSchema = `
+           [
+             { "label": "Year Animal", "value": "Animal Name", "icon": "pets" },
+             { "label": "Month Animal", "value": "Animal Name", "icon": "calendar_month" },
+             { "label": "Element", "value": "Wood/Fire/Earth/Metal/Water", "icon": "local_fire_department" },
+             { "label": "Yin/Yang", "value": "Yin or Yang", "icon": "contrast" },
+             { "label": "Trine", "value": "Trine Name", "icon": "hub" }
+           ]
+        `;
+      } else {
+        // Western / Default
+        technicalDetailsSchema = `
            [
              { "label": "Sun Sign", "value": "Sign Name", "icon": "sunny" },
              { "label": "Moon Sign", "value": "Sign Name", "icon": "bedtime" },
@@ -400,7 +416,8 @@ export default async function handler(req: Request) {
              { "label": "Venus", "value": "Sign Name", "icon": "favorite" },
              { "label": "Mars", "value": "Sign Name", "icon": "local_fire_department" }
            ]
-      `;
+        `;
+      }
 
       const prompt = `
          PERFORM ASTROLOGICAL INTERPRETATION.
