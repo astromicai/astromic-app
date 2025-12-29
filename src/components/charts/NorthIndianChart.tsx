@@ -5,10 +5,26 @@ interface ChartProps {
     data: InsightData;
 }
 
-const NorthIndianChart: React.FC<ChartProps> = ({ data }) => {
+const NorthIndianChart: React.FC<ChartProps & { language?: string }> = ({ data, language = 'English' }) => {
     // North Indian Chart: Houses are FIXED. Signs move.
     // House 1 is always Top Center Diamond.
     // House order is Anti-Clockwise.
+
+    const TRANSLATIONS: any = {
+        'Tamil': {
+            planets: {
+                "Sun": "சூ", "Moon": "சந்", "Mars": "செ", "Mercury": "பு",
+                "Jupiter": "குரு", "Venus": "சுக்", "Saturn": "சனி", "Rahu": "ரா", "Ketu": "கே", "Asc": "ல"
+            }
+        }
+    };
+
+    const getTranslatedPlanet = (planet: string) => {
+        if (language === 'Tamil' && TRANSLATIONS['Tamil'].planets[planet]) {
+            return TRANSLATIONS['Tamil'].planets[planet];
+        }
+        return planet.substring(0, 2);
+    };
 
     // 1. Determine Ascendant Sign Name
     const ascSignName = data.rawChart?.ascendant?.sign || data.technicalDetails?.find(d => d.label.includes('Ascendant') || d.label.includes('Lagnam'))?.value || "Aries";
@@ -19,14 +35,11 @@ const NorthIndianChart: React.FC<ChartProps> = ({ data }) => {
     ];
 
     // Find index of Ascendant sign (0-11)
-    // Note: user string might contain noise, simple includes check
     let ascIndex = ZODIAC.findIndex(z => ascSignName.includes(z));
     if (ascIndex === -1) ascIndex = 0; // Default Aries
 
     // Helper to get sign for a specific house (1-12)
     const getSignForHouse = (houseNum: number) => {
-        // House 1 = AscIndex
-        // House 2 = (AscIndex + 1) % 12
         const signIndex = (ascIndex + (houseNum - 1)) % 12;
         return ZODIAC[signIndex];
     };
@@ -35,23 +48,18 @@ const NorthIndianChart: React.FC<ChartProps> = ({ data }) => {
         const signName = getSignForHouse(houseNum);
         const points = [];
 
-        // We don't mark "Asc" inside the house because the layout itself *is* relative to Asc?
-        // Actually standard North charts DO mark the Sign Number in the corner, and planets.
-        // House 1 IS Ascendant. Point 'Asc' is implicitly House 1.
-        if (houseNum === 1) points.push("Asc");
+        if (houseNum === 1) points.push(getTranslatedPlanet("Asc"));
 
         if (data.rawChart?.planets) {
             data.rawChart.planets.forEach(p => {
                 if (p.sign === signName) {
-                    const short = p.name.substring(0, 2);
-                    points.push(short);
+                    points.push(getTranslatedPlanet(p.name));
                 }
             });
         } else {
             data.chartData?.planets.forEach(p => {
                 if (p.sign.includes(signName)) {
-                    const short = p.name.substring(0, 2);
-                    points.push(short);
+                    points.push(getTranslatedPlanet(p.name));
                 }
             });
         }
