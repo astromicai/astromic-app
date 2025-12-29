@@ -41,7 +41,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onCl
   }, [messages, isStreaming]);
 
   const userMessageCount = messages.filter(m => m.role === 'user').length;
-  const limitReached = userMessageCount >= 3;
+  const limitReached = userMessageCount >= 5;
 
   const handleSend = async () => {
     if (!input.trim() || isStreaming) return;
@@ -49,7 +49,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onCl
     if (limitReached) {
       setMessages(prev => [...prev, { role: 'user', text: input.trim() }, {
         role: 'model',
-        text: "You have reached your free query limit.\n\nWe are working on a subscription model to bring you unlimited cosmic insights. Please go back to our home page [Astromic.ai](https://astromic.ai) and join our waitlist using your email."
+        text: "You have reached your free query limit.\n\nWe are working on a subscription model to bring you unlimited cosmic insights. Please visit our home page [astromic.ai](https://astromic.ai) and join our waitlist using your email."
       }]);
       setInput('');
       return;
@@ -134,7 +134,9 @@ const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onCl
               }`}>
               <p className="text-[15px] leading-relaxed whitespace-pre-wrap font-medium"
                 dangerouslySetInnerHTML={{
-                  __html: msg.text.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" class="text-primary hover:underline font-bold">$1</a>').replace(/\n/g, '<br/>')
+                  __html: msg.text
+                    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary hover:text-white hover:underline font-bold transition-colors">$1</a>')
+                    .replace(/\n/g, '<br/>')
                 }}
               >
               </p>
