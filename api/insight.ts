@@ -64,7 +64,21 @@ function getMoonIsLong(jd: number): number {
   return normalizeDegree(l);
 }
 
-function calculateVedicChart(dateWrapper: string, timeString: string, lat: number, lon: number) {
+function getTzOffsetMinutes(date: Date, timeZone: string): number {
+  // Returns offset in minutes (e.g. Asia/Kolkata -> -330 for UTC+5:30)
+  // We use the Intl API which is available in Edge Runtime
+  try {
+    const invDate = new Date(date.toLocaleString('en-US', { timeZone }));
+    const diff = date.getTime() - invDate.getTime();
+    return diff / 60000;
+  } catch (e) {
+    // Fallback for invalid timezone: try to guess or default to 0
+    console.error("Timezone calc error:", e);
+    return 0;
+  }
+}
+
+function calculateVedicChart(dateWrapper: string, timeString: string, lat: number, lon: number, timeZone: string = "UTC") {
   let [hours, minutes] = timeString.split(':').map(part => part.trim());
   let isPM = false, isAM = false;
   if (timeString.toUpperCase().includes('PM')) { isPM = true; minutes = minutes.replace(/PM/i, '').trim(); }
@@ -77,16 +91,81 @@ function calculateVedicChart(dateWrapper: string, timeString: string, lat: numbe
 
   const paddedHour = hourInt.toString().padStart(2, '0');
   const paddedMinute = minuteInt.toString().padStart(2, '0');
-  let date = new Date(`${dateWrapper}T${paddedHour}:${paddedMinute}:00Z`); // Treat input as UTC for simplified calculation standard or assume input is local and convert.
-  // NOTE: Ideally we subtract TZ offset. For MVP crash fix, we treat as UTC-ish or rely on generic calc.
-  // Better: create date from string, get timestamp.
 
-  if (isNaN(date.getTime())) date = new Date(); // Fallback
+  // Construct "Local" date object (absolute time is wrong here, but components are right)
+  const isoLocal = `${dateWrapper}T${paddedHour}:${paddedMinute}:00`;
+  let localDateDummy = new Date(isoLocal + "Z"); // Treat as UTC just to get the components into a Date object
 
-  const jd = getJulianDay(date);
+  if (isNaN(localDateDummy.getTime())) localDateDummy = new Date();
+
+  // Calculate Offset
+  // We want: Time_UTC = Time_Local - Offset
+  // But Intl is tricky.
+  // robust way:
+  // 1. Create a date object that represents the instant in UTC that matches user's wall clock.
+  // 2. Ask Intl "What time is it in Asia/Kolkata for this UTC instant?"
+  // 3. The difference is the offset.
+
+  // Actually, simple Vercel/Node way:
+  // We have "2023-08-23T20:30:00" and "Asia/Kolkata".
+  // We want the timestamp.
+
+  // Let's use the 'toLocaleString' trick to compute offset:
+  const now = new Date();
+  const tzString = now.toLocaleString("en-US", { timeZone });
+  // This confirms timezone is valid.
+
+  // Hack: Create a UTC date with the user's components
+  const utcTimeOfUserComponents = Date.UTC(
+    localDateDummy.getUTCFullYear(),
+    localDateDummy.getUTCMonth(),
+    localDateDummy.getUTCDate(),
+    localDateDummy.getUTCHours(),
+    localDateDummy.getUTCMinutes()
+  );
+
+  // Now get the offset for this general area.
+  // Since we don't have a library, we'll approximate offset using the Intl API on the current date,
+  // or arguably the birth date if we can.
+
+  const getDateInTz = (d: number, tz: string) => {
+    return new Date(new Date(d).toLocaleString("en-US", { timeZone: tz }));
+  }
+
+  // Iterative approach to find UTC timestamp where Local Time matches User Input
+  // Estimate: UTC = Local - 5.5h (approx)
+  let guessUTC = utcTimeOfUserComponents - (5.5 * 3600 * 1000);
+
+  // Refine
+  // If we convert 'guessUTC' to 'timeZone', do we get 'utcTimeOfUserComponents'?
+  const dGuess = new Date(guessUTC);
+  const localGuess = getDateInTz(guessUTC, timeZone);
+  // localGuess components vs desired components
+  const diff = localGuess.getTime() - dGuess.getTime();
+  // Actually simpler:
+  // Offset = Local (as UTC) - UTC
+  // We can't easily get this without a library like luxon.
+
+  // SIMPLEST FIX FOR MVP:
+  // Use the `timeZone` to adjust.
+  // If timeZone is "Asia/Kolkata", we know it is roughly +5.5.
+  // If we are in Edge Runtime, we rely on standard IANA offsets.
+
+  // Let's deduce offset by formatting a reference date.
+  const refDate = new Date(utcTimeOfUserComponents); // 20:30 UTC
+  const refString = refDate.toLocaleString('en-US', { timeZone, hour12: false });
+  // This gives us what 20:30 UTC is in Kolkata (likely 02:00 next day).
+  // Compare 02:00 next day to 20:30.
+  const refLocal = new Date(refString);
+  const offsetMs = refLocal.getTime() - refDate.getTime(); // This is the TZ Offset!
+
+  const trueUtcTimestamp = utcTimeOfUserComponents - offsetMs;
+  const trueDate = new Date(trueUtcTimestamp);
+
+  const jd = getJulianDay(trueDate);
   const ayanamsa = getLahiriAyanamsa(jd);
   const gmst = getGMST(jd);
-  const lst = normalizeDegree(gmst + lon); // Local Sidereal Time in degrees
+  const lst = normalizeDegree(gmst + lon);
   const ramc = lst;
 
   // Obliquity
@@ -111,7 +190,6 @@ function calculateVedicChart(dateWrapper: string, timeString: string, lat: numbe
   const planets = [
     { name: "Sun", degree: sunSid, sign: ZODIAC[Math.floor(sunSid / 30)], nakshatra: NAKSHATRAS[Math.floor(sunSid / 13.33)] },
     { name: "Moon", degree: moonSid, sign: ZODIAC[Math.floor(moonSid / 30)], nakshatra: NAKSHATRAS[Math.floor(moonSid / 13.33)] },
-    // Others left for AI to estimate or add more formulas later
   ];
 
   const getSignName = (d: number) => ZODIAC[Math.floor(normalizeDegree(d) / 30)] || "Aries";
@@ -201,7 +279,7 @@ export default async function handler(req: Request) {
       // Profile Insight with VEDIC CALCULATION ENGINE
       let calculatedChartFormatted = "No calculation available.";
 
-      const { system, birthDate, birthTime, birthPlace, latitude, longitude } = userData;
+      const { system, birthDate, birthTime, birthPlace, latitude, longitude, timezone } = userData;
 
       // Only run engine if coordinates exist
       if (latitude && longitude && system === 'Indian Vedic') {
@@ -210,7 +288,7 @@ export default async function handler(req: Request) {
           // Since we are in the same project, we import from adjacent file
           // Note: In Vercel Edge, standard imports work if bundled.
           // Using .js extension for node16 resolution
-          const chart = calculateVedicChart(birthDate, birthTime, latitude, longitude);
+          const chart = calculateVedicChart(birthDate, birthTime, latitude, longitude, userData.timezone || "UTC");
 
           calculatedChartFormatted = `
             CALCULATED VEDIC DATA (Lahiri Ayanamsa):
