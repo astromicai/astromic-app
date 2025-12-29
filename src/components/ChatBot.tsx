@@ -40,8 +40,20 @@ const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onCl
     }
   }, [messages, isStreaming]);
 
+  const userMessageCount = messages.filter(m => m.role === 'user').length;
+  const limitReached = userMessageCount >= 3;
+
   const handleSend = async () => {
     if (!input.trim() || isStreaming) return;
+
+    if (limitReached) {
+      setMessages(prev => [...prev, { role: 'user', text: input.trim() }, {
+        role: 'model',
+        text: "You have reached your free query limit.\n\nWe are working on a subscription model to bring you unlimited cosmic insights. Please go back to our home page [Astromic.ai](https://astromic.ai) and join our waitlist using your email."
+      }]);
+      setInput('');
+      return;
+    }
 
     const userText = input.trim();
     setInput('');
@@ -63,7 +75,6 @@ const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onCl
       }));
 
       // Call the unified service
-      // We do NOT need to pass system instructions here, the service handles it.
       const responseText = await chatWithAstrologer(userText, history, userData);
 
       setMessages(prev => {
@@ -99,11 +110,13 @@ const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onCl
           <div>
             <h3 className="font-bold text-white text-lg tracking-tight">Astromic Oracle</h3>
             <div className="flex items-center gap-1.5">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              <span className={`relative flex h-2 w-2 ${limitReached ? 'grayscale opacity-50' : ''}`}>
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${limitReached ? 'bg-gray-400' : 'bg-green-400'} opacity-75`}></span>
+                <span className={`relative inline-flex rounded-full h-2 w-2 ${limitReached ? 'bg-gray-500' : 'bg-green-500'}`}></span>
               </span>
-              <span className="text-[10px] uppercase tracking-[0.15em] text-white/50 font-bold">Online</span>
+              <span className="text-[10px] uppercase tracking-[0.15em] text-white/50 font-bold">
+                {limitReached ? 'Limit Reached' : 'Online'}
+              </span>
             </div>
           </div>
         </div>
@@ -119,26 +132,32 @@ const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onCl
               ? 'bg-gradient-to-br from-primary to-primary-alt text-white rounded-tr-none'
               : 'bg-white/5 border border-white/10 text-white/90 rounded-tl-none'
               }`}>
-              <p className="text-[15px] leading-relaxed whitespace-pre-wrap font-medium">{msg.text}</p>
+              <p className="text-[15px] leading-relaxed whitespace-pre-wrap font-medium"
+                dangerouslySetInnerHTML={{
+                  __html: msg.text.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" class="text-primary hover:underline font-bold">$1</a>').replace(/\n/g, '<br/>')
+                }}
+              >
+              </p>
             </div>
           </div>
         ))}
       </div>
 
       <div className="relative p-5 bg-background-dark/80 backdrop-blur-md border-t border-white/10">
-        <div className="flex items-center gap-3 bg-white/5 border border-white/20 rounded-2xl px-4 py-3">
+        <div className={`flex items-center gap-3 bg-white/5 border border-white/20 rounded-2xl px-4 py-3 ${limitReached ? 'opacity-50 pointer-events-none' : ''}`}>
           <input
             type="text"
-            placeholder="Ask the Oracle..."
+            placeholder={limitReached ? "Query limit reached." : "Ask the Oracle..."}
             className="flex-1 bg-transparent border-none focus:ring-0 text-white placeholder-white/30 text-[15px] outline-none"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            disabled={isStreaming}
+            disabled={isStreaming || limitReached}
           />
           <button
             onClick={handleSend}
-            disabled={!input.trim() || isStreaming}
+            disabled={!input.trim() || isStreaming || limitReached}
+
             className="size-10 rounded-xl flex items-center justify-center bg-primary text-white"
           >
             <span className="material-symbols-outlined">send</span>
