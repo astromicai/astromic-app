@@ -134,6 +134,7 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
   step, userData, setUserData, onNext, onPrev, onFinish, loading
 }) => {
   const [activeTooltip, setActiveTooltip] = useState<AstrologySystem | null>(null);
+  const [isManual, setIsManual] = useState(false);
 
   const updateField = (field: keyof UserData, value: any) => {
     setUserData(prev => ({ ...prev, [field]: value }));
@@ -308,7 +309,7 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
   }
 
   if (step === 'BIRTH_DATE') {
-    const [isManual, setIsManual] = useState(false);
+
 
     // Helper to parse date
     const parseDate = (dateStr: string) => {
