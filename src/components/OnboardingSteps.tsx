@@ -174,7 +174,7 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
               <img
                 src="https://images.unsplash.com/photo-1542256840-2b6201e47321?q=80&w=800&auto=format&fit=crop"
                 alt="Cosmic Astrolabe"
-                className="w-full h-full object-contain drop-shadow-[0_0_50px_rgba(217,70,239,0.5)] rounded-full mix-blend-lighten opacity-90"
+                className="w-full h-full object-contain drop-shadow-[0_0_50px_rgba(217,70,239,0.5)] rounded-full opacity-90"
               />
             </div>
           </div>
