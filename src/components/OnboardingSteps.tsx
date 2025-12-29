@@ -159,9 +159,12 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
     return (
       <div className="flex-1 flex flex-col justify-between items-center px-6 py-8">
 
-        {/* Back to Home Button */}
+        {/* Back to Home Button - Restyled */}
         <div className="w-full flex justify-start mb-4 relative z-50">
-          <a href="https://astromic.ai" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors group">
+          <a
+            href="https://astromic.ai"
+            className="flex items-center gap-3 px-6 py-3 rounded-xl bg-white/10 border border-white/10 hover:bg-white/20 transition-all group backdrop-blur-md shadow-lg hover:shadow-primary/20"
+          >
             <span className="material-symbols-outlined text-lg group-hover:-translate-x-1 transition-transform">arrow_back</span>
             <span className="text-sm font-bold tracking-widest uppercase">Back to Home</span>
           </a>
@@ -188,14 +191,6 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
         </div>
 
         <div className="w-full flex flex-col items-center gap-6">
-          <div className="flex flex-col items-center gap-1.5">
-            <div className="flex items-center justify-center gap-2 group cursor-default">
-              <div className="h-px w-8 bg-gradient-to-r from-transparent to-primary/40"></div>
-              <p className="text-[#c190cb] text-sm font-bold tracking-[0.2em] uppercase transition-all group-hover:tracking-[0.3em]">Powered by AIworkX</p>
-              <div className="h-px w-8 bg-gradient-to-l from-transparent to-primary/40"></div>
-            </div>
-          </div>
-
           <div className="w-full space-y-3">
             <button
               onClick={onNext}
@@ -209,6 +204,15 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
 
         {/* Waitlist Widget (Fixed Bottom Left) */}
         <div className="fixed bottom-6 left-6 hidden md:block max-w-[320px] bg-card-surface/90 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow-2xl animate-in slide-in-from-left-10 fade-in duration-700 delay-500 z-50">
+          {/* Powered By Header */}
+          <div className="flex items-center justify-center gap-2 mb-4 group cursor-pointer">
+            <div className="h-px w-6 bg-gradient-to-r from-transparent to-primary/40"></div>
+            <a href="https://aiworkx.com" target="_blank" rel="noopener noreferrer" className="text-[#c190cb] text-[10px] font-bold tracking-[0.2em] uppercase hover:text-white transition-colors">
+              Powered by AIworkX.com
+            </a>
+            <div className="h-px w-6 bg-gradient-to-l from-transparent to-primary/40"></div>
+          </div>
+
           <p className="text-sm text-white/90 leading-relaxed mb-3 font-medium">
             ✨ We are enabling subscriptions soon.<br />
             Join the waitlist for your <strong className="text-primary font-bold">First Year Free</strong>:
