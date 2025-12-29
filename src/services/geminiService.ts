@@ -5,7 +5,7 @@ export const CHAT_MODEL_NAME = "gemini-2.0-flash";
 export const getAstrologicalInsight = async (userData: UserData): Promise<InsightData | { error: string }> => {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s timeout
 
     const response = await fetch('/api/insight', {
       method: 'POST',
