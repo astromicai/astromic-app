@@ -311,15 +311,26 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
   if (step === 'BIRTH_DATE') {
 
 
-    // Helper to parse date
+    // Helper to parse date manually to avoid Timezone off-by-one errors
     const parseDate = (dateStr: string) => {
       if (!dateStr) return { day: '1', month: '0', year: '2000' };
+
+      // Try parsing YYYY-MM-DD directly
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        const y = parts[0];
+        const m = (parseInt(parts[1], 10) - 1).toString(); // 0-indexed for state
+        const d = parseInt(parts[2], 10).toString();
+        return { year: y, month: m, day: d };
+      }
+
+      // Fallback to Date object if format is weird, but try to use UTC
       const d = new Date(dateStr);
       if (isNaN(d.getTime())) return { day: '1', month: '0', year: '2000' };
       return {
-        day: d.getDate().toString(),
-        month: d.getMonth().toString(), // 0-11
-        year: d.getFullYear().toString()
+        day: d.getUTCDate().toString(),
+        month: d.getUTCMonth().toString(),
+        year: d.getUTCFullYear().toString()
       };
     };
 
@@ -327,10 +338,6 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
 
     const updateDate = (d: string, m: string, y: string) => {
       // Construct YYYY-MM-DD
-      // month is 0-indexed in JS Date, but we need 01-12 string?
-      // Actually new Date(y, m, d) is reliable.
-      // But userData expects string usually.
-      // Let's format manually: YYYY-MM-DD
       const monthNum = parseInt(m) + 1;
       const monthStr = monthNum.toString().padStart(2, '0');
       const dayStr = d.padStart(2, '0');
