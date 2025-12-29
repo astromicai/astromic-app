@@ -47,10 +47,6 @@
             
             <!-- Background Glow Blob -->
             <circle r="60" fill="url(#ai-core-glow)" opacity="0.6" />
-            
-            <!-- "AI" Text -->
-            <text x="0" y="5" class="ai-text" filter="url(#text-glow)">AI</text>
-            <text x="0" y="5" class="ai-text">AI</text>
         </g>
 
         <!-- 2. MIDDLE: ATOMIC ORBITS (Cyan/Blue) -->
