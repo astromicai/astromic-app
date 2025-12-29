@@ -240,25 +240,13 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
 
         <div className="flex-1 flex flex-col items-center justify-center w-full mt-10 md:mt-0"> {/* Added top margin for mobile spacing */}
           <div className="w-full max-w-[540px] aspect-square relative mb-4 flex items-center justify-center">
-            {/* New Hero Image with Float Animation */}
-            <div className="relative w-full h-full flex items-center justify-center">
-              {/* Animated SVG Background (Internal Rotation) */}
-              <div className="absolute inset-0 w-full h-full">
-                <img
-                  src="/hero_ai_globe_logo.svg"
-                  alt="Zodiac Aether Wheel"
-                  className="w-full h-full object-contain opacity-100" // Increased opacity
-                />
-              </div>
-
-              {/* Floating Robot - Centered & Larger to cover Center */}
-              <div className="relative w-[32%] h-[55%] z-10 animate-float translate-y-2"> {/* Tweaked size/pos */}
-                <img
-                  src="/hero_robot_center.png"
-                  alt="AI Android Astrologer"
-                  className="w-full h-full object-contain drop-shadow-[0_0_40px_rgba(34,211,238,0.4)]"
-                />
-              </div>
+            {/* Hero Image with Float Animation */}
+            <div className="relative w-full h-full animate-float flex items-center justify-center">
+              <img
+                src="/hero_ai_globe_logo.svg"
+                alt="Astromic AI Globe"
+                className="w-full h-full object-contain drop-shadow-[0_0_50px_rgba(217,70,239,0.5)]"
+              />
             </div>
           </div>
 
