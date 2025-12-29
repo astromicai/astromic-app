@@ -179,6 +179,8 @@ const CosmicBackground: React.FC = () => {
             mouse.y = e.clientY;
         };
 
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas(); // Initialize stars and planets
         window.addEventListener('mousemove', handleMouseMove);
 
         // --- ANIMATION ---
