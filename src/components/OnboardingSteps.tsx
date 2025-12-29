@@ -206,6 +206,42 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
             </button>
           </div>
         </div>
+
+        {/* Waitlist Widget (Bottom Right) */}
+        <div className="absolute bottom-6 right-6 hidden md:block max-w-[320px] bg-card-surface/90 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow-2xl animate-in slide-in-from-right-10 fade-in duration-700 delay-500 z-50">
+          <p className="text-sm text-white/90 leading-relaxed mb-3 font-medium">
+            ✨ We are enabling subscriptions soon.<br />
+            Join the waitlist for your <strong className="text-primary font-bold">First Year Free</strong>:
+          </p>
+          <form
+            className="flex flex-col gap-2"
+            action="https://script.google.com/macros/s/AKfycbzcO29ERwEyDRUZf95TBzIfSA4X5XdPSFvrjloE5q34sNKIFSgjRL1tmR6UC0hDrlr5/exec"
+            method="POST"
+            target="_blank"
+          >
+            <input type="hidden" name="ip" className="field-ip" />
+            <input type="hidden" name="city" className="field-city" />
+            <input type="hidden" name="country" className="field-country" />
+            <input type="hidden" name="platform" value="App Hero" />
+
+            <div className="flex gap-2">
+              <input
+                type="email"
+                name="email"
+                placeholder="Enter your email..."
+                required
+                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-primary outline-none transition-all placeholder:text-white/30"
+              />
+              <button
+                type="submit"
+                className="bg-primary hover:bg-primary-alt text-white text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-lg transition-colors whitespace-nowrap shadow-lg"
+              >
+                Join
+              </button>
+            </div>
+          </form>
+          <p className="text-[10px] text-white/40 mt-2 text-center">Secure your free early-bird account now.</p>
+        </div>
       </div>
     );
   }
