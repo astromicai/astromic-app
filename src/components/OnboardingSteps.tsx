@@ -168,7 +168,7 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
         </div>
 
         <div className="flex-1 flex flex-col items-center justify-center w-full -mt-10">
-          <div className="w-full max-w-[540px] aspect-square relative mb-8 flex items-center justify-center ml-12">
+          <div className="w-full max-w-[540px] aspect-square relative mb-8 flex items-center justify-center">
             {/* New Hero Image with Float Animation */}
             <div className="relative w-full h-full animate-float">
               <img
@@ -207,8 +207,8 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
           </div>
         </div>
 
-        {/* Waitlist Widget (Bottom Right) */}
-        <div className="absolute bottom-6 right-6 hidden md:block max-w-[320px] bg-card-surface/90 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow-2xl animate-in slide-in-from-right-10 fade-in duration-700 delay-500 z-50">
+        {/* Waitlist Widget (Fixed Bottom Left) */}
+        <div className="fixed bottom-6 left-6 hidden md:block max-w-[320px] bg-card-surface/90 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow-2xl animate-in slide-in-from-left-10 fade-in duration-700 delay-500 z-50">
           <p className="text-sm text-white/90 leading-relaxed mb-3 font-medium">
             ✨ We are enabling subscriptions soon.<br />
             Join the waitlist for your <strong className="text-primary font-bold">First Year Free</strong>:
