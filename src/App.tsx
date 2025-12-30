@@ -51,6 +51,47 @@ const App: React.FC = () => {
       }
     }
     setIsInitialized(true);
+
+    // Analytics: Fire once on mount
+    const trackVisitor = async () => {
+      try {
+        const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+        // If API_BASE is set (mobile/prod), use it. If empty (local), default logging might fail or need full URL.
+        // For analytics, we should use the script URL directly or proxy if we have one. 
+        // Since we don't have a specific analytics proxy, we'll hit the script directly if possible, or skip if CORS is an issue.
+        // Actually, let's use the same proxy pattern if we had one.
+        // Wait, the user has a Google Script Web App URL. 
+        // We should PROXY this via Next.js API to hide the URL? 
+        // No, current chat logging uses the env var WAITLIST_GOOGLE_SCRIPT_URL on server.
+        // We lack a client-side visitor logger. 
+        // Let's CREATE a simple client-side logger function in `services/geminiService.ts` or similar that calls `/api/waitlist` with a special flag?
+        // Or just use the existing `/api/waitlist` or `/api/chat`?
+        // Let's create a cleaner `logVisitor` function in `api/waitlist.ts`? No, that's for waitlist.
+        // Let's use a new file `src/services/analytics.ts` and an API route `/api/log`.
+
+        // Simpler: Just Fetch the same /api/waitlist but handling "Pageview"?
+        // No, `api/waitlist.ts` expects email/message.
+
+        // Let's hit the new endpoint I will create: `/api/log.ts`
+        await fetch(`${API_BASE}/api/log`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'visitor',
+            isPWA,
+            screen: `${width}x${height}`,
+            referrer: document.referrer || 'direct'
+          })
+        });
+      } catch (e) {
+        console.warn("Analytics failed", e);
+      }
+    };
+    trackVisitor();
   }, []);
 
   // Navigation Helpers
