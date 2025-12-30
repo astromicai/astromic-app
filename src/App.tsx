@@ -162,6 +162,7 @@ const App: React.FC = () => {
 
         <ChatBot
           userData={userData}
+          insight={insightData}
           isOpen={isChatOpen}
           initialPrompt={initialChatPrompt}
           onClose={() => {

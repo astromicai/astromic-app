@@ -71,13 +71,19 @@ export const getTransitInsights = async (userData: UserData): Promise<TransitDat
 export const chatWithAstrologer = async (
   message: string,
   history: { role: 'user' | 'model'; parts: { text: string }[] }[] = [],
-  userData: UserData
+  userData: UserData,
+  insight?: any // Pass calculated chart data
 ) => {
   try {
     const response = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message, history, userData })
+      body: JSON.stringify({
+        message,
+        history,
+        userData,
+        chartContext: insight // Send to backend
+      })
     });
 
     const text = await response.text();

@@ -9,12 +9,13 @@ interface Message {
 
 interface ChatBotProps {
   userData: UserData;
+  insight: any; // Using any for flexibility or Import InsightData
   isOpen: boolean;
   initialPrompt: string | null;
   onClose: () => void;
 }
 
-const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onClose }) => {
+const ChatBot: React.FC<ChatBotProps> = ({ userData, insight, isOpen, initialPrompt, onClose }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'model',
@@ -75,7 +76,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ userData, isOpen, initialPrompt, onCl
       }));
 
       // Call the unified service
-      const responseText = await chatWithAstrologer(userText, history, userData);
+      const responseText = await chatWithAstrologer(userText, history, userData, insight);
 
       setMessages(prev => {
         const newMessages = [...prev];

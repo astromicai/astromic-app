@@ -11,7 +11,7 @@ export default async function handler(req: Request) {
     }
 
     try {
-        const { message, history, userData } = await req.json();
+        const { message, history, userData, chartContext } = await req.json();
         const apiKey = process.env.GEMINI_API_KEY;
 
         if (!apiKey) {
@@ -53,6 +53,9 @@ export default async function handler(req: Request) {
         • You may speak directly to the user about their life.
 
         Language: ${userData.language}.
+
+        TECHNICAL CHART CONTEXT (Use this to answer specific questions):
+        ${JSON.stringify(chartContext || {}, null, 2)}
       `
         });
 
