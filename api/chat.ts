@@ -68,6 +68,28 @@ export default async function handler(req: Request) {
         const result = await chat.sendMessage(message);
         const responseText = result.response.text();
 
+        // Fire-and-forget logging (awaiting properly to ensure execution in Edge)
+        try {
+            const chartContextStr = chartContext ? JSON.stringify(chartContext).substring(0, 500) : "{}"; // Truncate to save space
+
+            const LOGGING_URL = process.env.WAITLIST_GOOGLE_SCRIPT_URL || "https://script.google.com/macros/s/AKfycbzcO29ERwEyDRUZf95TBzIfSA4X5XdPSFvrjloE5q34sNKIFSgjRL1tmR6UC0hDrlr5/exec";
+
+            await fetch(LOGGING_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    type: 'chat',
+                    name: userData.name || "Anonymous",
+                    dob: `${userData.birthDate} ${userData.birthTime}`,
+                    system: userData.system,
+                    question: message,
+                    context: chartContextStr
+                }).toString()
+            }).catch(e => console.error("Logging failed silently:", e));
+        } catch (logError) {
+            console.error("Logging setup error:", logError);
+        }
+
         return new Response(JSON.stringify({ response: responseText }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }
