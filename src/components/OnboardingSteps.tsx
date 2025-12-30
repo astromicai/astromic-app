@@ -321,7 +321,8 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
         </div>
 
         {/* Footer - Powered By AIworkX */}
-        <div className="fixed bottom-4 left-0 w-full flex items-center justify-center gap-2 z-50 pointer-events-none">
+        {/* Footer - Powered By AIworkX */}
+        <div className="fixed bottom-12 left-0 w-full flex items-center justify-center gap-2 z-50 pointer-events-none">
           <div className="pointer-events-auto bg-black/40 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/10 flex items-center gap-2">
             <span className="text-white/60 text-[10px] font-medium tracking-wider uppercase">Powered by</span>
             <a href="https://aiworkx.com" target="_blank" rel="noopener noreferrer" className="text-white text-[11px] font-bold tracking-widest uppercase hover:text-primary transition-colors">
