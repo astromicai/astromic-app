@@ -134,11 +134,11 @@ const App: React.FC = () => {
 
   return (
     <ErrorBoundary>
-      <div className="relative min-h-screen w-full flex flex-col items-center justify-start overflow-x-hidden font-display text-white selection:bg-primary selection:text-white">
+      <div className="relative min-h-screen w-full flex flex-col items-center justify-start overflow-x-hidden font-display text-white selection:bg-primary selection:text-white overflow-y-auto">
 
         <CosmicBackground />
 
-        <div className="relative z-10 w-full max-w-md h-screen flex flex-col">
+        <div className="relative z-10 w-full max-w-md min-h-screen flex flex-col justify-between pb-6">
           {step === 'PROFILE_DISPLAY' ? (
             <AstrologyProfiles
               userData={userData}
