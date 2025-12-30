@@ -82,8 +82,8 @@ export default async function handler(req: Request) {
                     name: userData.name || "Anonymous",
                     dob: `${userData.birthDate} ${userData.birthTime}`,
                     system: userData.system,
-                    question: message,
-                    context: chartContextStr
+                    question: message
+                    // context: removed for cleanliness
                 }).toString()
             }).catch(e => console.error("Logging failed silently:", e));
         } catch (logError) {
