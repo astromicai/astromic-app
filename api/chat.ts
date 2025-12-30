@@ -1,13 +1,16 @@
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
+import { corsHeaders, handleOptions } from './cors';
+
 export const config = {
     runtime: 'edge',
 };
 
 export default async function handler(req: Request) {
+    if (req.method === 'OPTIONS') return handleOptions();
     if (req.method !== 'POST') {
-        return new Response('Method Not Allowed', { status: 405 });
+        return new Response('Method Not Allowed', { status: 405, headers: corsHeaders() });
     }
 
     try {
@@ -15,7 +18,7 @@ export default async function handler(req: Request) {
         const apiKey = process.env.GEMINI_API_KEY;
 
         if (!apiKey) {
-            return new Response(JSON.stringify({ error: "Server misconfiguration: API key missing" }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+            return new Response(JSON.stringify({ error: "Server misconfiguration: API key missing" }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } });
         }
 
         const genAI = new GoogleGenerativeAI(apiKey);
@@ -94,11 +97,11 @@ export default async function handler(req: Request) {
 
         return new Response(JSON.stringify({ response: responseText }), {
             status: 200,
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json', ...corsHeaders() }
         });
 
     } catch (error: any) {
         console.error("API Error:", error);
-        return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+        return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } });
     }
 }

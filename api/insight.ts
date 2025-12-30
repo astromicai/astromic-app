@@ -267,13 +267,16 @@ function calculateVedicChart(dateWrapper: string, timeString: string, lat: numbe
 }
 // --- ENGINE LOGIC END ---
 
+import { corsHeaders, handleOptions } from './cors';
+
 export const config = {
   runtime: 'edge',
 };
 
 export default async function handler(req: Request) {
+  if (req.method === 'OPTIONS') return handleOptions();
   if (req.method !== 'POST') {
-    return new Response('Method Not Allowed', { status: 405 });
+    return new Response('Method Not Allowed', { status: 405, headers: corsHeaders() });
   }
 
   try {
@@ -281,7 +284,7 @@ export default async function handler(req: Request) {
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
-      return new Response(JSON.stringify({ error: "Server misconfiguration: API key missing" }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify({ error: "Server misconfiguration: API key missing" }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } });
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
@@ -356,7 +359,7 @@ export default async function handler(req: Request) {
       `;
       const result = await model.generateContent(prompt);
       const cleanedText = cleanJson(result.response.text());
-      return new Response(cleanedText, { status: 200, headers: { 'Content-Type': 'application/json' } });
+      return new Response(cleanedText, { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } });
 
     } else {
       // Profile Insight with VEDIC CALCULATION ENGINE
@@ -551,12 +554,12 @@ export default async function handler(req: Request) {
         };
       }
 
-      return new Response(JSON.stringify(finalJson), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify(finalJson), { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } });
     }
 
 
   } catch (error: any) {
     console.error("API Error In Insight:", error);
-    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } });
   }
 }

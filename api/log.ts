@@ -1,9 +1,12 @@
+import { corsHeaders, handleOptions } from './cors';
+
 export const config = {
     runtime: 'edge',
 };
 
 export default async function handler(req: Request) {
-    if (req.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
+    if (req.method === 'OPTIONS') return handleOptions();
+    if (req.method !== 'POST') return new Response('Method Not Allowed', { status: 405, headers: corsHeaders() });
 
     try {
         const { type, isPWA, screen, referrer, name } = await req.json();
@@ -42,10 +45,10 @@ export default async function handler(req: Request) {
 
         return new Response(JSON.stringify({ success: true }), {
             status: 200,
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json', ...corsHeaders() }
         });
 
     } catch (error) {
-        return new Response(JSON.stringify({ error: 'Logging Failed' }), { status: 500 });
+        return new Response(JSON.stringify({ error: 'Logging Failed' }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } });
     }
 }
