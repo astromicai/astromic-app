@@ -381,7 +381,7 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
     const languages = [
       "English", "Spanish", "French", "German", "Chinese", "Japanese",
       "Hindi", "Arabic", "Portuguese", "Russian", "Tamil", "Telugu",
-      "Malayalam", "Bengali", "Indonesian", "Italian", "Turkey", "Korean", "Vietnamese"
+      "Malayalam", "Bengali", "Indonesian", "Italian", "Turkey", "Korean"
     ];
     return (
       <div className="flex-1 flex flex-col px-6 pt-10 pb-8 relative z-[20]">
