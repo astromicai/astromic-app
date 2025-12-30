@@ -229,7 +229,13 @@ const AstrologyProfiles: React.FC<ProfileProps> = ({ userData, insight, transitD
       );
     }
 
+    // Chinese & Tibetan: Do not show Western/Vedic chart wheels as they use different visual systems (Pillars/Mewa)
+    if (userData.system === AstrologySystem.CHINESE || userData.system === AstrologySystem.TIBETAN) {
+      return null;
+    }
+
     if (!insight.chartData?.planets) return null;
+
     return (
       <div className="mb-8 relative group w-full flex justify-center">
         {userData.system === AstrologySystem.VEDIC ? (
@@ -276,9 +282,5 @@ const AstrologyProfiles: React.FC<ProfileProps> = ({ userData, insight, transitD
     </div>
   );
 };
-
-
-
-
 
 export default AstrologyProfiles;
