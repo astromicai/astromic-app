@@ -267,7 +267,7 @@ function calculateVedicChart(dateWrapper: string, timeString: string, lat: numbe
 }
 // --- ENGINE LOGIC END ---
 
-import { corsHeaders, handleOptions } from './cors';
+import { corsHeaders, handleOptions } from './cors.js';
 
 export const config = {
   runtime: 'edge',

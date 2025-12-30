@@ -1,4 +1,4 @@
-import { corsHeaders, handleOptions } from './cors';
+import { corsHeaders, handleOptions } from './cors.js';
 
 export const config = {
     runtime: 'edge',
