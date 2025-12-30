@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { AppStep, UserData, AstrologySystem } from '../types';
+import heroImage from '../assets/hero_ai_globe_logo.svg';
 
 interface OnboardingProps {
   step: AppStep;
@@ -247,7 +248,7 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
             {/* Hero Image with Float Animation */}
             <div className="relative w-full h-full animate-float flex items-center justify-center">
               <img
-                src="/hero_ai_globe_logo.svg"
+                src={heroImage}
                 alt="Astromic AI Globe"
                 className="w-full h-full object-contain drop-shadow-[0_0_50px_rgba(217,70,239,0.5)]"
               />
