@@ -4,7 +4,7 @@ const Footer: React.FC = () => {
     return (
         <footer className="w-full py-4 text-center z-10">
             <p className="text-white/40 text-xs">
-                © 2025 Astromic AI.{" "}
+                © {new Date().getFullYear()} Astromic AI.{" "}
                 <a
                     href="https://astromic.ai"
                     target="_blank"
