@@ -176,7 +176,7 @@ const App: React.FC = () => {
           <div className="fixed bottom-6 right-6 z-50 flex items-center gap-4">
             {/* Notification Label */}
             <div className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-xl shadow-lg animate-bounce hidden md:block">
-              <span className="text-sm font-bold tracking-wide">Ask the AI Oracle 👉</span>
+              <span className="text-sm font-bold tracking-wide">Ask Astromic AI Oracle 👉</span>
             </div>
 
             <button

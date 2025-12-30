@@ -270,7 +270,7 @@ const AstrologyProfiles: React.FC<ProfileProps> = ({ userData, insight, transitD
       <div className="fixed bottom-6 left-4 right-4 z-40 flex justify-center">
         <button onClick={() => onOpenChat()} className="w-full max-w-sm bg-primary hover:bg-primary/90 text-white font-bold py-4 px-6 rounded-2xl shadow-[0_10px_30px_rgba(242,13,185,0.4)] flex items-center justify-center gap-2 transition-all active:scale-95 border border-white/10">
           <span className="material-symbols-outlined">auto_awesome</span>
-          <span>Ask Astromic Oracle</span>
+          <span>Ask Astromic AI Oracle</span>
         </button>
       </div>
     </div>

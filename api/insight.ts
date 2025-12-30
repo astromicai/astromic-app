@@ -311,6 +311,8 @@ export default async function handler(req: Request) {
         transitSystemInstruction = "Strictly use Chinese BaZi Daily compatibility. Analyze the interaction between the Current Day's Pillar (Stem/Branch) and the User's Year/Day Pillar. Mention 'Clash' (Chong), 'Combination' (He), 'Penalty'. Focus on 5 Element flows.";
       } else if (userData.system === 'Hellenistic' || userData.system === 'Western') {
         transitSystemInstruction = "Use Western/Hellenistic transit methodology. Focus on exact PTolemaic aspects (Conjunction, Sextile, Square, Trine, Opposition) from current planets to natal planets. Mention House activations.";
+      } else if (userData.system === 'Numerology') {
+        transitSystemInstruction = "Strictly use Numerological forecasting. Calculate and interpret: 1. Universal Day Number. 2. Personal Year Number. 3. Personal Month Number. 4. Personal Day Number. Do NOT use planets or aspects. Focus on the vibrational energy of numbers.";
       } else {
         transitSystemInstruction = `Use ${userData.system} specific transit methodology.`;
       }
