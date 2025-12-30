@@ -7,7 +7,8 @@ export const getAstrologicalInsight = async (userData: UserData): Promise<Insigh
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s timeout
 
-    const response = await fetch('/api/insight', {
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+    const response = await fetch(`${API_BASE}/api/insight`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userData, type: 'insight' }),
@@ -42,7 +43,8 @@ export const getAstrologicalInsight = async (userData: UserData): Promise<Insigh
 
 export const getTransitInsights = async (userData: UserData): Promise<TransitData | null> => {
   try {
-    const response = await fetch('/api/insight', {
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+    const response = await fetch(`${API_BASE}/api/insight`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userData, type: 'transit' })
@@ -75,7 +77,8 @@ export const chatWithAstrologer = async (
   insight?: any // Pass calculated chart data
 ) => {
   try {
-    const response = await fetch('/api/chat', {
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+    const response = await fetch(`${API_BASE}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

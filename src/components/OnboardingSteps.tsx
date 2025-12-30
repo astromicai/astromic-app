@@ -196,7 +196,8 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
     formData.append('time', new Date().toLocaleTimeString('en-US', { hour12: true }));
 
     try {
-      const response = await fetch("/api/waitlist", {
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+      const response = await fetch(`${API_BASE}/api/waitlist`, {
         method: 'POST',
         body: formData,
       });
