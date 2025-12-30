@@ -412,26 +412,7 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
               {lang}
             </button>
           ))}
-          {/* The following buttons are added based on the user's instruction, assuming they are meant to be part of a system selection grid,
-              but placed here as per the provided snippet's location. This might indicate a mismatch between the instruction's intent
-              and the current file's structure. */}
-          <button
-            onClick={() => updateField('system', AstrologySystem.KABBALISTIC)}
-            className={`p-4 rounded-2xl border text-left transition-all ${userData.system === AstrologySystem.KABBALISTIC ? 'bg-primary border-primary shadow-lg scale-[1.02]' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
-          >
-            <span className="text-2xl mb-2 block">✡️</span>
-            <span className="font-bold text-lg block">Kabbalistic</span>
-            <span className="text-xs text-white/50">Tree of Life & Sefirot</span>
-          </button>
-
-          <button
-            onClick={() => updateField('system', AstrologySystem.NUMEROLOGY)}
-            className={`p-4 rounded-2xl border text-left transition-all ${userData.system === AstrologySystem.NUMEROLOGY ? 'bg-primary border-primary shadow-lg scale-[1.02]' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
-          >
-            <span className="text-2xl mb-2 block">🔢</span>
-            <span className="font-bold text-lg block">Numerology</span>
-            <span className="text-xs text-white/50">Life Path & Destiny</span>
-          </button>
+          {/* Misplaced buttons removed */}
           <div className="col-span-2 mt-2">
             <input
               type="text"
@@ -448,7 +429,7 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
             <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
           </button>
         </div>
-      </div>
+      </div >
     );
   }
 
@@ -763,6 +744,7 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
       { id: AstrologySystem.HELLENISTIC, icon: 'account_balance' },
       { id: AstrologySystem.ISLAMIC, icon: 'nightlight' },
       { id: AstrologySystem.KABBALISTIC, icon: 'flare' },
+      { id: AstrologySystem.NUMEROLOGY, icon: 'grid_3x3' }, // Using grid_3x3 for Numerology
     ];
 
     return (
