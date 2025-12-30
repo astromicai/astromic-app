@@ -256,7 +256,7 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
           </div>
 
           <h1 className="text-white tracking-tighter text-[64px] font-bold leading-none mb-4 drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)] text-center font-display">
-            Astromic
+            Astromic.AI
           </h1>
           <p className="text-white/80 text-xl font-normal leading-relaxed px-4 text-center max-w-[360px] font-display">
             Unveil your cosmic blueprint. Personalized <span className="text-primary font-bold">AI Astrology</span> for the modern seeker.
