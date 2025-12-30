@@ -462,6 +462,16 @@ export default async function handler(req: Request) {
              { "label": "Element", "value": "Fire/Air/Water/Earth", "icon": "local_fire_department" }
            ]
         `;
+      } else if (sys === 'Numerology') {
+        technicalDetailsSchema = `
+           [
+             { "label": "Life Path", "value": "Number (e.g. 7)", "icon": "timeline" },
+             { "label": "Destiny", "value": "Number", "icon": "stars" },
+             { "label": "Soul Urge", "value": "Number", "icon": "favorite" },
+             { "label": "Birthday", "value": "Number", "icon": "cake" },
+             { "label": "Personality", "value": "Number", "icon": "face" }
+           ]
+        `;
       } else {
         // Western / Default
         technicalDetailsSchema = `
@@ -499,7 +509,8 @@ export default async function handler(req: Request) {
          3. TRANSLATE ALL VALUES.
          4. ADHERE STRICTLY TO THE ${userData.system.toUpperCase()} SYSTEM.
          5. IF WESTERN, DO NOT USE VEDIC TERMS LIKE "Rashi", "Nakshatra", "Tithi". Use "Sun Sign", "Moon Sign".
-         6. NO empty strings.
+         6. IF NUMEROLOGY, DO NOT CALCULATE PLANETS. Focus on the Numbers derived from Name (${userData.name}) and Birth Date.
+         7. NO empty strings.
          
          Return JSON:
          {
