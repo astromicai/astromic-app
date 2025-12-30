@@ -77,6 +77,16 @@ const App: React.FC = () => {
         // No, `api/waitlist.ts` expects email/message.
 
         // Let's hit the new endpoint I will create: `/api/log.ts`
+
+        let savedName = "Guest";
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved) {
+            const p = JSON.parse(saved);
+            if (p.name) savedName = p.name;
+          }
+        } catch (e) { }
+
         await fetch(`${API_BASE}/api/log`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -84,7 +94,8 @@ const App: React.FC = () => {
             type: 'visitor',
             isPWA,
             screen: `${width}x${height}`,
-            referrer: document.referrer || 'direct'
+            referrer: document.referrer || 'direct',
+            name: savedName
           })
         });
       } catch (e) {

@@ -6,19 +6,32 @@ export default async function handler(req: Request) {
     if (req.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
 
     try {
-        const { type, isPWA, screen, referrer } = await req.json();
+        const { type, isPWA, screen, referrer, name } = await req.json();
 
         // Environment variable for the Google Script
         const LOGGING_URL = process.env.WAITLIST_GOOGLE_SCRIPT_URL || "https://script.google.com/macros/s/AKfycbzcO29ERwEyDRUZf95TBzIfSA4X5XdPSFvrjloE5q34sNKIFSgjRL1tmR6UC0hDrlr5/exec";
 
         // Forward to Google Script
-        const scriptParams = new URLSearchParams({
-            email: 'Pageview', // Trigger the visitor logic in the script
-            message: isPWA ? 'PWA Launch' : 'Web Visit',
-            screen: screen,
-            referrer: isPWA ? 'App Installed' : referrer,
-            platform: isPWA ? 'Mobile App' : 'Web'
-        });
+        let scriptParams;
+
+        if (isPWA) {
+            scriptParams = new URLSearchParams({
+                type: 'pwa_launch',
+                name: name || 'Guest',
+                screen: screen,
+                os: 'Mobile/Tablet',
+                ip: req.headers.get('x-forwarded-for') || 'unknown'
+            });
+        } else {
+            scriptParams = new URLSearchParams({
+                email: 'Pageview',
+                message: 'Web Visit',
+                screen: screen,
+                referrer: referrer,
+                platform: 'Web',
+                ip: req.headers.get('x-forwarded-for') || 'unknown'
+            });
+        }
 
         // Fire and forget (await to ensure it sends in Edge)
         await fetch(LOGGING_URL, {
