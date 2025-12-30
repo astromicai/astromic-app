@@ -20,6 +20,7 @@ const SYSTEM_INFOS: Record<AstrologySystem, string> = {
   [AstrologySystem.HELLENISTIC]: "The root of Western astrology. Uses ancient techniques like Sect and Lots from Mediterranean antiquity.",
   [AstrologySystem.ISLAMIC]: "Arabic traditions that preserved Greek wisdom, famous for mathematical 'Lots' and mathematical precision.",
   [AstrologySystem.KABBALISTIC]: "Jewish mystical astrology linked to the Sefirot and the Hebrew alphabet to reveal soul root paths.",
+  [AstrologySystem.NUMEROLOGY]: "Analysis of the vibrational frequency of numbers in your birth date and name to reveal life path and destiny.",
 };
 
 // Extracted component for location search to adhere to Rules of Hooks
@@ -411,6 +412,26 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
               {lang}
             </button>
           ))}
+          {/* The following buttons are added based on the user's instruction, assuming they are meant to be part of a system selection grid,
+              but placed here as per the provided snippet's location. This might indicate a mismatch between the instruction's intent
+              and the current file's structure. */}
+          <button
+            onClick={() => updateField('system', AstrologySystem.KABBALISTIC)}
+            className={`p-4 rounded-2xl border text-left transition-all ${userData.system === AstrologySystem.KABBALISTIC ? 'bg-primary border-primary shadow-lg scale-[1.02]' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+          >
+            <span className="text-2xl mb-2 block">✡️</span>
+            <span className="font-bold text-lg block">Kabbalistic</span>
+            <span className="text-xs text-white/50">Tree of Life & Sefirot</span>
+          </button>
+
+          <button
+            onClick={() => updateField('system', AstrologySystem.NUMEROLOGY)}
+            className={`p-4 rounded-2xl border text-left transition-all ${userData.system === AstrologySystem.NUMEROLOGY ? 'bg-primary border-primary shadow-lg scale-[1.02]' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+          >
+            <span className="text-2xl mb-2 block">🔢</span>
+            <span className="font-bold text-lg block">Numerology</span>
+            <span className="text-xs text-white/50">Life Path & Destiny</span>
+          </button>
           <div className="col-span-2 mt-2">
             <input
               type="text"

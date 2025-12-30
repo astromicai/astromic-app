@@ -7,6 +7,7 @@ import KabbalisticProfile from './profiles/KabbalisticProfile';
 import HellenisticProfile from './profiles/HellenisticProfile';
 import IslamicProfile from './profiles/IslamicProfile';
 import StandardProfile from './profiles/StandardProfile';
+import NumerologyGrid from './NumerologyGrid';
 
 interface ProfileProps {
   userData: UserData;
@@ -212,11 +213,22 @@ const AstrologyProfiles: React.FC<ProfileProps> = ({ userData, insight, transitD
       case AstrologySystem.VEDIC: return <VedicProfile userData={userData} data={insight} onOpenChat={onOpenChat} />;
       case AstrologySystem.HELLENISTIC: return <HellenisticProfile userData={userData} insight={insight} onOpenChat={onOpenChat} />;
       case AstrologySystem.ISLAMIC: return <IslamicProfile userData={userData} insight={insight} onOpenChat={onOpenChat} />;
+      case AstrologySystem.NUMEROLOGY: return <StandardProfile userData={userData} insight={insight} onOpenChat={onOpenChat} />;
       default: return <StandardProfile userData={userData} insight={insight} onOpenChat={onOpenChat} />;
     }
   };
 
   const renderChart = () => {
+    // Numerology Special Case: Render Grid regardless of 'planets' data
+    if (userData.system === AstrologySystem.NUMEROLOGY) {
+      return (
+        <div className="mb-8 relative group w-full flex justify-center">
+          {/* @ts-ignore - Temporary ignore until file is fully typed/imported */}
+          <NumerologyGrid />
+        </div>
+      );
+    }
+
     if (!insight.chartData?.planets) return null;
     return (
       <div className="mb-8 relative group w-full flex justify-center">

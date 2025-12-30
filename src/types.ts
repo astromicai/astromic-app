@@ -7,6 +7,7 @@ export enum AstrologySystem {
   HELLENISTIC = 'Hellenistic',
   ISLAMIC = 'Islamic',
   KABBALISTIC = 'Kabbalistic',
+  NUMEROLOGY = 'Numerology',
 }
 
 export interface UserData {
