@@ -7,6 +7,7 @@ import ChatBot from './components/ChatBot';
 import { getAstrologicalInsight, getTransitInsights } from './services/geminiService';
 import ErrorBoundary from './components/ErrorBoundary';
 import CosmicBackground from './components/layout/CosmicBackground';
+import Footer from './components/layout/Footer';
 
 const STORAGE_KEY = 'astromic_user_profile_v2';
 const INSIGHT_KEY = 'astromic_insight_data';
@@ -158,6 +159,7 @@ const App: React.FC = () => {
               loading={loading}
             />
           )}
+          <Footer />
         </div>
 
         <ChatBot

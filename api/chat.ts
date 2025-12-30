@@ -74,6 +74,8 @@ export default async function handler(req: Request) {
 
             const LOGGING_URL = process.env.WAITLIST_GOOGLE_SCRIPT_URL || "https://script.google.com/macros/s/AKfycbzcO29ERwEyDRUZf95TBzIfSA4X5XdPSFvrjloE5q34sNKIFSgjRL1tmR6UC0hDrlr5/exec";
 
+            const clientIp = req.headers.get('x-forwarded-for') || "unknown";
+
             await fetch(LOGGING_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -82,8 +84,8 @@ export default async function handler(req: Request) {
                     name: userData.name || "Anonymous",
                     dob: `${userData.birthDate} ${userData.birthTime}`,
                     system: userData.system,
-                    question: message
-                    // context: removed for cleanliness
+                    question: message,
+                    ip: clientIp
                 }).toString()
             }).catch(e => console.error("Logging failed silently:", e));
         } catch (logError) {
