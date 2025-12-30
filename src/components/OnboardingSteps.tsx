@@ -196,11 +196,13 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
     formData.append('time', new Date().toLocaleTimeString('en-US', { hour12: true }));
 
     try {
-      await fetch("https://script.google.com/macros/s/AKfycbzcO29ERwEyDRUZf95TBzIfSA4X5XdPSFvrjloE5q34sNKIFSgjRL1tmR6UC0hDrlr5/exec", {
+      const response = await fetch("/api/waitlist", {
         method: 'POST',
         body: formData,
-        mode: 'no-cors'
       });
+
+      if (!response.ok) throw new Error("Submission failed");
+
       setSubmissionStatus('success');
       setEmail("");
     } catch (error) {
@@ -355,7 +357,7 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
         <div className="relative w-full">
           <input
             type="text"
-            className="w-full bg-white/5 border-b-2 border-primary/40 focus:border-primary text-white text-3xl font-bold py-4 px-2 shadow-none focus:ring-0 outline-none transition-all placeholder:text-white/5"
+            className="w-full bg-white/10 border-2 border-white/10 focus:border-primary text-white text-3xl font-bold py-6 px-6 rounded-2xl shadow-lg outline-none transition-all placeholder:text-white/20 text-center focus:ring-2 focus:ring-primary/20"
             placeholder="Enter your name"
             value={userData.name}
             onChange={(e) => updateField('name', e.target.value)}

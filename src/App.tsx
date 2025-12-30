@@ -79,8 +79,6 @@ const App: React.FC = () => {
   const handleFinish = async () => {
     setLoading(true);
     try {
-      console.log("Starting generation...");
-
       const [insight, transits] = await Promise.all([
         getAstrologicalInsight(userData),
         getTransitInsights(userData)
