@@ -9,7 +9,7 @@ export default async function handler(req: Request) {
     if (req.method !== 'POST') return new Response('Method Not Allowed', { status: 405, headers: corsHeaders() });
 
     try {
-        const { type, isPWA, screen, referrer, name } = await req.json();
+        const { type, isPWA, screen, referrer, name, language, timezone, city, country } = await req.json();
 
         // Environment variable for the Google Script
         const LOGGING_URL = process.env.WAITLIST_GOOGLE_SCRIPT_URL || "https://script.google.com/macros/s/AKfycbzcO29ERwEyDRUZf95TBzIfSA4X5XdPSFvrjloE5q34sNKIFSgjRL1tmR6UC0hDrlr5/exec";
@@ -23,7 +23,11 @@ export default async function handler(req: Request) {
                 name: name || 'Guest',
                 screen: screen,
                 os: 'Mobile/Tablet',
-                ip: req.headers.get('x-forwarded-for') || 'unknown'
+                ip: req.headers.get('x-forwarded-for') || 'unknown',
+                language: language || 'unknown',
+                timezone: timezone || 'unknown',
+                city: city || '',
+                country: country || ''
             });
         } else {
             scriptParams = new URLSearchParams({
@@ -32,7 +36,12 @@ export default async function handler(req: Request) {
                 screen: screen,
                 referrer: referrer,
                 platform: 'Web',
-                ip: req.headers.get('x-forwarded-for') || 'unknown'
+                ip: req.headers.get('x-forwarded-for') || 'unknown',
+                name: name || 'Guest', // Ensure name is passed
+                language: language || 'unknown',
+                timezone: timezone || 'unknown',
+                city: city || '',
+                country: country || ''
             });
         }
 

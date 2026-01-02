@@ -95,7 +95,11 @@ const App: React.FC = () => {
             isPWA,
             screen: `${width}x${height}`,
             referrer: document.referrer || 'direct',
-            name: savedName
+            name: savedName,
+            language: navigator.language || 'en-US',
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown',
+            city: '',
+            country: ''
           })
         });
       } catch (e) {
