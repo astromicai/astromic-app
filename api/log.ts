@@ -27,7 +27,7 @@ export default async function handler(req: Request) {
             });
         } else {
             scriptParams = new URLSearchParams({
-                email: 'Pageview',
+                type: 'pageview',
                 message: 'Web Visit',
                 screen: screen,
                 referrer: referrer,

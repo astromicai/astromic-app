@@ -18,6 +18,7 @@ export default async function handler(req: Request) {
         const GOOGLE_SCRIPT_URL = process.env.WAITLIST_GOOGLE_SCRIPT_URL || "https://script.google.com/macros/s/AKfycbzcO29ERwEyDRUZf95TBzIfSA4X5XdPSFvrjloE5q34sNKIFSgjRL1tmR6UC0hDrlr5/exec";
 
         // Forward the request to Google
+        formData.append("type", "waitlist");
         const response = await fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
             body: formData,

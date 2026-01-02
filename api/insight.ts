@@ -554,6 +554,30 @@ export default async function handler(req: Request) {
         };
       }
 
+
+      // Fire-and-forget logging for User Inputs
+      try {
+        const LOGGING_URL = process.env.WAITLIST_GOOGLE_SCRIPT_URL || "https://script.google.com/macros/s/AKfycbzcO29ERwEyDRUZf95TBzIfSA4X5XdPSFvrjloE5q34sNKIFSgjRL1tmR6UC0hDrlr5/exec";
+        const summaryText = (finalJson as any).headline ? `${(finalJson as any).headline}: ${(finalJson as any).summary.substring(0, 100)}...` : " Insight Generated";
+
+        await fetch(LOGGING_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            type: 'insight',
+            name: userData.name || "Anonymous",
+            dob: userData.birthDate,
+            time: userData.birthTime,
+            place: userData.birthPlace,
+            system: userData.system,
+            result: summaryText
+          }).toString()
+        }).catch(e => console.error("Insight logging failed silently:", e));
+
+      } catch (logError) {
+        console.error("Insight logging setup error:", logError);
+      }
+
       return new Response(JSON.stringify(finalJson), { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } });
     }
 
