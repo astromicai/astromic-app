@@ -1,5 +1,6 @@
 
-import * as Astronomy from 'astronomy-engine';
+import * as AstroModule from 'astronomy-engine';
+const Astronomy = (AstroModule as any).default || AstroModule;
 
 // ZODIAC SIGNS (0 = Aries, 1 = Taurus, ... 11 = Pisces)
 const ZODIAC = [

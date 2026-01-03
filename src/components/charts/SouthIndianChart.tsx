@@ -12,7 +12,8 @@ const SouthIndianChart: React.FC<ChartProps & { language?: string }> = ({ data, 
             // Just planet abbreviations needed now
             planets: {
                 "Sun": "சூ", "Moon": "சந்", "Mars": "செ", "Mercury": "பு",
-                "Jupiter": "குரு", "Venus": "சுக்", "Saturn": "சனி", "Rahu": "ரா", "Ketu": "கே", "Asc": "ல"
+                "Jupiter": "குரு", "Venus": "சுக்", "Saturn": "சனி", "Rahu": "ரா", "Ketu": "கே", "Asc": "ல",
+                "Uranus": "யுரே", "Neptune": "நெப்", "Pluto": "புளூ"
             }
         }
     };
