@@ -8,6 +8,8 @@ import { getAstrologicalInsight, getTransitInsights } from './services/geminiSer
 import ErrorBoundary from './components/ErrorBoundary';
 import CosmicBackground from './components/layout/CosmicBackground';
 import Footer from './components/layout/Footer';
+import WhatsAppButton from './components/WhatsAppButton';
+
 
 const STORAGE_KEY = 'astromic_user_profile_v2';
 const INSIGHT_KEY = 'astromic_insight_data';
@@ -230,23 +232,28 @@ const App: React.FC = () => {
         />
 
         {step === 'PROFILE_DISPLAY' && !isChatOpen && (
-          <div className="fixed bottom-6 right-6 z-50 flex items-center gap-4">
-            {/* Notification Label */}
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-xl shadow-lg animate-bounce hidden md:block">
-              <span className="text-sm font-bold tracking-wide">Ask Astromic AI Oracle 👉</span>
+          <>
+            {/* WhatsApp Button (Bottom Left) */}
+            <WhatsAppButton />
+
+            <div className="fixed bottom-6 right-6 z-50 flex items-center gap-4">
+              {/* Notification Label */}
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-xl shadow-lg animate-bounce hidden md:block">
+                <span className="text-sm font-bold tracking-wide">Ask Astromic AI Oracle 👉</span>
+              </div>
+
+              <button
+                onClick={() => openChat()}
+                className="size-14 rounded-full bg-primary flex items-center justify-center text-white shadow-2xl hover:bg-primary-alt transition-all animate-none hover:scale-110 group relative"
+              >
+                {/* Mobile Notification Pulse */}
+                <span className="absolute -top-1 -right-1 size-4 bg-red-500 rounded-full animate-ping md:hidden"></span>
+                <span className="absolute -top-1 -right-1 size-4 bg-red-500 rounded-full border-2 border-background md:hidden"></span>
+
+                <span className="material-symbols-outlined text-2xl group-hover:rotate-12 transition-transform">chat</span>
+              </button>
             </div>
-
-            <button
-              onClick={() => openChat()}
-              className="size-14 rounded-full bg-primary flex items-center justify-center text-white shadow-2xl hover:bg-primary-alt transition-all animate-none hover:scale-110 group relative"
-            >
-              {/* Mobile Notification Pulse */}
-              <span className="absolute -top-1 -right-1 size-4 bg-red-500 rounded-full animate-ping md:hidden"></span>
-              <span className="absolute -top-1 -right-1 size-4 bg-red-500 rounded-full border-2 border-background md:hidden"></span>
-
-              <span className="material-symbols-outlined text-2xl group-hover:rotate-12 transition-transform">chat</span>
-            </button>
-          </div>
+          </>
         )}
       </div>
     </ErrorBoundary>
