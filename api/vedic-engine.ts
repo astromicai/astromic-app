@@ -118,20 +118,58 @@ export function calculateVedicChartV2(dateString: string, timeString: string, la
     // Example: 20:30 IST is 15:00 UTC. 
     // If we created 20:30 UTC (date above), we must SUBTRACT 5.5 hours.
 
-    let offsetHours = 0;
-    const tz = timezone.toLowerCase();
+    // ROBUST OFFSET CALCULATION using Intl
+    // We need to know: What is the offset of `timezone` on `dateString`?
+    // construct a date that represents the input time as if it were UTC
+    const inputAsUtc = new Date(isoString);
 
-    if (tz.includes('kolkata') || tz.includes('calcutta') || tz.includes('ist') || tz.includes('india')) {
-        offsetHours = 5.5;
-    } else if (tz === 'utc' || tz === 'gmt') {
-        offsetHours = 0;
-    } else {
-        // Fallback: Try to guess or default to UTC if unknown.
-        // Ideally passing the numeric offset from frontend would be better.
-        // For now, assume UTC if not Indian, to avoid wild errors, or maybe 0 check.
-        // But we assume the standard user is testing for India per conversation.
-        offsetHours = 0;
-    }
+    // Get the time in the target timezone for that specific moment
+    // We use a "reference" date to deduce the offset.
+    // Actually, simpler approach:
+    // 1. We have the "Wall Clock Time" (inputAsUtc represents the face of the clock).
+    // 2. We need to find the "Real UTC" instant that corresponds to that Wall Clock Time in that Zone.
+
+    // Helper to get offset in hours for a valid JS date object
+    const getOffsetInHours = (d: Date, tz: string) => {
+        try {
+            // Create a format that outputs specific parts
+            // Intl.DateTimeFormat can be tricky to inverse.
+            // Strategy: 
+            // Formats date string in target TZ: "1/1/2026, 12:00:00 PM"
+            // Parse that string back as local/UTC? No.
+
+            // Robust Method:
+            // formatToParts
+            const str = d.toLocaleString('en-US', { timeZone: tz, hour12: false });
+            // str is "1/1/2026, 24:00:00" roughly.
+            const dateInTz = new Date(str);
+
+            // Diff between the "UTC interpretations"
+            // If d is 12:00 UTC. In TZ it is 17:30. dateInTz becomes 17:30 UTC.
+            // Diff = 17:30 - 12:00 = +5.5 hours.
+            const diffMs = dateInTz.getTime() - d.getTime();
+            return diffMs / (1000 * 60 * 60);
+        } catch (e) {
+            console.error("Timezone offset calc failed", e);
+            return 0;
+        }
+    };
+
+    // Iterative approach to solve: Time_UTC + Offset(Time_UTC) = Time_Wall
+    // Initial guess: Assume Offset = 0, so Guess_UTC = Time_Wall
+    let guessUtc = new Date(isoString);
+
+    // 1st iteration
+    let offset = getOffsetInHours(guessUtc, timezone);
+    // If offset is +5.5 (India), then Wall Time is 5.5h ahead of UTC.
+    // So Real UTC = Wall - 5.5.
+
+    // Refine:
+    // If we go back 5.5 hours, is the offset still +5.5? (DST check)
+    let roughUtc = new Date(guessUtc.getTime() - (offset * 3600 * 1000));
+    let refinedOffset = getOffsetInHours(roughUtc, timezone);
+
+    let offsetHours = refinedOffset;
 
     // Subtract offsetHours from the date (which is currently "Local Time as UTC")
     date.setTime(date.getTime() - (offsetHours * 60 * 60 * 1000));
