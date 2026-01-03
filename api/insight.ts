@@ -369,7 +369,7 @@ export default async function handler(req: Request) {
       const { system, birthDate, birthTime, birthPlace, latitude, longitude, timezone } = userData;
 
       // Only run engine if coordinates exist
-      if (latitude && longitude && system === 'Indian Vedic') {
+      if (latitude && longitude) {
         try {
           // Import dynamically or assume it's available if compilation succeeds
           // Since we are in the same project, we import from adjacent file
@@ -377,27 +377,45 @@ export default async function handler(req: Request) {
           // Using .js extension for node16 resolution
           chart = calculateVedicChartV2(birthDate, birthTime, latitude, longitude, userData.timezone || "UTC");
 
-          calculatedChartFormatted = `
-            CALCULATED VEDIC DATA (Lahiri Ayanamsa):
-            Ascendant (Lagnam): ${chart.ascendant?.sign} (${chart.ascendant?.nakshatra} - Padam ${chart.ascendant?.nakshatraPadam})
-            Sun: ${chart.planets?.find((p: any) => p.name === 'Sun')?.sign}
-            Moon: ${chart.planets?.find((p: any) => p.name === 'Moon')?.sign} (${chart.planets?.find((p: any) => p.name === 'Moon')?.nakshatra} - Padam ${chart.planets?.find((p: any) => p.name === 'Moon')?.nakshatraPadam})
-            Mars: ${chart.planets?.find((p: any) => p.name === 'Mars')?.sign}
-            Mercury: ${chart.planets?.find((p: any) => p.name === 'Mercury')?.sign}
-            Jupiter: ${chart.planets?.find((p: any) => p.name === 'Jupiter')?.sign}
-            Venus: ${chart.planets?.find((p: any) => p.name === 'Venus')?.sign}
-            Saturn: ${chart.planets?.find((p: any) => p.name === 'Saturn')?.sign}
-            Rahu: ${chart.planets?.find((p: any) => p.name === 'Rahu')?.sign}
-            Ketu: ${chart.planets?.find((p: any) => p.name === 'Ketu')?.sign}
-            
-            PANCHANG DETAILS (MUST USE):
-            Tithi: ${chart.panchang?.tithi || 'Unknown'} (${chart.panchang?.tithiPaksha})
-            Yoga: ${chart.panchang?.yoga || 'Unknown'}
-            Karana: ${chart.panchang?.karana || 'Unknown'}
-            Nakshatra: ${chart.panchang?.nakshatra || 'Unknown'}
-            `;
+          if (system === 'Indian Vedic') {
+            calculatedChartFormatted = `
+             CALCULATED VEDIC DATA (Lahiri Ayanamsa):
+             Ascendant (Lagnam): ${chart.ascendant?.sign} (${chart.ascendant?.nakshatra} - Padam ${chart.ascendant?.nakshatraPadam})
+             Sun: ${chart.planets?.find((p: any) => p.name === 'Sun')?.sign}
+             Moon: ${chart.planets?.find((p: any) => p.name === 'Moon')?.sign} (${chart.planets?.find((p: any) => p.name === 'Moon')?.nakshatra} - Padam ${chart.planets?.find((p: any) => p.name === 'Moon')?.nakshatraPadam})
+             Mars: ${chart.planets?.find((p: any) => p.name === 'Mars')?.sign}
+             Mercury: ${chart.planets?.find((p: any) => p.name === 'Mercury')?.sign}
+             Jupiter: ${chart.planets?.find((p: any) => p.name === 'Jupiter')?.sign}
+             Venus: ${chart.planets?.find((p: any) => p.name === 'Venus')?.sign}
+             Saturn: ${chart.planets?.find((p: any) => p.name === 'Saturn')?.sign}
+             Rahu: ${chart.planets?.find((p: any) => p.name === 'Rahu')?.sign}
+             Ketu: ${chart.planets?.find((p: any) => p.name === 'Ketu')?.sign}
+             
+             PANCHANG DETAILS (MUST USE):
+             Tithi: ${chart.panchang?.tithi || 'Unknown'} (${chart.panchang?.tithiPaksha})
+             Yoga: ${chart.panchang?.yoga || 'Unknown'}
+             Karana: ${chart.panchang?.karana || 'Unknown'}
+             Nakshatra: ${chart.panchang?.nakshatra || 'Unknown'}
+             `;
+          } else {
+            // WESTERN / TROPICAL DATA
+            calculatedChartFormatted = `
+             CALCULATED WESTERN / TROPICAL DATA:
+             Ascendant: ${chart.western?.ascendant?.sign} (${chart.western?.ascendant?.degree?.toFixed(2)}°)
+             Sun: ${chart.western?.planets?.find((p: any) => p.name === 'Sun')?.sign} (${chart.western?.planets?.find((p: any) => p.name === 'Sun')?.degree?.toFixed(2)}°)
+             Moon: ${chart.western?.planets?.find((p: any) => p.name === 'Moon')?.sign} (${chart.western?.planets?.find((p: any) => p.name === 'Moon')?.degree?.toFixed(2)}°)
+             Mars: ${chart.western?.planets?.find((p: any) => p.name === 'Mars')?.sign}
+             Mercury: ${chart.western?.planets?.find((p: any) => p.name === 'Mercury')?.sign}
+             Jupiter: ${chart.western?.planets?.find((p: any) => p.name === 'Jupiter')?.sign}
+             Venus: ${chart.western?.planets?.find((p: any) => p.name === 'Venus')?.sign}
+             Saturn: ${chart.western?.planets?.find((p: any) => p.name === 'Saturn')?.sign}
+             
+             (Use these accurate positions over any estimations)
+             `;
+          }
+
         } catch (e: any) {
-          console.error("Vedic Engine Calculation Failed:", e);
+          console.error("Engine Calculation Failed:", e);
           const errorMsg = e instanceof Error ? e.message : String(e);
           calculatedChartFormatted = `CALCULATION FAILED CRITICALLY. ERROR: ${errorMsg}. DO NOT HALLUCINATE. STATE THIS ERROR IN SUMMARY.`;
         }
@@ -501,12 +519,12 @@ export default async function handler(req: Request) {
          System: ${userData.system}
          Language: ${userData.language}
          
-         ${(sys === 'Indian Vedic') && calculatedChartFormatted !== "No calculation available." ? `
-         CRITICAL: USE THESE PRE-CALCULATED PLANETARY POSITIONS (DO NOT HALLUCINATE POSITIONS):
-         ${calculatedChartFormatted}
-         ` : `
-         CRITICAL: Calculate planetary positions accurately for the date using ${userData.system} methodology.
-         `}
+         ${calculatedChartFormatted !== "No calculation available." ? `
+          CRITICAL: USE THESE PRE-CALCULATED PLANETARY POSITIONS (DO NOT HALLUCINATE POSITIONS):
+          ${calculatedChartFormatted}
+          ` : `
+          CRITICAL: Calculate planetary positions accurately for the date using ${userData.system} methodology.
+          `}
          
          MANDATORY INSTRUCTIONS:
          1. OUTPUT MUST BE IN ${userData.language} LANGUAGE (except JSON keys).
