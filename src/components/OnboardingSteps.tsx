@@ -142,77 +142,6 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
   const [activeTooltip, setActiveTooltip] = useState<AstrologySystem | null>(null);
   const [isManual, setIsManual] = useState(false);
 
-  const [email, setEmail] = useState("");
-  const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
-  const [ipData, setIpData] = useState<any>({
-    ip: '',
-    city: '',
-    country: '',
-    platform: navigator.platform || 'Unknown Device'
-  });
-
-  // Fetch IP Data for Waitlist (Replicating tachyon-space logic)
-  useEffect(() => {
-    const fetchIP = async () => {
-      try {
-        const resp = await fetch('https://ipapi.co/json/');
-        if (!resp.ok) throw new Error('IPAPI failed');
-        const data = await resp.json();
-        setIpData({
-          ip: data.ip || 'Unknown',
-          city: data.city || 'Unknown',
-          country: data.country_name || 'Unknown',
-          platform: navigator.platform || 'Unknown Device'
-        });
-      } catch (e) {
-        // Fallback or retry logic could go here, for now simpler is better for React
-        try {
-          const resp2 = await fetch('https://ipwho.is/');
-          const data2 = await resp2.json();
-          setIpData({
-            ip: data2.ip || 'Unknown',
-            city: data2.city || 'Unknown',
-            country: data2.country || 'Unknown',
-            platform: navigator.platform || 'Unknown Device'
-          });
-        } catch (err) {
-          console.error("IP Fetch failed", err);
-        }
-      }
-    };
-    fetchIP();
-  }, []);
-
-  const handleWaitlistSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmissionStatus('sending');
-
-    const formData = new FormData();
-    formData.append('email', email);
-    formData.append('ip', ipData.ip);
-    formData.append('city', ipData.city);
-    formData.append('country', ipData.country);
-    formData.append('platform', ipData.platform);
-    formData.append('date', new Date().toLocaleDateString('en-CA'));
-    formData.append('time', new Date().toLocaleTimeString('en-US', { hour12: true }));
-
-    try {
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
-      const response = await fetch(`${API_BASE}/api/waitlist`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) throw new Error("Submission failed");
-
-      setSubmissionStatus('success');
-      setEmail("");
-    } catch (error) {
-      console.error("Waitlist error", error);
-      setSubmissionStatus('error');
-    }
-  };
-
   const updateField = (field: keyof UserData, value: any) => {
     setUserData(prev => ({ ...prev, [field]: value }));
   };
@@ -273,52 +202,6 @@ const OnboardingSteps: React.FC<OnboardingProps> = ({
               <span>Begin Your Journey</span>
               <span className="material-symbols-outlined ml-3 text-[24px]">auto_awesome</span>
             </button>
-          </div>
-
-          {/* Waitlist Widget (Moved Below CTA) */}
-          <div className="w-full max-w-[340px] bg-card-surface/50 backdrop-blur-md border border-white/5 p-5 rounded-2xl shadow-xl z-40">
-
-            <p className="text-sm text-white/90 leading-relaxed mb-3 font-medium text-center">
-              ✨ We are enabling subscriptions soon.<br />
-              Join the waitlist for your <strong className="text-primary font-bold">First Year Free</strong>:
-            </p>
-
-            {submissionStatus === 'success' ? (
-              <div className="text-center py-4 animate-in fade-in zoom-in">
-                <div className="text-4xl mb-2">✅</div>
-                <p className="text-primary font-bold">You are on the list!</p>
-                <p className="text-xs text-white/60">Watch your inbox for early access.</p>
-              </div>
-            ) : (
-              <form
-                className="flex flex-col gap-2"
-                onSubmit={handleWaitlistSubmit}
-              >
-                <div className="flex gap-2">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email..."
-                    required
-                    disabled={submissionStatus === 'sending'}
-                    className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-primary outline-none transition-all placeholder:text-white/30 disabled:opacity-50"
-                  />
-                  <button
-                    type="submit"
-                    disabled={submissionStatus === 'sending'}
-                    className="bg-primary hover:bg-primary-alt text-white text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-lg transition-colors whitespace-nowrap shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {submissionStatus === 'sending' ? '...' : 'Join'}
-                  </button>
-                </div>
-                {submissionStatus === 'error' && <p className="text-red-400 text-[10px] text-center">Something went wrong. Please try again.</p>}
-              </form>
-            )}
-
-            {submissionStatus !== 'success' && (
-              <p className="text-[10px] text-white/40 mt-2 text-center">Secure your free early-bird account now.</p>
-            )}
           </div>
         </div>
 

@@ -183,7 +183,7 @@ export function calculateVedicChartV2(dateString: string, timeString: string, la
     const ayanamsa = getLahiriAyanamsa(date);
 
     const planets = [
-        "Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"
+        "Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Rahu", "Ketu"
     ];
 
     let sunLon = 0;
@@ -195,11 +195,27 @@ export function calculateVedicChartV2(dateString: string, timeString: string, la
 
     // 1. Calculate Planets
     for (const p of planets) {
-        // Cast string to any to avoid TS error, runtime supports strings
-        // Use ofDate=true (4th arg) to get coordinates relative to Equinox of Date.
-        const eq = Astronomy.Equator(p as any, date, observer, true, true);
-        const ecliptic = Astronomy.Ecliptic(eq.vec);
-        const tropicalLon = ecliptic.elon;
+        let tropicalLon = 0;
+
+        if (p === "Rahu" || p === "Ketu") {
+            const jd = (date.getTime() / 86400000) + 2440587.5;
+            const d = jd - 2451545.0;
+            if (p === "Rahu") {
+                // Mean North Node
+                tropicalLon = normalizeDegree(125.04452 - 0.0529537648 * d);
+            } else {
+                // Mean South Node
+                const rahuLon = normalizeDegree(125.04452 - 0.0529537648 * d);
+                tropicalLon = normalizeDegree(rahuLon + 180);
+            }
+        } else {
+            // Cast string to any to avoid TS error, runtime supports strings
+            // Use ofDate=true (4th arg) to get coordinates relative to Equinox of Date.
+            const eq = Astronomy.Equator(p as any, date, observer, true, true);
+            const ecliptic = Astronomy.Ecliptic(eq.vec);
+            tropicalLon = ecliptic.elon;
+        }
+
         const siderealLon = normalizeDegree(tropicalLon - ayanamsa);
 
         if (p === "Sun") sunLon = siderealLon;

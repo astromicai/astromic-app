@@ -1,6 +1,6 @@
 import { UserData, InsightData, TransitData } from '../types';
 
-export const CHAT_MODEL_NAME = "gemini-2.0-flash";
+export const CHAT_MODEL_NAME = "gemini-3.5-flash";
 
 export const getAstrologicalInsight = async (userData: UserData): Promise<InsightData | { error: string }> => {
   try {

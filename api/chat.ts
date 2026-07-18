@@ -23,7 +23,7 @@ export default async function handler(req: Request) {
 
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.0-flash",
+            model: "gemini-3.5-flash",
             systemInstruction: `
         You are Astromic — an advanced astrology analysis engine.
         Your goal is to provide deep, insightful, and technical astrological guidance.

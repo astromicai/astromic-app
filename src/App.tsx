@@ -8,7 +8,7 @@ import { getAstrologicalInsight, getTransitInsights } from './services/geminiSer
 import ErrorBoundary from './components/ErrorBoundary';
 import CosmicBackground from './components/layout/CosmicBackground';
 import Footer from './components/layout/Footer';
-import WhatsAppButton from './components/WhatsAppButton';
+
 
 
 const STORAGE_KEY = 'astromic_user_profile_v2';
@@ -23,6 +23,12 @@ const App: React.FC = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [initialChatPrompt, setInitialChatPrompt] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [tick, setTick] = useState(0); // Force re-render for rotating text
+
+  useEffect(() => {
+    const interval = setInterval(() => setTick(t => t + 1), 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   const [userData, setUserData] = useState<UserData>({
     name: '',
@@ -62,23 +68,6 @@ const App: React.FC = () => {
         const height = window.innerHeight;
 
         const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
-        // If API_BASE is set (mobile/prod), use it. If empty (local), default logging might fail or need full URL.
-        // For analytics, we should use the script URL directly or proxy if we have one. 
-        // Since we don't have a specific analytics proxy, we'll hit the script directly if possible, or skip if CORS is an issue.
-        // Actually, let's use the same proxy pattern if we had one.
-        // Wait, the user has a Google Script Web App URL. 
-        // We should PROXY this via Next.js API to hide the URL? 
-        // No, current chat logging uses the env var WAITLIST_GOOGLE_SCRIPT_URL on server.
-        // We lack a client-side visitor logger. 
-        // Let's CREATE a simple client-side logger function in `services/geminiService.ts` or similar that calls `/api/waitlist` with a special flag?
-        // Or just use the existing `/api/waitlist` or `/api/chat`?
-        // Let's create a cleaner `logVisitor` function in `api/waitlist.ts`? No, that's for waitlist.
-        // Let's use a new file `src/services/analytics.ts` and an API route `/api/log`.
-
-        // Simpler: Just Fetch the same /api/waitlist but handling "Pageview"?
-        // No, `api/waitlist.ts` expects email/message.
-
-        // Let's hit the new endpoint I will create: `/api/log.ts`
 
         let savedName = "Guest";
         try {
@@ -233,25 +222,31 @@ const App: React.FC = () => {
 
         {step === 'PROFILE_DISPLAY' && !isChatOpen && (
           <>
-            {/* WhatsApp Button (Bottom Left) */}
-            <WhatsAppButton />
 
-            <div className="fixed bottom-6 right-6 z-50 flex items-center gap-4">
-              {/* Notification Label */}
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-xl shadow-lg animate-bounce hidden md:block">
-                <span className="text-sm font-bold tracking-wide">Ask Astromic AI Oracle 👉</span>
+
+            {/* Chat FAB with Pulse & Context Bubbles */}
+            <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2 pointer-events-none sm:pointer-events-auto">
+              {/* Rotating Context Bubbles (Coach Marks) */}
+              <div className="bg-white text-primary px-4 py-2 rounded-xl shadow-xl animate-in slide-in-from-right fade-in duration-700 mb-2 border border-primary/20 relative after:content-[''] after:absolute after:bottom-[-6px] after:right-6 after:size-3 after:bg-white after:rotate-45 after:border-b after:border-r after:border-primary/20 pointer-events-auto">
+                <p className="text-xs font-bold whitespace-nowrap typing-demo">
+                  {["Ask about Love ❤️", "Career Insight? 💼", "Check Compatibility 👩‍❤️‍👨", "My Lucky Color? 🎨"][Math.floor((Date.now() / 4000) % 4)]}
+                </p>
               </div>
 
-              <button
-                onClick={() => openChat()}
-                className="size-14 rounded-full bg-primary flex items-center justify-center text-white shadow-2xl hover:bg-primary-alt transition-all animate-none hover:scale-110 group relative"
-              >
-                {/* Mobile Notification Pulse */}
-                <span className="absolute -top-1 -right-1 size-4 bg-red-500 rounded-full animate-ping md:hidden"></span>
-                <span className="absolute -top-1 -right-1 size-4 bg-red-500 rounded-full border-2 border-background md:hidden"></span>
+              <div className="flex items-center gap-4 pointer-events-auto">
+                <div className="relative">
+                  {/* Pulse Rings */}
+                  <div className="absolute inset-0 rounded-full border-2 border-primary/50 animate-ping opacity-75"></div>
+                  <div className="absolute inset-0 rounded-full border border-primary/30 animate-ping delay-150 opacity-50"></div>
 
-                <span className="material-symbols-outlined text-2xl group-hover:rotate-12 transition-transform">chat</span>
-              </button>
+                  <button
+                    onClick={() => openChat()}
+                    className="size-16 rounded-full bg-gradient-to-r from-primary to-purple-600 flex items-center justify-center text-white shadow-[0_0_30px_rgba(242,13,185,0.6)] hover:shadow-[0_0_50px_rgba(242,13,185,0.9)] hover:scale-110 transition-all duration-300 group relative overflow-hidden z-10"
+                  >
+                    <span className="material-symbols-outlined text-3xl group-hover:rotate-12 transition-transform relative z-10 drop-shadow-md">chat_sparkle</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </>
         )}
